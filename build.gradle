@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'commons-io:commons-io:2.5'
+    compile 'com.google.guava:guava:20.0'
+    compile 'com.github.matejtymes:javafixes:1.1.1'
+
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'ch.qos.logback:logback-classic:1.1.9'
+
+    testCompile 'com.h2database:h2:1.4.196'
+
+}
