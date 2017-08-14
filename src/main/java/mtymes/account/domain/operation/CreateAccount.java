@@ -1,4 +1,4 @@
-package mtymes.account.domain.request;
+package mtymes.account.domain.operation;
 
 import mtymes.account.domain.account.AccountId;
 
@@ -7,7 +7,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static javafixes.common.CollectionUtil.newSet;
 
-public class CreateAccount extends Request {
+public class CreateAccount extends Operation {
 
     public final AccountId accountId;
 
@@ -16,6 +16,7 @@ public class CreateAccount extends Request {
         this.accountId = accountId;
     }
 
+    // todo: test this
     @Override
     public Set<AccountId> affectedAccountIds() {
         return newSet(accountId);
