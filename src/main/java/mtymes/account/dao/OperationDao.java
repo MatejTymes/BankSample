@@ -8,6 +8,7 @@ import mtymes.account.domain.operation.OperationId;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bson.Document;
 
+import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
@@ -21,22 +22,45 @@ public class OperationDao {
 
     // todo: test
     public OperationId storeOperation(Operation operation) {
-        // todo: implement
-        throw new NotImplementedException("implement me");
+        long longId = storeOperation(
+                operation.type(),
+                asDocument(operation)
+        );
+        return operationId(longId);
     }
 
     // todo: test
     public void markAsSuccessful(OperationId operationId) {
-        // todo: implement
-        throw new NotImplementedException("implement me");
+        operations.updateOne(
+                docBuilder()
+                        .put("_id", operationId)
+                        .put("finalState", null)
+                        .build(),
+                doc("$set", doc("finalState", "success"))
+        );
     }
 
     // todo: test
     public void markAsFailed(OperationId operationId, String description) {
+        operations.updateOne(
+                docBuilder()
+                        .put("_id", operationId)
+                        .put("finalState", null)
+                        .build(),
+                doc("$set", docBuilder()
+                        .put("finalState", "failure")
+                        .put("description", description)
+                        .build())
+        );
+    }
+
+    // todo: test
+    private Document asDocument(Operation operation) {
         // todo: implement
         throw new NotImplementedException("implement me");
     }
 
+    // todo: execute in single thread
     // using "Optimistic Loop" to guarantee the sequencing of Operations
     // look at: https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/ for more details
     private long storeOperation(String type, Document operationDocument) {

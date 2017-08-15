@@ -20,7 +20,7 @@ import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
-public class AccountDao {
+public class AccountDao extends BaseDao {
 
     private final MongoCollection<Document> accounts;
 
@@ -79,22 +79,7 @@ public class AccountDao {
         return findOne(
                 accounts,
                 doc("accountId", accountId),
-                doc -> operationId(doc.getLong("operationId"))
+                doc -> operationId(doc.getLong("lastAppliedOpId"))
         );
-    }
-
-    // todo: move into BaseDao
-    protected <T> Optional<T> findOne(MongoCollection<Document> collection, Document query, Function<Document, T> mapper) {
-        MongoCursor<Document> iterator = collection.find(query).iterator();
-        if (iterator.hasNext()) {
-            Document dbItem = iterator.next();
-            if (iterator.hasNext()) {
-                throw new IllegalStateException("more than one db item for query: " + query);
-            }
-
-            return Optional.of(mapper.apply(dbItem));
-        } else {
-            return Optional.empty();
-        }
     }
 }
