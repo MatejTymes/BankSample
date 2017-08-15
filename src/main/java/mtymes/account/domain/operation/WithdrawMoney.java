@@ -1,6 +1,5 @@
 package mtymes.account.domain.operation;
 
-import com.google.common.base.Preconditions;
 import mtymes.account.domain.account.AccountId;
 
 import java.math.BigDecimal;
@@ -10,12 +9,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static javafixes.common.CollectionUtil.newSet;
 
-public class DepositMoney extends Operation {
+public class WithdrawMoney extends Operation {
 
     public final AccountId accountId;
     public final BigDecimal amount;
 
-    public DepositMoney(AccountId accountId, BigDecimal amount) {
+    public WithdrawMoney(AccountId accountId, BigDecimal amount) {
         // todo: check conditions
         checkNotNull(accountId, "accountId can't be null");
         checkNotNull(amount, "amount can't be null");
