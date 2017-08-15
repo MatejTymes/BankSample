@@ -1,7 +1,7 @@
 package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
-import mtymes.account.dao.RequestDao;
+import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.Operation;
@@ -13,8 +13,8 @@ import static mtymes.account.handler.OperationHandler.Progress.ThisOperationAppl
 
 public class CreateAccountHandler extends OperationHandler<CreateAccount> {
 
-    public CreateAccountHandler(AccountDao accountDao, RequestDao requestDao) {
-        super(accountDao, requestDao);
+    public CreateAccountHandler(AccountDao accountDao, OperationDao operationDao) {
+        super(accountDao, operationDao);
     }
 
     // todo: test this

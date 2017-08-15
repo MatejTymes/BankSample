@@ -1,7 +1,7 @@
 package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
-import mtymes.account.dao.RequestDao;
+import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositMoney;
@@ -12,8 +12,8 @@ import static java.lang.String.format;
 
 public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
 
-    public DepositMoneyHandler(AccountDao accountDao, RequestDao requestDao) {
-        super(accountDao, requestDao);
+    public DepositMoneyHandler(AccountDao accountDao, OperationDao operationDao) {
+        super(accountDao, operationDao);
     }
 
     // todo: test this

@@ -1,7 +1,7 @@
 package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
-import mtymes.account.dao.RequestDao;
+import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.Operation;
@@ -14,8 +14,8 @@ import static java.lang.String.format;
 
 public class WithdrawMoneyHandler extends OperationHandler<WithdrawMoney> {
 
-    public WithdrawMoneyHandler(AccountDao accountDao, RequestDao requestDao) {
-        super(accountDao, requestDao);
+    public WithdrawMoneyHandler(AccountDao accountDao, OperationDao operationDao) {
+        super(accountDao, operationDao);
     }
 
     // todo: test this

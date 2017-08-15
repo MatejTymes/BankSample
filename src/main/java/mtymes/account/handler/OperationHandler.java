@@ -1,7 +1,7 @@
 package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
-import mtymes.account.dao.RequestDao;
+import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.Operation;
@@ -15,11 +15,11 @@ import static mtymes.account.handler.OperationHandler.Progress.ThisOperationAppl
 public abstract class OperationHandler<T extends Operation> {
 
     protected final AccountDao accountDao;
-    protected final RequestDao requestDao;
+    protected final OperationDao operationDao;
 
-    protected OperationHandler(AccountDao accountDao, RequestDao requestDao) {
+    protected OperationHandler(AccountDao accountDao, OperationDao operationDao) {
         this.accountDao = accountDao;
-        this.requestDao = requestDao;
+        this.operationDao = operationDao;
     }
 
     abstract boolean canHandleRequest(Operation operation);
@@ -46,11 +46,11 @@ public abstract class OperationHandler<T extends Operation> {
     }
 
     protected void markAsSuccess(OperationId operationId) {
-        requestDao.markAsSuccessful(operationId);
+        operationDao.markAsSuccessful(operationId);
     }
 
     protected void markAsFailure(OperationId operationId, String description) {
-        requestDao.markAsFailed(operationId, description);
+        operationDao.markAsFailed(operationId, description);
     }
 
     protected enum Progress {
