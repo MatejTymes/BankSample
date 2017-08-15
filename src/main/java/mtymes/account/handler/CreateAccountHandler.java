@@ -31,13 +31,13 @@ public class CreateAccountHandler extends OperationHandler<CreateAccount> {
 
         boolean success = accountDao.createAccount(accountId, operationId);
         if (success) {
-            markAsSuccess(operationId, accountId);
+            markAsSuccess(operationId);
         } else {
             Progress progress = checkProgress(accountId, operationId);
             if (progress == OlderOperationApplied) {
-                markAsFailure(operationId, accountId, format("Account '%s' already exists", accountId));
+                markAsFailure(operationId, format("Account '%s' already exists", accountId));
             } else if (progress == ThisOperationApplied) {
-                markAsSuccess(operationId, accountId);
+                markAsSuccess(operationId);
             }
         }
     }

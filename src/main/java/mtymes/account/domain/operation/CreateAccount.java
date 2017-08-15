@@ -12,7 +12,9 @@ public class CreateAccount extends Operation {
     public final AccountId accountId;
 
     public CreateAccount(AccountId accountId) {
+        // todo: check conditions
         checkNotNull(accountId, "accountId can't be null");
+
         this.accountId = accountId;
     }
 

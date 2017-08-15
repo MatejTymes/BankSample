@@ -2,6 +2,7 @@ package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.RequestDao;
+import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
@@ -36,14 +37,20 @@ public abstract class OperationHandler<T extends Operation> {
         return comparison < 0 ? OlderOperationApplied : comparison == 0 ? ThisOperationApplied : NewerOperationApplied;
     }
 
-    protected void markAsSuccess(OperationId operationId, AccountId accountId) {
-        requestDao.markAsSuccessful(operationId);
-        accountDao.markOperationWasUpdated(accountId, operationId);
+    protected Account loadAccount(AccountId accountId) {
+        return accountDao
+                .findAccount(accountId)
+                .orElseThrow(
+                        () -> new IllegalStateException(format("Failed to load Account '%s'", accountId))
+                );
     }
 
-    protected void markAsFailure(OperationId operationId, AccountId accountId, String description) {
+    protected void markAsSuccess(OperationId operationId) {
+        requestDao.markAsSuccessful(operationId);
+    }
+
+    protected void markAsFailure(OperationId operationId, String description) {
         requestDao.markAsFailed(operationId, description);
-        accountDao.markOperationWasUpdated(accountId, operationId);
     }
 
     protected enum Progress {

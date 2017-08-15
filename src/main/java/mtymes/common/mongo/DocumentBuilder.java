@@ -6,6 +6,7 @@ import org.bson.Document;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.util.stream.Collectors.toList;
@@ -48,6 +49,8 @@ public class DocumentBuilder {
         // todo: do we still need this ???
         if (valueToStore instanceof BigDecimal) {
             valueToStore = ((BigDecimal) valueToStore).doubleValue();
+        } else if (valueToStore instanceof UUID) {
+            valueToStore = ((UUID) valueToStore).toString();
         } else if (valueToStore instanceof Iterable) {
             valueToStore = toStream((Iterable) valueToStore)
                     .map(this::toValueToStore)

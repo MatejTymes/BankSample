@@ -16,4 +16,10 @@ public class OperationId extends Microtype<Long> implements Comparable<Operation
     public int compareTo(OperationId other) {
         return Long.compare(value(), other.value());
     }
+
+    // todo: test this
+    public boolean isBefore(OperationId operationId) {
+        return this.compareTo(operationId) < 0;
+    }
+
 }
