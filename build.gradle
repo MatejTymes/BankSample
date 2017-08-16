@@ -21,5 +21,6 @@ dependencies {
     compile 'org.mongodb:mongo-java-driver:3.5.0'
 
 //    testCompile 'com.h2database:h2:1.4.196'
+    testCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
 
 }
