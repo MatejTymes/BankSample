@@ -22,8 +22,6 @@ public abstract class OperationHandler<T extends Operation> {
         this.operationDao = operationDao;
     }
 
-    abstract boolean canHandleRequest(Operation operation);
-
     abstract void handleRequest(OperationId operationId, T request);
 
     protected Progress checkProgress(AccountId accountId, OperationId operationId) throws IllegalStateException {

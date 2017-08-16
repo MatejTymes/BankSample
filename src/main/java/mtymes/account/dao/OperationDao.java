@@ -24,11 +24,14 @@ public class OperationDao {
 
     // todo: test
     public OperationId storeOperation(Operation operation) {
-        long longId = storeOperation(
-                operation.type(),
-                operation.apply(mapper)
+        long sequenceId = storeWithSequenceId(
+                docBuilder()
+                        .put("type", operation.type())
+                        .put("accountIds", operation.affectedAccountIds())
+                        .put("body", operation.apply(mapper))
+                        .build()
         );
-        return operationId(longId);
+        return operationId(sequenceId);
     }
 
     // todo: test
@@ -65,18 +68,15 @@ public class OperationDao {
     // todo: execute in single thread
     // using "Optimistic Loop" to guarantee the sequencing of Operations
     // look at: https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/ for more details
-    private long storeOperation(String type, Document operationDocument) {
+    private long storeWithSequenceId(Document document) {
         long idToUse = getLastId() + 1;
 
         boolean retry;
         do {
             retry = false;
             try {
-                operations.insertOne(docBuilder()
-                        .put("_id", idToUse)
-                        .put("type", type)
-                        .put("body", operationDocument)
-                        .build());
+                document.put("_id", idToUse);
+                operations.insertOne(document);
             } catch (DuplicateKeyException e) {
                 retry = true;
                 idToUse++;

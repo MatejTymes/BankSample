@@ -16,12 +16,6 @@ public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
         super(accountDao, operationDao);
     }
 
-    // todo: test this
-    @Override
-    public boolean canHandleRequest(Operation operation) {
-        return operation instanceof DepositMoney;
-    }
-
     // todo: test
     // todo: test that any dao interaction can fail
     @Override

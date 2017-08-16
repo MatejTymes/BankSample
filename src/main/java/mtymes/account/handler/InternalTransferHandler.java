@@ -18,12 +18,6 @@ public class InternalTransferHandler extends OperationHandler<InternalTransfer> 
         super(accountDao, operationDao);
     }
 
-    // todo: test this
-    @Override
-    boolean canHandleRequest(Operation operation) {
-        return operation instanceof InternalTransfer;
-    }
-
     // todo: test
     // todo: test that any dao interaction can fail
     @Override

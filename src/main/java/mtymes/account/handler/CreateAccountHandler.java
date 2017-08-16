@@ -17,12 +17,6 @@ public class CreateAccountHandler extends OperationHandler<CreateAccount> {
         super(accountDao, operationDao);
     }
 
-    // todo: test this
-    @Override
-    public boolean canHandleRequest(Operation operation) {
-        return operation instanceof CreateAccount;
-    }
-
     // todo: test
     // todo: test that any dao interaction can fail
     @Override

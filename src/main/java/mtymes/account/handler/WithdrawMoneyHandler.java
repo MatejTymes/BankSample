@@ -18,12 +18,6 @@ public class WithdrawMoneyHandler extends OperationHandler<WithdrawMoney> {
         super(accountDao, operationDao);
     }
 
-    // todo: test this
-    @Override
-    boolean canHandleRequest(Operation operation) {
-        return operation instanceof WithdrawMoney;
-    }
-
     // todo: test
     // todo: test that any dao interaction can fail
     @Override
