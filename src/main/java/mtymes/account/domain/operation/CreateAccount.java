@@ -26,7 +26,7 @@ public class CreateAccount extends Operation {
 
     // todo: test this
     @Override
-    public <T> T accept(OperationVisitor<T> visitor) {
+    public <T> T apply(OperationVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

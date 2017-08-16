@@ -15,16 +15,18 @@ import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 public class OperationDao {
 
     private final MongoCollection<Document> operations;
+    private final MongoMapper mapper;
 
-    public OperationDao(MongoCollection<Document> operations) {
+    public OperationDao(MongoCollection<Document> operations, MongoMapper mapper) {
         this.operations = operations;
+        this.mapper = mapper;
     }
 
     // todo: test
     public OperationId storeOperation(Operation operation) {
         long longId = storeOperation(
                 operation.type(),
-                asDocument(operation)
+                operation.apply(mapper)
         );
         return operationId(longId);
     }
