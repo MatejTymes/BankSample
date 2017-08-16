@@ -31,7 +31,7 @@ public class WithdrawMoneyHandler extends OperationHandler<WithdrawMoney> {
         AccountId accountId = request.accountId;
 
         Account account = loadAccount(accountId);
-        OperationId lastAppliedId = account.lastAppliedOperation;
+        OperationId lastAppliedId = account.lastAppliedOpId;
         if (lastAppliedId.isBefore(operationId)) {
             BigDecimal newBalance = account.balance.subtract(request.amount);
             if (newBalance.compareTo(BigDecimal.ZERO) >= 0) {

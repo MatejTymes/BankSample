@@ -11,25 +11,25 @@ import static javafixes.common.CollectionUtil.newSet;
 
 public class InternalTransfer extends Operation {
 
-    public final AccountId fromAccount;
-    public final AccountId toAccount;
+    public final AccountId fromAccountId;
+    public final AccountId toAccountId;
     public final BigDecimal amount;
 
-    public InternalTransfer(AccountId fromAccount, AccountId toAccount, BigDecimal amount) {
+    public InternalTransfer(AccountId fromAccountId, AccountId toAccountId, BigDecimal amount) {
         // todo: check conditions
-        checkNotNull(fromAccount, "fromAccount can't be null");
-        checkNotNull(toAccount, "toAccount can't be null");
+        checkNotNull(fromAccountId, "fromAccountId can't be null");
+        checkNotNull(toAccountId, "toAccountId can't be null");
         checkNotNull(amount, "amount can't be null");
         checkArgument(amount.compareTo(BigDecimal.ZERO) > 0, "amount must be a positive value");
 
-        this.fromAccount = fromAccount;
-        this.toAccount = toAccount;
+        this.fromAccountId = fromAccountId;
+        this.toAccountId = toAccountId;
         this.amount = amount;
     }
 
     // todo: test this
     @Override
     public Set<AccountId> affectedAccountIds() {
-        return newSet(fromAccount, toAccount);
+        return newSet(fromAccountId, toAccountId);
     }
 }

@@ -29,7 +29,7 @@ public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
         AccountId accountId = request.accountId;
 
         Account account = loadAccount(accountId);
-        OperationId lastAppliedId = account.lastAppliedOperation;
+        OperationId lastAppliedId = account.lastAppliedOpId;
         if (lastAppliedId.isBefore(operationId)) {
             accountDao.updateBalance(accountId, account.balance.add(request.amount), lastAppliedId, operationId);
             markAsSuccess(operationId);
