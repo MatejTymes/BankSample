@@ -23,4 +23,10 @@ public class CreateAccount extends Operation {
     public Set<AccountId> affectedAccountIds() {
         return newSet(accountId);
     }
+
+    // todo: test this
+    @Override
+    public <T> T accept(OperationVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

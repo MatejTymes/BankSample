@@ -12,4 +12,6 @@ public abstract class Operation extends DataObject {
     }
 
     public abstract Set<AccountId> affectedAccountIds();
+
+    public abstract <T> T accept(OperationVisitor<T> visitor);
 }
