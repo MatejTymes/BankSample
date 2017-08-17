@@ -1,20 +1,18 @@
 package mtymes.account.dao;
 
-import com.mongodb.Function;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
+import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
 import org.bson.Document;
+import org.bson.types.Decimal128;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.mongodb.client.model.Filters.eq;
+import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
@@ -28,13 +26,12 @@ public class AccountDao extends BaseDao {
         this.accounts = accounts;
     }
 
-    // todo: test
     public boolean createAccount(AccountId accountId, OperationId operationId) {
         try {
             accounts.insertOne(docBuilder()
                     .put("accountId", accountId)
                     .put("lastAppliedOpId", operationId)
-                    .put("balance", BigDecimal.ZERO)
+                    .put("balance", Decimal.ZERO)
                     .build());
             return true;
         } catch (MongoWriteException e) {
@@ -43,7 +40,7 @@ public class AccountDao extends BaseDao {
     }
 
     // todo: test
-    public boolean updateBalance(AccountId accountId, BigDecimal newBalance, OperationId fromOperationId, OperationId toOperationId) {
+    public boolean updateBalance(AccountId accountId, Decimal newBalance, OperationId fromOperationId, OperationId toOperationId) {
         try {
             accounts.updateOne(
                     docBuilder()
@@ -68,7 +65,7 @@ public class AccountDao extends BaseDao {
                 doc("accountId", accountId),
                 doc -> new Account(
                         accountId(UUID.fromString(doc.getString("accountId"))),
-                        BigDecimal.valueOf(doc.getDouble("balance")),
+                        d(((Decimal128)doc.get("balance")).bigDecimalValue()),
                         operationId(doc.getLong("lastAppliedOpId"))
                 )
         );

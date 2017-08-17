@@ -1,8 +1,8 @@
 package mtymes.account.domain.operation;
 
+import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
 
-import java.math.BigDecimal;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -13,14 +13,14 @@ public class InternalTransfer extends Operation {
 
     public final AccountId fromAccountId;
     public final AccountId toAccountId;
-    public final BigDecimal amount;
+    public final Decimal amount;
 
-    public InternalTransfer(AccountId fromAccountId, AccountId toAccountId, BigDecimal amount) {
+    public InternalTransfer(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
         // todo: check conditions
         checkNotNull(fromAccountId, "fromAccountId can't be null");
         checkNotNull(toAccountId, "toAccountId can't be null");
         checkNotNull(amount, "amount can't be null");
-        checkArgument(amount.compareTo(BigDecimal.ZERO) > 0, "amount must be a positive value");
+        checkArgument(amount.compareTo(Decimal.ZERO) > 0, "amount must be a positive value");
 
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;

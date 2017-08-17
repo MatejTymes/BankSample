@@ -1,5 +1,7 @@
 package mtymes.test.db;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import de.flapdoodle.embed.mongo.Command;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -12,6 +14,7 @@ import de.flapdoodle.embed.process.config.IRuntimeConfig;
 import de.flapdoodle.embed.process.distribution.GenericVersion;
 import de.flapdoodle.embed.process.extract.UserTempNaming;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
+import mtymes.common.mongo.DocumentBuilder;
 
 import java.io.IOException;
 
@@ -24,22 +27,46 @@ public class EmbeddedDB {
     private static final IFeatureAwareVersion V3_4_7 = Versions.withFeatures(new GenericVersion("3.4.7"), Feature.SYNC_DELAY, Feature.STORAGE_ENGINE, Feature.ONLY_64BIT, Feature.NO_CHUNKSIZE_ARG, Feature.MONGOS_CONFIGDB_SET_STYLE);
 
     private final int port;
+    private final String dbName;
 
     private MongodExecutable executable;
     private MongodProcess process;
+    private MongoDatabase database;
     private boolean started = false;
 
-    public EmbeddedDB(int port) {
+    public EmbeddedDB(int port, String dbName) {
         this.port = port;
+        this.dbName = dbName;
     }
 
     public static EmbeddedDB embeddedDB() {
         try {
             int port = getFreeServerPort();
 
-            return new EmbeddedDB(port);
+            return new EmbeddedDB(port, "myBank");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public synchronized MongoDatabase getDatabase() {
+        if (!started) {
+            throw new IllegalStateException("Embedded MongoDB not started yet started");
+        }
+        return database;
+    }
+
+    public void removeAllData() {
+        for (String collectionName : database.listCollectionNames()) {
+            database.getCollection(collectionName).deleteMany(DocumentBuilder.emptyDoc());
         }
     }
 
@@ -50,7 +77,7 @@ public class EmbeddedDB {
         try {
             IMongodConfig config = new MongodConfigBuilder()
                     .version(V3_4_7) // Version.V3_4_1
-                    .net(new Net(port, localhostIsIPv6()))
+                    .net(new Net("localhost", port, localhostIsIPv6()))
                     .build();
             Command command = Command.MongoD;
             IRuntimeConfig runtimeConfig = new RuntimeConfigBuilder()
@@ -71,20 +98,22 @@ public class EmbeddedDB {
             process = executable.start();
             started = true;
 
+            MongoClient client = new MongoClient("localhost", this.port);
+            database = client.getDatabase(dbName);
+
             return this;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void stop() {
+    public synchronized void stop() {
         if (!started) {
             throw new IllegalStateException("Embedded MongoDB not started yet started");
         }
         process.stop();
         executable.stop();
     }
-
 
     public static void main(String[] args) throws IOException {
         EmbeddedDB embeddedDB = embeddedDB().start();

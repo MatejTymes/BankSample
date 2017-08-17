@@ -5,10 +5,7 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositMoney;
-import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
-
-import static java.lang.String.format;
 
 public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
 
@@ -25,7 +22,7 @@ public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
         Account account = loadAccount(accountId);
         OperationId lastAppliedId = account.lastAppliedOpId;
         if (lastAppliedId.isBefore(operationId)) {
-            accountDao.updateBalance(accountId, account.balance.add(request.amount), lastAppliedId, operationId);
+            accountDao.updateBalance(accountId, account.balance.plus(request.amount), lastAppliedId, operationId);
             markAsSuccess(operationId);
         } else if (lastAppliedId.equals(operationId)) {
             markAsSuccess(operationId);

@@ -1,9 +1,10 @@
 package mtymes.common.mongo;
 
+import javafixes.math.Decimal;
 import javafixes.object.Microtype;
 import org.bson.Document;
+import org.bson.types.Decimal128;
 
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +24,10 @@ public class DocumentBuilder {
 
     public static Document doc(String key, Object value) {
         return docBuilder().put(key, value).build();
+    }
+
+    public static Document emptyDoc() {
+        return docBuilder().build();
     }
 
     public Document build() {
@@ -47,8 +52,8 @@ public class DocumentBuilder {
         }
 
         // todo: do we still need this ???
-        if (valueToStore instanceof BigDecimal) {
-            valueToStore = ((BigDecimal) valueToStore).doubleValue();
+        if (valueToStore instanceof Decimal) {
+            valueToStore = new Decimal128(((Decimal) valueToStore).bigDecimalValue());
         } else if (valueToStore instanceof UUID) {
             valueToStore = ((UUID) valueToStore).toString();
         } else if (valueToStore instanceof Iterable) {

@@ -1,14 +1,12 @@
 package mtymes.account.handler;
 
+import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.WithdrawMoney;
-
-import java.math.BigDecimal;
 
 import static java.lang.String.format;
 
@@ -27,8 +25,8 @@ public class WithdrawMoneyHandler extends OperationHandler<WithdrawMoney> {
         Account account = loadAccount(accountId);
         OperationId lastAppliedId = account.lastAppliedOpId;
         if (lastAppliedId.isBefore(operationId)) {
-            BigDecimal newBalance = account.balance.subtract(request.amount);
-            if (newBalance.compareTo(BigDecimal.ZERO) >= 0) {
+            Decimal newBalance = account.balance.minus(request.amount);
+            if (newBalance.compareTo(Decimal.ZERO) >= 0) {
                 accountDao.updateBalance(accountId, newBalance, lastAppliedId, operationId);
                 markAsSuccess(operationId);
             } else {

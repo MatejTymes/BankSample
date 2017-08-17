@@ -1,14 +1,12 @@
 package mtymes.account.handler;
 
+import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.InternalTransfer;
-import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
-
-import java.math.BigDecimal;
 
 import static java.lang.String.format;
 
@@ -36,8 +34,8 @@ public class InternalTransferHandler extends OperationHandler<InternalTransfer> 
 
         OperationId lastAppliedId = account.lastAppliedOpId;
         if (lastAppliedId.isBefore(operationId)) {
-            BigDecimal newBalance = account.balance.subtract(request.amount);
-            if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            Decimal newBalance = account.balance.minus(request.amount);
+            if (newBalance.compareTo(Decimal.ZERO) < 0) {
                 markAsFailure(operationId, format("Insufficient funds on account '%s'", accountId));
                 return false;
             } else {
@@ -54,7 +52,7 @@ public class InternalTransferHandler extends OperationHandler<InternalTransfer> 
 
         OperationId lastAppliedId = account.lastAppliedOpId;
         if (lastAppliedId.isBefore(operationId)) {
-            accountDao.updateBalance(accountId, account.balance.add(request.amount), lastAppliedId, operationId);
+            accountDao.updateBalance(accountId, account.balance.plus(request.amount), lastAppliedId, operationId);
             markAsSuccess(operationId);
         } else if (lastAppliedId.equals(operationId)) {
             markAsSuccess(operationId);
