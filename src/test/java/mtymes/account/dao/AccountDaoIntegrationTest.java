@@ -5,6 +5,7 @@ import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.OperationId;
 import mtymes.test.db.EmbeddedDB;
+import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -19,19 +20,18 @@ import static mtymes.test.Condition.otherThan;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
-import static mtymes.test.db.EmbeddedDB.embeddedDB;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 // todo: move into test-integration
-public class AccountDaoTest {
+public class AccountDaoIntegrationTest {
 
     private static EmbeddedDB db;
     private static AccountDao accountDao;
 
     @BeforeClass
     public static void initDB() {
-        db = embeddedDB().start();
+        db = MongoManager.getEmbeddedDB();
         accountDao = new AccountDao(accountsCollection(db.getDatabase()));
     }
 
@@ -42,7 +42,7 @@ public class AccountDaoTest {
 
     @AfterClass
     public static void releaseDB() {
-        db.stop();
+        MongoManager.release(db);
     }
 
     @Test
@@ -55,6 +55,23 @@ public class AccountDaoTest {
 
         // Then
         assertThat(success, is(true));
+        Optional<Account> account = accountDao.findAccount(accountId);
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, operationId)));
+    }
+
+    @Test
+    public void shouldFailToCreateAccountIfItAlreadyExists() {
+        AccountId accountId = newAccountId();
+        OperationId operationId = randomOperationId();
+        accountDao.createAccount(accountId, operationId);
+
+        OperationId newOperationId = randomOperationId(otherThan(operationId));
+
+        // When
+        boolean success = accountDao.createAccount(accountId, newOperationId);
+
+        // Then
+        assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
         assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, operationId)));
     }

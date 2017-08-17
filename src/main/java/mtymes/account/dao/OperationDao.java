@@ -15,11 +15,10 @@ import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 public class OperationDao {
 
     private final MongoCollection<Document> operations;
-    private final MongoMapper mapper;
+    private final MongoMapper mapper = new MongoMapper();
 
-    public OperationDao(MongoCollection<Document> operations, MongoMapper mapper) {
+    public OperationDao(MongoCollection<Document> operations) {
         this.operations = operations;
-        this.mapper = mapper;
     }
 
     // todo: test
