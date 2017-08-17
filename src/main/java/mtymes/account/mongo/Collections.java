@@ -33,15 +33,15 @@ public class Collections {
         );
     }
 
-    private static MongoCollection<Document> getOrCreateCollection(MongoDatabase db, String collectionName, Consumer<MongoCollection<Document>> indexCreator) {
-        if (newSet(db.listCollectionNames()).contains(collectionName)) {
-            return db.getCollection(collectionName);
-        } else {
-            db.createCollection(collectionName);
+    private static MongoCollection<Document> getOrCreateCollection(MongoDatabase database, String collectionName, Consumer<MongoCollection<Document>> afterCreation) {
+        if (!newSet(database.listCollectionNames()).contains(collectionName)) {
+            database.createCollection(collectionName);
 
-            MongoCollection<Document> collection = db.getCollection(collectionName);
-            indexCreator.accept(collection);
+            MongoCollection<Document> collection = database.getCollection(collectionName);
+            afterCreation.accept(collection);
             return collection;
+        } else {
+            return database.getCollection(collectionName);
         }
     }
 }

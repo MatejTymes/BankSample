@@ -10,6 +10,40 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/test-integration/java')
+
+            integrationTest.runtimeClasspath += integrationTest.output
+        }
+        resources.srcDir file('src/test-integration/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+idea {
+    module {
+        testSourceDirs += file('src/test-integration/java')
+        scopes.TEST.plus += [configurations.integrationTestRuntimeClasspath, configurations.integrationTestCompileClasspath]
+    }
+}
+task integrationTest(type: Test) {
+    description = 'Run the integration tests.'
+    group = 'verification'
+    testClassesDirs += sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+
 dependencies {
     compile 'commons-io:commons-io:2.5'
     compile 'com.google.guava:guava:20.0'
@@ -20,7 +54,11 @@ dependencies {
 
     compile 'org.mongodb:mongo-java-driver:3.5.0'
 
+    testCompile 'junit:junit:4.12'
 //    testCompile 'com.h2database:h2:1.4.196'
     testCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
+}
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.1'
 }
