@@ -12,12 +12,13 @@ import org.junit.Test;
 
 import java.util.Optional;
 
+import static javafixes.math.Decimal.ZERO;
 import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.mongo.Collections.accountsCollection;
+import static mtymes.test.Condition.otherThan;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
-import static mtymes.test.Random.randomAccountId;
-import static mtymes.test.Random.randomOperationId;
+import static mtymes.test.Random.*;
 import static mtymes.test.db.EmbeddedDB.embeddedDB;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -45,14 +46,9 @@ public class AccountDaoTest {
     }
 
     @Test
-    public void shouldLoadNoAccountOnUnknownAccountId() {
-        assertThat(accountDao.findAccount(randomAccountId()), isNotPresent());
-    }
-
-    @Test
     public void shouldCreateAndLoadNewAccount() {
-        OperationId operationId = randomOperationId();
         AccountId accountId = newAccountId();
+        OperationId operationId = randomOperationId();
 
         // When
         boolean success = accountDao.createAccount(accountId, operationId);
@@ -60,7 +56,53 @@ public class AccountDaoTest {
         // Then
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, operationId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, operationId)));
     }
 
+    @Test
+    public void shouldNotFindNonExistingAccount() {
+        assertThat(accountDao.findAccount(randomAccountId()), isNotPresent());
+    }
+
+    @Test
+    public void shouldUpdateBalance() {
+        AccountId accountId = newAccountId();
+        OperationId lastOperationId = randomOperationId();
+        accountDao.createAccount(accountId, lastOperationId);
+
+        OperationId newOperationId = randomOperationId(otherThan(lastOperationId));
+        Decimal newBalance = randomDecimal();
+
+        // When
+        boolean success = accountDao.updateBalance(accountId, newBalance, lastOperationId, newOperationId);
+
+        // Then
+        assertThat(success, is(true));
+        Optional<Account> account = accountDao.findAccount(accountId);
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, newBalance, newOperationId)));
+    }
+
+    @Test
+    public void shouldNotUpdateBalanceOnOperationIdMismatch() {
+        AccountId accountId = newAccountId();
+        OperationId lastOperationId = randomOperationId();
+        accountDao.createAccount(accountId, lastOperationId);
+
+        OperationId differentLastOperationId = randomOperationId(otherThan(lastOperationId)) ;
+        OperationId newOperationId = randomOperationId(otherThan(lastOperationId, differentLastOperationId));
+        Decimal newBalance = randomDecimal();
+
+        // When
+        boolean success = accountDao.updateBalance(accountId, newBalance, differentLastOperationId, newOperationId);
+
+        // Then
+        assertThat(success, is(false));
+        Optional<Account> account = accountDao.findAccount(accountId);
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, lastOperationId)));
+    }
+
+    @Test
+    public void shouldNotUpdateBalanceForNonExistingAccount() {
+        assertThat(accountDao.updateBalance(randomAccountId(), randomDecimal(), randomOperationId(), randomOperationId()), is(false));
+    }
 }

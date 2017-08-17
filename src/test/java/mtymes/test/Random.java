@@ -1,5 +1,6 @@
 package mtymes.test;
 
+import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.OperationId;
 
@@ -9,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.UUID.randomUUID;
+import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.operation.OperationId.operationId;
 
@@ -16,7 +18,7 @@ import static mtymes.account.domain.operation.OperationId.operationId;
 public class Random {
 
     @SafeVarargs
-    public static int randomInt(int from, int to, Function<Integer, Boolean>... validityConditions) {
+    public static int randomInt(int from, int to, Condition<Integer>... validityConditions) {
         return generateValidValue(
                 // typecast it to long as otherwise we could get int overflow
                 () -> (int) ((long) (Math.random() * ((long) to - (long) from + 1L)) + (long) from),
@@ -25,10 +27,17 @@ public class Random {
     }
 
     @SafeVarargs
-    public static long randomLong(long from, long to, Function<Long, Boolean>... validityConditions) {
+    public static long randomLong(long from, long to, Condition<Long>... validityConditions) {
         return generateValidValue(
                 () -> ThreadLocalRandom.current().nextLong(from, to) + (long) randomInt(0, 1),
                 validityConditions
+        );
+    }
+
+    public static Decimal randomDecimal() {
+        return decimal(
+                randomLong(Long.MIN_VALUE, Long.MAX_VALUE),
+                randomInt(-5, 5)
         );
     }
 
@@ -36,8 +45,12 @@ public class Random {
         return accountId(randomUUID());
     }
 
-    public static OperationId randomOperationId() {
-        return operationId(randomLong(0, Long.MAX_VALUE));
+    @SafeVarargs
+    public static OperationId randomOperationId(Condition<OperationId>... validityConditions) {
+        return generateValidValue(
+                () -> operationId(randomLong(0, Long.MAX_VALUE)),
+                validityConditions
+        );
     }
 
     @SafeVarargs
@@ -50,7 +63,7 @@ public class Random {
     }
 
     @SafeVarargs
-    private static <T> T generateValidValue(Supplier<T> generator, Function<T, Boolean>... validityConditions) {
+    private static <T> T generateValidValue(Supplier<T> generator, Condition<T>... validityConditions) {
         T value;
 
         int infiniteCycleCounter = 0;

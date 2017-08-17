@@ -2,6 +2,7 @@ package mtymes.account.dao;
 
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.UpdateResult;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
@@ -39,10 +40,9 @@ public class AccountDao extends BaseDao {
         }
     }
 
-    // todo: test
     public boolean updateBalance(AccountId accountId, Decimal newBalance, OperationId fromOperationId, OperationId toOperationId) {
         try {
-            accounts.updateOne(
+            UpdateResult result = accounts.updateOne(
                     docBuilder()
                             .put("accountId", accountId)
                             .put("lastAppliedOpId", fromOperationId)
@@ -52,13 +52,12 @@ public class AccountDao extends BaseDao {
                             .put("lastAppliedOpId", toOperationId)
                             .build())
             );
-            return true;
+            return result.getModifiedCount() == 1;
         } catch (MongoWriteException e) {
             return false;
         }
     }
 
-    // todo: test
     public Optional<Account> findAccount(AccountId accountId) {
         return findOne(
                 accounts,
