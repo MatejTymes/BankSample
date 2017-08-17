@@ -1,4 +1,14 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.2'
+    }
+}
+
 apply plugin: 'java'
+apply plugin: 'org.unbroken-dome.test-sets'
 apply plugin: 'idea'
 
 sourceCompatibility = 1.8
@@ -10,38 +20,17 @@ repositories {
     mavenCentral()
 }
 
-sourceSets {
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/test-integration/java')
-
-            integrationTest.runtimeClasspath += integrationTest.output
-        }
-        resources.srcDir file('src/test-integration/resources')
-    }
-}
-
-configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
-idea {
-    module {
-        testSourceDirs += file('src/test-integration/java')
-        scopes.TEST.plus += [configurations.integrationTestRuntimeClasspath, configurations.integrationTestCompileClasspath]
-    }
-}
-task integrationTest(type: Test) {
-    description = 'Run the integration tests.'
-    group = 'verification'
-    testClassesDirs += sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    outputs.upToDateWhen { false }
+testSets {
+    integrationTest { dirName = 'test-integration' }
 }
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
+//idea {
+//    module {
+//        testSourceDirs += file('src/test-integration/java')
+//        scopes.TEST.plus += [configurations.integrationTestRuntimeClasspath, configurations.integrationTestCompileClasspath]
+//    }
+//}
 
 
 dependencies {
