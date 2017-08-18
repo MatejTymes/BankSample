@@ -1,22 +1,25 @@
 package mtymes.account.dao;
 
-import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import mtymes.account.domain.operation.FinalState;
 import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.PersistedOperation;
 import org.bson.Document;
 
+import java.util.Optional;
 import java.util.concurrent.locks.StampedLock;
 
 import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
-public class OperationDao {
+public class OperationDao extends BaseDao {
 
     private final MongoCollection<Document> operations;
-    private final MongoMapper mapper = new MongoMapper();
+    private final OperationDbMapper mapper = new OperationDbMapper();
 
     private final StampedLock seqGenerationLock = new StampedLock();
 
@@ -24,7 +27,6 @@ public class OperationDao {
         this.operations = operations;
     }
 
-    // todo: test
     public OperationId storeOperation(Operation operation) {
         long sequenceId = storeWithSequenceId(
                 docBuilder()
@@ -61,22 +63,52 @@ public class OperationDao {
         );
     }
 
-    // todo: execute in single thread
+    public Optional<PersistedOperation> findOperation(OperationId operationId) {
+        return findOne(
+                operations,
+                doc("_id", operationId),
+                doc -> {
+                    Operation operation = mapper.toOperation(
+                            doc.getString("type"),
+                            (Document) doc.get("body")
+                    );
+                    Optional<FinalState> finalState = Optional.ofNullable(doc.getString("finalState")).map(state -> {
+                        if ("success".equals(state)) {
+                            return FinalState.Success;
+                        } else if ("failure".equals(state)) {
+                            return FinalState.Failure;
+                        } else {
+                            throw new IllegalStateException(String.format("Unknown state '%s'", state));
+                        }
+                    });
+                    return new PersistedOperation(
+                            operationId(doc.getLong("_id")),
+                            operation,
+                            finalState,
+                            Optional.ofNullable(doc.getString("description"))
+                    );
+                }
+        );
+    }
+
+    // todo: test this
     // using "Optimistic Loop" to guarantee the sequencing of Operations
     // look at: https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/ for more details
     private long storeWithSequenceId(Document document) {
-        long idToUse = getLastId() + 1;
+        long idToUse;
 
-        int attemptCount = 0; // this is relevant only to multi-node scenario
+        int attemptCount = 0; // use of this is relevant only in case of multi-node scenario
+
         long stamp = seqGenerationLock.writeLock();
         try {
+            idToUse = getLastId() + 1;
             boolean retry;
             do {
                 retry = false;
                 try {
                     document.put("_id", idToUse);
                     operations.insertOne(document);
-                } catch (DuplicateKeyException e) {
+                } catch (MongoWriteException e) {
                     retry = true;
                     if (++attemptCount < 3) {
                         idToUse++;

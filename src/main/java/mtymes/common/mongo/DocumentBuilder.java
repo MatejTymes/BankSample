@@ -51,7 +51,6 @@ public class DocumentBuilder {
             valueToStore = ((Microtype) valueToStore).getValue();
         }
 
-        // todo: do we still need this ???
         if (valueToStore instanceof Decimal) {
             valueToStore = new Decimal128(((Decimal) valueToStore).bigDecimalValue());
         } else if (valueToStore instanceof UUID) {

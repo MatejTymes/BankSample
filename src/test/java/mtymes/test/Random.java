@@ -41,6 +41,13 @@ public class Random {
         );
     }
 
+    public static Decimal randomPositiveDecimal() {
+        return decimal(
+                randomLong(1L, Long.MAX_VALUE),
+                randomInt(-5, 5)
+        );
+    }
+
     public static AccountId randomAccountId() {
         return accountId(randomUUID());
     }
