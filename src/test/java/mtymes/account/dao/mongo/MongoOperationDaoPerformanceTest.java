@@ -1,6 +1,7 @@
-package mtymes.account.dao;
+package mtymes.account.dao.mongo;
 
 import javafixes.concurrency.Runner;
+import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.operation.*;
 import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;

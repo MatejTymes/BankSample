@@ -1,9 +1,10 @@
-package mtymes.account.dao;
+package mtymes.account.dao.mongo;
 
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.result.UpdateResult;
+import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.operation.FinalState;
 import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
@@ -19,12 +20,12 @@ import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 public class MongoOperationDao extends MongoBaseDao implements OperationDao {
 
-    public static final String _ID = "_id";
-    public static final String TYPE = "type";
-    public static final String ACCOUNT_IDS = "accountIds";
-    public static final String BODY = "body";
-    public static final String FINAL_STATE = "finalState";
-    public static final String DESCRIPTION = "description";
+    private static final String _ID = "_id";
+    private static final String TYPE = "type";
+    private static final String ACCOUNT_IDS = "accountIds";
+    private static final String BODY = "body";
+    private static final String FINAL_STATE = "finalState";
+    private static final String DESCRIPTION = "description";
 
     private final MongoCollection<Document> operations;
     private final OperationDbMapper mapper = new OperationDbMapper();

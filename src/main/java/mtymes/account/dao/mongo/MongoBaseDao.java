@@ -1,4 +1,4 @@
-package mtymes.account.dao;
+package mtymes.account.dao.mongo;
 
 import com.mongodb.Function;
 import com.mongodb.client.MongoCollection;

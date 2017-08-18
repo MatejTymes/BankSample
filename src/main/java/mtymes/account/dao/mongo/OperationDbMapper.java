@@ -1,4 +1,4 @@
-package mtymes.account.dao;
+package mtymes.account.dao.mongo;
 
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
