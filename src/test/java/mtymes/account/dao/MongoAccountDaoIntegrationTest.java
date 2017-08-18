@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 // todo: move into test-integration
-public class AccountDaoIntegrationTest {
+public class MongoAccountDaoIntegrationTest {
 
     private static EmbeddedDB db;
     private static AccountDao accountDao;
@@ -32,7 +32,7 @@ public class AccountDaoIntegrationTest {
     @BeforeClass
     public static void initDB() {
         db = MongoManager.getEmbeddedDB();
-        accountDao = new AccountDao(accountsCollection(db.getDatabase()));
+        accountDao = new MongoAccountDao(accountsCollection(db.getDatabase()));
     }
 
     @Before

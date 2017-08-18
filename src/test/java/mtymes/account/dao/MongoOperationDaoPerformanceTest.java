@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
 // todo: move into test-performance
-public class OperationDaoPerformanceTest {
+public class MongoOperationDaoPerformanceTest {
 
     private final List<Operation> allOperations = newList(
             new CreateAccount(randomAccountId()),
@@ -36,7 +36,7 @@ public class OperationDaoPerformanceTest {
     @BeforeClass
     public static void initDB() {
         db = MongoManager.getEmbeddedDB();
-        operationDao = new OperationDao(operationsCollection(db.getDatabase()));
+        operationDao = new MongoOperationDao(operationsCollection(db.getDatabase()));
     }
 
     @Before

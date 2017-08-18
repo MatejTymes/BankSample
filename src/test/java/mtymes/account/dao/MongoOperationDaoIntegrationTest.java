@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 // todo: move into test-integration
-public class OperationDaoIntegrationTest {
+public class MongoOperationDaoIntegrationTest {
 
     private final List<Operation> allOperations = newList(
             new CreateAccount(randomAccountId()),
@@ -45,7 +45,7 @@ public class OperationDaoIntegrationTest {
     @BeforeClass
     public static void initDB() {
         db = MongoManager.getEmbeddedDB();
-        operationDao = new OperationDao(operationsCollection(db.getDatabase()));
+        operationDao = new MongoOperationDao(operationsCollection(db.getDatabase()));
     }
 
     @Before

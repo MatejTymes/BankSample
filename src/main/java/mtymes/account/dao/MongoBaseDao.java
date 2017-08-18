@@ -7,7 +7,7 @@ import org.bson.Document;
 
 import java.util.Optional;
 
-abstract class BaseDao {
+abstract class MongoBaseDao {
 
     protected <T> Optional<T> findOne(MongoCollection<Document> collection, Document query, Function<Document, T> mapper) {
         MongoCursor<Document> iterator = collection.find(query).iterator();
