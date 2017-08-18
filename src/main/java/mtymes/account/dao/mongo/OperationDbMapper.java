@@ -22,13 +22,11 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     private static final String FROM_ACCOUNT_ID = "fromAccountId";
     private static final String TO_ACCOUNT_ID = "toAccountId";
 
-    // todo: test
     @Override
     public Document visit(CreateAccount request) {
         return doc(ACCOUNT_ID, request.accountId);
     }
 
-    // todo: test
     @Override
     public Document visit(DepositMoney request) {
         return docBuilder()
@@ -37,7 +35,6 @@ public class OperationDbMapper implements OperationVisitor<Document> {
                 .build();
     }
 
-    // todo: test
     @Override
     public Document visit(WithdrawMoney request) {
         return docBuilder()
@@ -46,7 +43,6 @@ public class OperationDbMapper implements OperationVisitor<Document> {
                 .build();
     }
 
-    // todo: test
     @Override
     public Document visit(InternalTransfer request) {
         return docBuilder()
@@ -56,7 +52,6 @@ public class OperationDbMapper implements OperationVisitor<Document> {
                 .build();
     }
 
-    // todo: test
     public Operation toOperation(String type, Document body) {
         switch (type) {
             case "CreateAccount":
