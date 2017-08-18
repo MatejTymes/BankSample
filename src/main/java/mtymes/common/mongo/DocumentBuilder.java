@@ -35,12 +35,11 @@ public class DocumentBuilder {
     }
 
     public DocumentBuilder put(String key, Object value) {
-        values.put(key, toValueToStore(value));
-        return this;
-    }
-
-    public DocumentBuilder put(String key, Optional<?> value) {
-        value.ifPresent(o -> put(key, o));
+        if (value instanceof Optional) {
+            ((Optional) value).ifPresent(o -> values.put(key, toValueToStore(o)));
+        } else {
+            values.put(key, toValueToStore(value));
+        }
         return this;
     }
 

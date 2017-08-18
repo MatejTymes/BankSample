@@ -3,6 +3,7 @@ package mtymes.account.dao;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.result.UpdateResult;
 import mtymes.account.domain.operation.FinalState;
 import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
@@ -18,6 +19,14 @@ import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 public class OperationDao extends BaseDao {
 
+
+    public static final String _ID = "_id";
+    public static final String TYPE = "type";
+    public static final String ACCOUNT_IDS = "accountIds";
+    public static final String BODY = "body";
+    public static final String FINAL_STATE = "finalState";
+    public static final String DESCRIPTION = "description";
+
     private final MongoCollection<Document> operations;
     private final OperationDbMapper mapper = new OperationDbMapper();
 
@@ -30,49 +39,49 @@ public class OperationDao extends BaseDao {
     public OperationId storeOperation(Operation operation) {
         long sequenceId = storeWithSequenceId(
                 docBuilder()
-                        .put("type", operation.type())
-                        .put("accountIds", operation.affectedAccountIds())
-                        .put("body", operation.apply(mapper))
+                        .put(TYPE, operation.type())
+                        .put(ACCOUNT_IDS, operation.affectedAccountIds())
+                        .put(BODY, operation.apply(mapper))
                         .build()
         );
         return operationId(sequenceId);
     }
 
-    // todo: test
-    public void markAsSuccessful(OperationId operationId) {
-        operations.updateOne(
+    public boolean markAsSuccessful(OperationId operationId) {
+        UpdateResult result = operations.updateOne(
                 docBuilder()
-                        .put("_id", operationId)
-                        .put("finalState", null)
+                        .put(_ID, operationId)
+                        .put(FINAL_STATE, null)
                         .build(),
-                doc("$set", doc("finalState", "success"))
+                doc("$set", doc(FINAL_STATE, "success"))
         );
+        return result.getModifiedCount() == 1;
     }
 
-    // todo: test
-    public void markAsFailed(OperationId operationId, String description) {
-        operations.updateOne(
+    public boolean markAsFailed(OperationId operationId, String description) {
+        UpdateResult result = operations.updateOne(
                 docBuilder()
-                        .put("_id", operationId)
-                        .put("finalState", null)
+                        .put(_ID, operationId)
+                        .put(FINAL_STATE, null)
                         .build(),
                 doc("$set", docBuilder()
-                        .put("finalState", "failure")
-                        .put("description", description)
+                        .put(FINAL_STATE, "failure")
+                        .put(DESCRIPTION, description)
                         .build())
         );
+        return result.getModifiedCount() == 1;
     }
 
     public Optional<PersistedOperation> findOperation(OperationId operationId) {
         return findOne(
                 operations,
-                doc("_id", operationId),
+                doc(_ID, operationId),
                 doc -> {
                     Operation operation = mapper.toOperation(
-                            doc.getString("type"),
-                            (Document) doc.get("body")
+                            doc.getString(TYPE),
+                            (Document) doc.get(BODY)
                     );
-                    Optional<FinalState> finalState = Optional.ofNullable(doc.getString("finalState")).map(state -> {
+                    Optional<FinalState> finalState = Optional.ofNullable(doc.getString(FINAL_STATE)).map(state -> {
                         if ("success".equals(state)) {
                             return FinalState.Success;
                         } else if ("failure".equals(state)) {
@@ -82,16 +91,15 @@ public class OperationDao extends BaseDao {
                         }
                     });
                     return new PersistedOperation(
-                            operationId(doc.getLong("_id")),
+                            operationId(doc.getLong(_ID)),
                             operation,
                             finalState,
-                            Optional.ofNullable(doc.getString("description"))
+                            Optional.ofNullable(doc.getString(DESCRIPTION))
                     );
                 }
         );
     }
 
-    // todo: test this
     // using "Optimistic Loop" to guarantee the sequencing of Operations
     // look at: https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/ for more details
     private long storeWithSequenceId(Document document) {
@@ -106,7 +114,7 @@ public class OperationDao extends BaseDao {
             do {
                 retry = false;
                 try {
-                    document.put("_id", idToUse);
+                    document.put(_ID, idToUse);
                     operations.insertOne(document);
                 } catch (MongoWriteException e) {
                     retry = true;
@@ -127,8 +135,8 @@ public class OperationDao extends BaseDao {
 
     private long getLastId() {
         MongoCursor<Document> idIterator = operations
-                .find().projection(doc("_id", 1)).sort(doc("_id", -1)).limit(1)
+                .find().projection(doc(_ID, 1)).sort(doc(_ID, -1)).limit(1)
                 .iterator();
-        return idIterator.hasNext() ? idIterator.next().getLong("_id") : 0;
+        return idIterator.hasNext() ? idIterator.next().getLong(_ID) : 0;
     }
 }

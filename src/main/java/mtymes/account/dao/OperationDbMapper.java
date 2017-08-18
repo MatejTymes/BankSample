@@ -17,18 +17,23 @@ import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 public class OperationDbMapper implements OperationVisitor<Document> {
 
+    private static final String ACCOUNT_ID = "accountId";
+    private static final String AMOUNT = "amount";
+    private static final String FROM_ACCOUNT_ID = "fromAccountId";
+    private static final String TO_ACCOUNT_ID = "toAccountId";
+
     // todo: test
     @Override
     public Document visit(CreateAccount request) {
-        return doc("accountId", request.accountId);
+        return doc(ACCOUNT_ID, request.accountId);
     }
 
     // todo: test
     @Override
     public Document visit(DepositMoney request) {
         return docBuilder()
-                .put("accountId", request.accountId)
-                .put("amount", request.amount)
+                .put(ACCOUNT_ID, request.accountId)
+                .put(AMOUNT, request.amount)
                 .build();
     }
 
@@ -36,8 +41,8 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     @Override
     public Document visit(WithdrawMoney request) {
         return docBuilder()
-                .put("accountId", request.accountId)
-                .put("amount", request.amount)
+                .put(ACCOUNT_ID, request.accountId)
+                .put(AMOUNT, request.amount)
                 .build();
     }
 
@@ -45,9 +50,9 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     @Override
     public Document visit(InternalTransfer request) {
         return docBuilder()
-                .put("fromAccountId", request.fromAccountId)
-                .put("toAccountId", request.toAccountId)
-                .put("amount", request.amount)
+                .put(FROM_ACCOUNT_ID, request.fromAccountId)
+                .put(TO_ACCOUNT_ID, request.toAccountId)
+                .put(AMOUNT, request.amount)
                 .build();
     }
 
@@ -56,23 +61,23 @@ public class OperationDbMapper implements OperationVisitor<Document> {
         switch (type) {
             case "CreateAccount":
                 return new CreateAccount(
-                        getAccountId(body, "accountId")
+                        getAccountId(body, ACCOUNT_ID)
                 );
             case "DepositMoney":
                 return new DepositMoney(
-                        getAccountId(body, "accountId"),
-                        getDecimal(body, "amount")
+                        getAccountId(body, ACCOUNT_ID),
+                        getDecimal(body, AMOUNT)
                 );
             case "WithdrawMoney":
                 return new WithdrawMoney(
-                        getAccountId(body, "accountId"),
-                        getDecimal(body, "amount")
+                        getAccountId(body, ACCOUNT_ID),
+                        getDecimal(body, AMOUNT)
                 );
             case "InternalTransfer":
                 return new InternalTransfer(
-                        getAccountId(body, "fromAccountId"),
-                        getAccountId(body, "toAccountId"),
-                        getDecimal(body, "amount")
+                        getAccountId(body, FROM_ACCOUNT_ID),
+                        getAccountId(body, TO_ACCOUNT_ID),
+                        getDecimal(body, AMOUNT)
                 );
         }
         throw new IllegalStateException(format("Unknown type '%s'", type));

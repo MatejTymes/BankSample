@@ -17,6 +17,10 @@ import static mtymes.account.domain.operation.OperationId.operationId;
 // todo: move into test-infrastructure
 public class Random {
 
+    public static boolean randomBoolean() {
+        return pickRandomValue(true, false);
+    }
+
     @SafeVarargs
     public static int randomInt(int from, int to, Condition<Integer>... validityConditions) {
         return generateValidValue(

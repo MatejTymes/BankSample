@@ -2,6 +2,7 @@ package mtymes.account.dao;
 
 import javafixes.concurrency.Runner;
 import mtymes.account.domain.operation.*;
+import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.hamcrest.Matchers;
@@ -9,16 +10,24 @@ import org.junit.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.LongStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
+import static javafixes.common.CollectionUtil.newSet;
+import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.domain.account.AccountId.newAccountId;
-import static mtymes.account.domain.operation.PersistedOperation.newOperation;
+import static mtymes.account.domain.operation.OperationId.operationId;
+import static mtymes.account.domain.operation.PersistedOperation.*;
 import static mtymes.account.mongo.Collections.operationsCollection;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
-import static mtymes.test.Random.randomAccountId;
-import static mtymes.test.Random.randomPositiveDecimal;
+import static mtymes.test.Random.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class OperationDaoIntegrationTest {
@@ -61,6 +70,176 @@ public class OperationDaoIntegrationTest {
         }
     }
 
+    @Test
+    public void shouldStoreOperationsWithSequentialOperationId() {
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(1)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(2)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(3)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(4)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(5)));
+    }
+
+    @Test
+    public void shouldMarkOperationAsSuccessful() {
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+
+        // When
+        boolean success = operationDao.markAsSuccessful(operationId);
+
+        // Then
+        assertThat(success, is(true));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+    }
+
+    @Test
+    public void shouldMarkOperationAsFailed() {
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+
+        // When
+        boolean success = operationDao.markAsFailed(operationId, "failure description");
+
+        // Then
+        assertThat(success, is(true));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "failure description")));
+    }
+
+    @Test
+    public void shouldNotMarkOperationAsSuccessfulTwice() {
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+        operationDao.markAsSuccessful(operationId);
+
+        // When
+        boolean success = operationDao.markAsSuccessful(operationId);
+
+        // Then
+        assertThat(success, is(false));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+    }
+
+    @Test
+    public void shouldNotMarkOperationAsFailedTwice() {
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+        operationDao.markAsFailed(operationId, "first commentary");
+
+        // When
+        boolean success = operationDao.markAsFailed(operationId, "second commentary");
+
+        // Then
+        assertThat(success, is(false));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "first commentary")));
+    }
+
+    @Test
+    public void shouldNotMarkOperationAsSuccessfulIfItIsAlreadyFailed() {
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+        operationDao.markAsFailed(operationId, "first commentary");
+
+        // When
+        boolean success = operationDao.markAsSuccessful(operationId);
+
+        // Then
+        assertThat(success, is(false));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "first commentary")));
+    }
+
+    @Test
+    public void shouldNotMarkOperationAsFailedIfItIsAlreadySuccessful() {
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+        operationDao.markAsSuccessful(operationId);
+
+        // When
+        boolean success = operationDao.markAsFailed(operationId, "failure description");
+
+        // Then
+        assertThat(success, is(false));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+    }
+
+    @Test
+    public void shouldCreateUniqueSequentialOperationIdsOnConcurrentWrites() {
+        int threadCount = 64;
+
+        List<OperationId> operationIds = newCopyOnWriteArrayList();
+
+        Runner runner = runner(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
+        for (int i = 0; i < threadCount; i++) {
+            runner.runTask(() -> {
+                Operation operation = pickRandomValue(allOperations);
+
+                synchronizer.synchronizeThreadsAtThisPoint();
+
+                // When
+                operationIds.add(
+                        operationDao.storeOperation(operation)
+                );
+            });
+        }
+        runner.waitTillDone().shutdown();
+
+        // Then
+        assertThat(operationIds.size(), is(threadCount));
+        Set<OperationId> expectedOperationIds = rangeClosed(1, threadCount)
+                .mapToObj(OperationId::operationId)
+                .collect(toSet());
+        assertThat(newSet(operationIds), equalTo(expectedOperationIds));
+    }
+
+    @Test
+    public void shouldAllowOnlyOneFinalizationMethodOnConcurrentRequests() {
+        int threadCount = 64;
+
+        Operation operation = pickRandomValue(allOperations);
+        OperationId operationId = operationDao.storeOperation(operation);
+
+        List<FinalState> appliedStates = newCopyOnWriteArrayList();
+
+        Runner runner = runner(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
+        for (int i = 0; i < threadCount; i++) {
+            runner.runTask(() -> {
+                FinalState stateToApply = pickRandomValue(FinalState.values());
+
+                synchronizer.synchronizeThreadsAtThisPoint();
+
+                // When
+                boolean success;
+                if (stateToApply == FinalState.Success) {
+                    success = operationDao.markAsSuccessful(operationId);
+                } else {
+                    success = operationDao.markAsFailed(operationId, "some description");
+                }
+
+                if (success) {
+                    appliedStates.add(stateToApply);
+                }
+            });
+        }
+        runner.waitTillDone().shutdown();
+
+        // Then
+        assertThat(appliedStates.size(), is(1));
+
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        if (appliedStates.get(0) == FinalState.Success) {
+            assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+        } else {
+            assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "some description")));
+        }
+    }
+
 
     // todo: remove - put into performance test instead
     @Test
@@ -70,7 +249,7 @@ public class OperationDaoIntegrationTest {
         int insertCount = 100_000;
         AtomicInteger insertCounter = new AtomicInteger(insertCount);
 
-        Runner runner = Runner.runner(threadCount);
+        Runner runner = runner(threadCount);
         CountDownLatch startAtTheSameTimeBarrier = new CountDownLatch(threadCount + 1);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
@@ -96,6 +275,5 @@ public class OperationDaoIntegrationTest {
         System.out.println(insertsPerSecond + " inserts/second");
         assertThat(insertsPerSecond, Matchers.greaterThanOrEqualTo(1_000d));
     }
-
 
 }
