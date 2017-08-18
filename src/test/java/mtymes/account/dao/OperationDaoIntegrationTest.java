@@ -5,14 +5,14 @@ import mtymes.account.domain.operation.*;
 import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
-import org.hamcrest.Matchers;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static java.util.stream.Collectors.toSet;
@@ -20,7 +20,6 @@ import static java.util.stream.LongStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
 import static javafixes.common.CollectionUtil.newSet;
 import static javafixes.concurrency.Runner.runner;
-import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.account.domain.operation.PersistedOperation.*;
 import static mtymes.account.mongo.Collections.operationsCollection;
@@ -30,6 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+// todo: move into test-integration
 public class OperationDaoIntegrationTest {
 
     private final List<Operation> allOperations = newList(
@@ -239,41 +239,4 @@ public class OperationDaoIntegrationTest {
             assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "some description")));
         }
     }
-
-
-    // todo: remove - put into performance test instead
-    @Test
-    @Ignore
-    public void shouldBeAbleToStoreOperationsConcurrently() throws InterruptedException {
-        int threadCount = 128;
-        int insertCount = 100_000;
-        AtomicInteger insertCounter = new AtomicInteger(insertCount);
-
-        Runner runner = runner(threadCount);
-        CountDownLatch startAtTheSameTimeBarrier = new CountDownLatch(threadCount + 1);
-        for (int i = 0; i < threadCount; i++) {
-            runner.runTask(() -> {
-                startAtTheSameTimeBarrier.countDown();
-                startAtTheSameTimeBarrier.await();
-
-                while (insertCounter.getAndDecrement() > 0) {
-                    operationDao.storeOperation(new CreateAccount(newAccountId()));
-                }
-            });
-        }
-
-        startAtTheSameTimeBarrier.countDown();
-        startAtTheSameTimeBarrier.await();
-
-        long startTime = System.currentTimeMillis();
-        runner.waitTillDone();
-        long endTime = System.currentTimeMillis();
-
-        runner.shutdown();
-
-        double insertsPerSecond = (insertCount * 1000d) / (endTime - startTime);
-        System.out.println(insertsPerSecond + " inserts/second");
-        assertThat(insertsPerSecond, Matchers.greaterThanOrEqualTo(1_000d));
-    }
-
 }
