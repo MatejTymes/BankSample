@@ -12,19 +12,16 @@ public class CreateAccount extends Operation {
     public final AccountId accountId;
 
     public CreateAccount(AccountId accountId) {
-        // todo: check conditions
         checkNotNull(accountId, "accountId can't be null");
 
         this.accountId = accountId;
     }
 
-    // todo: test this
     @Override
     public Set<AccountId> affectedAccountIds() {
         return newSet(accountId);
     }
 
-    // todo: test this
     @Override
     public <T> T apply(OperationVisitor<T> visitor) {
         return visitor.visit(this);
