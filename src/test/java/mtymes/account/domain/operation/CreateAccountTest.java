@@ -1,11 +1,8 @@
 package mtymes.account.domain.operation;
 
 import mtymes.account.domain.account.AccountId;
-import org.junit.Rule;
+import mtymes.test.StrictMockTest;
 import org.junit.Test;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-import org.mockito.quality.Strictness;
 
 import java.util.UUID;
 
@@ -14,12 +11,10 @@ import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.test.Random.randomAccountId;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class CreateAccountTest {
-
-    @Rule
-    public MockitoRule mockito = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+public class CreateAccountTest extends StrictMockTest {
 
     @Test(expected = NullPointerException.class)
     public void shouldFailConstructionIfAccountIdIsNull() {
@@ -47,6 +42,5 @@ public class CreateAccountTest {
 
         // Then
         assertThat(actualResponse, equalTo(expectedResponse));
-        verifyNoMoreInteractions(visitor);
     }
 }
