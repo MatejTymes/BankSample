@@ -16,47 +16,56 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WithdrawMoneyTest extends StrictMockTest {
+public class InternalTransferTest extends StrictMockTest {
 
     @Test
     public void shouldCreateOperation() {
-        AccountId accountId = randomAccountId();
+        AccountId fromAccountId = randomAccountId();
+        AccountId toAccountId = randomAccountId();
         Decimal amount = randomPositiveDecimal();
 
         // When
-        WithdrawMoney WithdrawMoney = new WithdrawMoney(accountId, amount);
+        InternalTransfer InternalTransfer = new InternalTransfer(fromAccountId, toAccountId, amount);
 
         // Then
-        assertThat(WithdrawMoney.accountId, equalTo(accountId));
-        assertThat(WithdrawMoney.amount, equalTo(amount));
-        assertThat(WithdrawMoney.affectedAccountIds(), equalTo(newSet(accountId)));
+        assertThat(InternalTransfer.fromAccountId, equalTo(fromAccountId));
+        assertThat(InternalTransfer.toAccountId, equalTo(toAccountId));
+        assertThat(InternalTransfer.amount, equalTo(amount));
+        assertThat(InternalTransfer.affectedAccountIds(), equalTo(newSet(fromAccountId, toAccountId)));
     }
 
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new WithdrawMoney(null, randomPositiveDecimal());
+            new InternalTransfer(null, randomAccountId(), randomPositiveDecimal());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
-            assertThat(expected.getMessage(), equalTo("accountId can't be null"));
+            assertThat(expected.getMessage(), equalTo("fromAccountId can't be null"));
         }
         try {
-            new WithdrawMoney(randomAccountId(), null);
+            new InternalTransfer(randomAccountId(), null, randomPositiveDecimal());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("toAccountId can't be null"));
+        }
+        try {
+            new InternalTransfer(randomAccountId(), randomAccountId(), null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("amount can't be null"));
         }
         try {
-            new WithdrawMoney(randomAccountId(), Decimal.ZERO);
+            new InternalTransfer(randomAccountId(), randomAccountId(), Decimal.ZERO);
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
         try {
-            new WithdrawMoney(randomAccountId(), randomNegativeDecimal());
+            new InternalTransfer(randomAccountId(), randomAccountId(), randomNegativeDecimal());
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
@@ -67,13 +76,13 @@ public class WithdrawMoneyTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        WithdrawMoney WithdrawMoney = new WithdrawMoney(randomAccountId(), randomPositiveDecimal());
+        InternalTransfer InternalTransfer = new InternalTransfer(randomAccountId(), randomAccountId(), randomPositiveDecimal());
 
         UUID expectedResponse = randomUUID();
-        when(visitor.visit(WithdrawMoney)).thenReturn(expectedResponse);
+        when(visitor.visit(InternalTransfer)).thenReturn(expectedResponse);
 
         // When
-        UUID actualResponse = WithdrawMoney.apply(visitor);
+        UUID actualResponse = InternalTransfer.apply(visitor);
 
         // Then
         assertThat(actualResponse, equalTo(expectedResponse));

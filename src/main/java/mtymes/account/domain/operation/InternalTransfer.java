@@ -16,7 +16,6 @@ public class InternalTransfer extends Operation {
     public final Decimal amount;
 
     public InternalTransfer(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
-        // todo: check conditions
         checkNotNull(fromAccountId, "fromAccountId can't be null");
         checkNotNull(toAccountId, "toAccountId can't be null");
         checkNotNull(amount, "amount can't be null");
@@ -27,13 +26,11 @@ public class InternalTransfer extends Operation {
         this.amount = amount;
     }
 
-    // todo: test this
     @Override
     public Set<AccountId> affectedAccountIds() {
         return newSet(fromAccountId, toAccountId);
     }
 
-    // todo: test this
     @Override
     public <T> T apply(OperationVisitor<T> visitor) {
         return visitor.visit(this);
