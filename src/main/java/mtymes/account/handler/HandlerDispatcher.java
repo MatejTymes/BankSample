@@ -2,7 +2,7 @@ package mtymes.account.handler;
 
 import mtymes.account.domain.operation.*;
 
-public class HandlerDispatcher implements OperationVisitor<BaseOperationHandler<?>> {
+public class HandlerDispatcher implements OperationVisitor<OperationHandler<?>> {
 
     private final CreateAccountHandler createAccountHandler;
     private final DepositMoneyHandler depositMoneyHandler;
@@ -17,22 +17,22 @@ public class HandlerDispatcher implements OperationVisitor<BaseOperationHandler<
     }
 
     @Override
-    public BaseOperationHandler<CreateAccount> visit(CreateAccount request) {
+    public OperationHandler<CreateAccount> visit(CreateAccount request) {
         return createAccountHandler;
     }
 
     @Override
-    public BaseOperationHandler<DepositMoney> visit(DepositMoney request) {
+    public OperationHandler<DepositMoney> visit(DepositMoney request) {
         return depositMoneyHandler;
     }
 
     @Override
-    public BaseOperationHandler<WithdrawMoney> visit(WithdrawMoney request) {
+    public OperationHandler<WithdrawMoney> visit(WithdrawMoney request) {
         return withdrawMoneyHandler;
     }
 
     @Override
-    public BaseOperationHandler<InternalTransfer> visit(InternalTransfer request) {
+    public OperationHandler<InternalTransfer> visit(InternalTransfer request) {
         return internalTransferHandler;
     }
 }

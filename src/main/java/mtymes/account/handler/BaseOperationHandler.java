@@ -10,7 +10,7 @@ import mtymes.account.domain.operation.OperationId;
 import static java.lang.String.format;
 import static mtymes.account.handler.BaseOperationHandler.Progress.*;
 
-public abstract class BaseOperationHandler<T extends Operation> {
+public abstract class BaseOperationHandler<T extends Operation> implements OperationHandler<T> {
 
     protected final AccountDao accountDao;
     protected final OperationDao operationDao;
@@ -19,8 +19,6 @@ public abstract class BaseOperationHandler<T extends Operation> {
         this.accountDao = accountDao;
         this.operationDao = operationDao;
     }
-
-    abstract void handleRequest(OperationId operationId, T request);
 
     protected Progress checkProgress(AccountId accountId, OperationId operationId) throws IllegalStateException {
         OperationId lastAppliedOperationId = accountDao

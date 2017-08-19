@@ -101,7 +101,7 @@ public class MongoAccountDaoIntegrationTest {
     }
 
     @Test
-    public void shouldNotUpdateBalanceOnOperationIdMismatch() {
+    public void shouldNotUpdateBalanceOnLastOperationIdMismatch() {
         AccountId accountId = newAccountId();
         OperationId lastOperationId = randomOperationId();
         accountDao.createAccount(accountId, lastOperationId);
