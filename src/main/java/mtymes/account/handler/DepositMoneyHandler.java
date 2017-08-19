@@ -7,7 +7,7 @@ import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositMoney;
 import mtymes.account.domain.operation.OperationId;
 
-public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
+public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
 
     public DepositMoneyHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
@@ -15,6 +15,7 @@ public class DepositMoneyHandler extends OperationHandler<DepositMoney> {
 
     // todo: test
     // todo: test that any dao interaction can fail
+    // todo: test that can be run concurrently
     @Override
     public void handleRequest(OperationId operationId, DepositMoney request) {
         AccountId accountId = request.accountId;

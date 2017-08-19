@@ -11,6 +11,7 @@ public interface AccountDao {
 
     boolean createAccount(AccountId accountId, OperationId operationId);
 
+    // todo: check that the fromOperationId < toOperationId
     boolean updateBalance(AccountId accountId, Decimal newBalance, OperationId fromOperationId, OperationId toOperationId);
 
     Optional<Account> findAccount(AccountId accountId);

@@ -10,7 +10,7 @@ import mtymes.account.domain.operation.WithdrawMoney;
 
 import static java.lang.String.format;
 
-public class WithdrawMoneyHandler extends OperationHandler<WithdrawMoney> {
+public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
 
     public WithdrawMoneyHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
@@ -18,6 +18,7 @@ public class WithdrawMoneyHandler extends OperationHandler<WithdrawMoney> {
 
     // todo: test
     // todo: test that any dao interaction can fail
+    // todo: test that can be run concurrently
     @Override
     void handleRequest(OperationId operationId, WithdrawMoney request) {
         AccountId accountId = request.accountId;

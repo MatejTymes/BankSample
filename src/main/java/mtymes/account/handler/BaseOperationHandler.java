@@ -8,16 +8,14 @@ import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
 
 import static java.lang.String.format;
-import static mtymes.account.handler.OperationHandler.Progress.NewerOperationApplied;
-import static mtymes.account.handler.OperationHandler.Progress.OlderOperationApplied;
-import static mtymes.account.handler.OperationHandler.Progress.ThisOperationApplied;
+import static mtymes.account.handler.BaseOperationHandler.Progress.*;
 
-public abstract class OperationHandler<T extends Operation> {
+public abstract class BaseOperationHandler<T extends Operation> {
 
     protected final AccountDao accountDao;
     protected final OperationDao operationDao;
 
-    protected OperationHandler(AccountDao accountDao, OperationDao operationDao) {
+    protected BaseOperationHandler(AccountDao accountDao, OperationDao operationDao) {
         this.accountDao = accountDao;
         this.operationDao = operationDao;
     }

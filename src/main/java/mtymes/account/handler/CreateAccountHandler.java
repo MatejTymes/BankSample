@@ -4,14 +4,13 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
 
 import static java.lang.String.format;
-import static mtymes.account.handler.OperationHandler.Progress.OlderOperationApplied;
-import static mtymes.account.handler.OperationHandler.Progress.ThisOperationApplied;
+import static mtymes.account.handler.BaseOperationHandler.Progress.OlderOperationApplied;
+import static mtymes.account.handler.BaseOperationHandler.Progress.ThisOperationApplied;
 
-public class CreateAccountHandler extends OperationHandler<CreateAccount> {
+public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
 
     public CreateAccountHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
@@ -19,6 +18,7 @@ public class CreateAccountHandler extends OperationHandler<CreateAccount> {
 
     // todo: test
     // todo: test that any dao interaction can fail
+    // todo: test that can be run concurrently
     @Override
     public void handleRequest(OperationId operationId, CreateAccount request) {
         AccountId accountId = request.accountId;

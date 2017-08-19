@@ -10,7 +10,7 @@ import mtymes.account.domain.operation.OperationId;
 
 import static java.lang.String.format;
 
-public class InternalTransferHandler extends OperationHandler<InternalTransfer> {
+public class InternalTransferHandler extends BaseOperationHandler<InternalTransfer> {
 
     public InternalTransferHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
@@ -18,6 +18,7 @@ public class InternalTransferHandler extends OperationHandler<InternalTransfer> 
 
     // todo: test
     // todo: test that any dao interaction can fail
+    // todo: test that can be run concurrently
     @Override
     void handleRequest(OperationId operationId, InternalTransfer request) {
         Account fromAccount = loadAccount(request.fromAccountId);
