@@ -34,7 +34,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     }
 
     @Test
-    public void shouldSucceedToCreateAccount() {
+    public void shouldSucceedToCreateNewAccount() {
         when(accountDao.createAccount(accountId, operationId))
                 .thenReturn(true);
         when(operationDao.markAsSuccessful(operationId))

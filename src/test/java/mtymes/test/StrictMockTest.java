@@ -12,6 +12,7 @@ import org.mockito.quality.Strictness;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 // todo: turn this into a rule somehow
@@ -31,8 +32,11 @@ public abstract class StrictMockTest {
     @After
     public void verifyMocksStrictly() throws Exception {
         if (mocks.size() > 0) {
-            verifyNoMoreInteractions(mocks.toArray());
-            mocks.clear();
+            try {
+                verifyNoMoreInteractions(mocks.toArray());
+            } finally {
+                clearInvocations(mocks.toArray());
+            }
         }
     }
 }
