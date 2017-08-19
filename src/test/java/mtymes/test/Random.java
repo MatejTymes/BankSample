@@ -52,6 +52,13 @@ public class Random {
         );
     }
 
+    public static Decimal randomNegativeDecimal() {
+        return decimal(
+                randomLong(Long.MIN_VALUE, -1),
+                randomInt(-5, 5)
+        );
+    }
+
     public static AccountId randomAccountId() {
         return accountId(randomUUID());
     }

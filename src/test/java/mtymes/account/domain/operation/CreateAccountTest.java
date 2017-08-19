@@ -11,22 +11,33 @@ import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.test.Random.randomAccountId;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CreateAccountTest extends StrictMockTest {
 
-    @Test(expected = NullPointerException.class)
-    public void shouldFailConstructionIfAccountIdIsNull() {
-        new CreateAccount(null);
+    @Test
+    public void shouldCreateOperation() {
+        AccountId accountId = randomAccountId();
+
+        // When
+        CreateAccount createAccount = new CreateAccount(accountId);
+
+        // Then
+        assertThat(createAccount.accountId, equalTo(accountId));
+        assertThat(createAccount.affectedAccountIds(), equalTo(newSet(accountId)));
     }
 
     @Test
-    public void shouldProvideAffectedAccountIds() {
-        AccountId accountId = randomAccountId();
-        CreateAccount createAccount = new CreateAccount(accountId);
+    public void shouldFailConstructionOnInvalidParameters() {
+        try {
+            new CreateAccount(null);
 
-        assertThat(createAccount.affectedAccountIds(), equalTo(newSet(accountId)));
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("accountId can't be null"));
+        }
     }
 
     @Test
