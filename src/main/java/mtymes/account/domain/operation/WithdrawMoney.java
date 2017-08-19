@@ -15,7 +15,6 @@ public class WithdrawMoney extends Operation {
     public final Decimal amount;
 
     public WithdrawMoney(AccountId accountId, Decimal amount) {
-        // todo: check conditions
         checkNotNull(accountId, "accountId can't be null");
         checkNotNull(amount, "amount can't be null");
         checkArgument(amount.compareTo(Decimal.ZERO) > 0, "amount must be a positive value");
@@ -24,13 +23,11 @@ public class WithdrawMoney extends Operation {
         this.amount = amount;
     }
 
-    // todo: test this
     @Override
     public Set<AccountId> affectedAccountIds() {
         return newSet(accountId);
     }
 
-    // todo: test this
     @Override
     public <T> T apply(OperationVisitor<T> visitor) {
         return visitor.visit(this);
