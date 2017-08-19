@@ -16,7 +16,6 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
         super(accountDao, operationDao);
     }
 
-    // todo: test
     // todo: test that any dao interaction can fail
     // todo: test that can be run concurrently
     @Override
