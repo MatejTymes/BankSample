@@ -11,8 +11,10 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static mtymes.account.domain.operation.OperationId.operationId;
-import static mtymes.test.Random.*;
+import static mtymes.test.Condition.after;
+import static mtymes.test.Condition.before;
+import static mtymes.test.Random.randomAccountId;
+import static mtymes.test.Random.randomOperationId;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +43,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
                 .thenReturn(true);
 
         // When & Then
-        handler.handleRequest(operationId, operation);
+        handler.handleOperation(operationId, operation);
     }
 
     @Test
@@ -54,7 +56,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
                 .thenReturn(true);
 
         // When & Then
-        handler.handleRequest(operationId, operation);
+        handler.handleOperation(operationId, operation);
     }
 
     @Test
@@ -62,12 +64,12 @@ public class CreateAccountHandlerTest extends StrictMockTest {
         when(accountDao.createAccount(accountId, operationId))
                 .thenReturn(false);
         when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(operationId(operationId.value() - randomInt(1, 1_000))));
+                .thenReturn(Optional.of(randomOperationId(before(operationId))));
         when(operationDao.markAsFailed(operationId, "Account '" + accountId + "' already exists"))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleRequest(operationId, operation);
+        handler.handleOperation(operationId, operation);
     }
 
     @Test
@@ -75,9 +77,9 @@ public class CreateAccountHandlerTest extends StrictMockTest {
         when(accountDao.createAccount(accountId, operationId))
                 .thenReturn(false);
         when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(operationId(operationId.value() + randomInt(1, 1_000))));
+                .thenReturn(Optional.of(randomOperationId(after(operationId))));
 
         // When & Then
-        handler.handleRequest(operationId, operation);
+        handler.handleOperation(operationId, operation);
     }
 }

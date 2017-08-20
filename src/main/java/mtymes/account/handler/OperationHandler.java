@@ -5,5 +5,5 @@ import mtymes.account.domain.operation.OperationId;
 
 public interface OperationHandler<T extends Operation> {
 
-    void handleRequest(OperationId operationId, T request);
+    void handleOperation(OperationId operationId, T request);
 }

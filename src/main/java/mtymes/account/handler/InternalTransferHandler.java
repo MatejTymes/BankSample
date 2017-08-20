@@ -20,7 +20,7 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
     // todo: test that any dao interaction can fail
     // todo: test that can be run concurrently
     @Override
-    public void handleRequest(OperationId operationId, InternalTransfer request) {
+    public void handleOperation(OperationId operationId, InternalTransfer request) {
         Account fromAccount = loadAccount(request.fromAccountId);
         Account toAccount = loadAccount(request.toAccountId);
 

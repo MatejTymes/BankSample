@@ -8,7 +8,6 @@ import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.OperationId;
 
 import static java.lang.String.format;
-import static mtymes.account.handler.BaseOperationHandler.Progress.*;
 
 public abstract class BaseOperationHandler<T extends Operation> implements OperationHandler<T> {
 
@@ -20,22 +19,19 @@ public abstract class BaseOperationHandler<T extends Operation> implements Opera
         this.operationDao = operationDao;
     }
 
-    protected Progress checkProgress(AccountId accountId, OperationId operationId) throws IllegalStateException {
-        OperationId lastAppliedOperationId = accountDao
-                .findLastAppliedOperationId(accountId)
-                .orElseThrow(
-                        () -> new IllegalStateException(format("Failed to load OperationId for Account '%s'", accountId))
-                );
-
-        int comparison = lastAppliedOperationId.compareTo(operationId);
-        return comparison < 0 ? OlderOperationApplied : comparison == 0 ? ThisOperationApplied : NewerOperationApplied;
-    }
-
     protected Account loadAccount(AccountId accountId) {
         return accountDao
                 .findAccount(accountId)
                 .orElseThrow(
                         () -> new IllegalStateException(format("Failed to load Account '%s'", accountId))
+                );
+    }
+
+    protected OperationId loadLastAppliedOperationId(AccountId accountId) {
+        return accountDao
+                .findLastAppliedOperationId(accountId)
+                .orElseThrow(
+                        () -> new IllegalStateException(format("Failed to load OperationId for Account '%s'", accountId))
                 );
     }
 
@@ -45,11 +41,5 @@ public abstract class BaseOperationHandler<T extends Operation> implements Opera
 
     protected void markAsFailure(OperationId operationId, String description) {
         operationDao.markAsFailed(operationId, description);
-    }
-
-    protected enum Progress {
-        OlderOperationApplied,
-        ThisOperationApplied,
-        NewerOperationApplied
     }
 }
