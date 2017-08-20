@@ -5,8 +5,8 @@ import mtymes.account.domain.operation.OperationId;
 
 import static mtymes.test.Random.*;
 
+// todo: move into test-infrastructure
 public class AccountBuilder {
-
 
     private AccountId accountId = randomAccountId();
     private Decimal balance = randomDecimal();
