@@ -32,4 +32,12 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
             }
         }
     }
+
+    protected OperationId loadLastAppliedOperationId(AccountId accountId) {
+        return accountDao
+                .findLastAppliedOperationId(accountId)
+                .orElseThrow(
+                        () -> new IllegalStateException(format("Failed to load OperationId for Account '%s'", accountId))
+                );
+    }
 }
