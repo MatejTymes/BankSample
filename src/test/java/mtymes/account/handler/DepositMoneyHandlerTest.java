@@ -39,14 +39,14 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDepositMoney() {
-        OperationId lasAppliedOperationId = randomOperationId(before(operationId));
+        OperationId lastAppliedOperationId = randomOperationId(before(operationId));
         Decimal lastBalance = randomDecimal();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lasAppliedOperationId)
+                .lastAppliedOperationId(lastAppliedOperationId)
                 .build()));
-        when(accountDao.updateBalance(accountId, lastBalance.plus(depositAmount), lasAppliedOperationId, operationId)).thenReturn(true);
+        when(accountDao.updateBalance(accountId, lastBalance.plus(depositAmount), lastAppliedOperationId, operationId)).thenReturn(true);
         when(operationDao.markAsSuccessful(operationId)).thenReturn(true);
 
         // When & Then

@@ -17,7 +17,6 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
         super(accountDao, operationDao);
     }
 
-    // todo: test
     // todo: test that any dao interaction can fail
     // todo: test that can be run concurrently
     @Override

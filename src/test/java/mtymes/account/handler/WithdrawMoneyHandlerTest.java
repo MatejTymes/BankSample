@@ -39,14 +39,14 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldWithdrawMoney() {
-        OperationId lasAppliedOperationId = randomOperationId(before(operationId));
+        OperationId lastAppliedOperationId = randomOperationId(before(operationId));
         Decimal lastBalance = withdrawAmount.plus(randomPositiveDecimal());
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lasAppliedOperationId)
+                .lastAppliedOperationId(lastAppliedOperationId)
                 .build()));
-        when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), lasAppliedOperationId, operationId)).thenReturn(true);
+        when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), lastAppliedOperationId, operationId)).thenReturn(true);
         when(operationDao.markAsSuccessful(operationId)).thenReturn(true);
 
         // When & Then
@@ -67,7 +67,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasInsufficientFunds() {
-        OperationId lasAppliedOperationId = randomOperationId(before(operationId));
+        OperationId lastAppliedOperationId = randomOperationId(before(operationId));
         Decimal lastBalance = randomPositiveDecimal();
         withdrawAmount = lastBalance.plus(randomPositiveDecimal());
         operation = new WithdrawMoney(accountId, withdrawAmount);
@@ -75,7 +75,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lasAppliedOperationId)
+                .lastAppliedOperationId(lastAppliedOperationId)
                 .build()));
         when(operationDao.markAsFailed(operationId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
@@ -85,12 +85,12 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasZeroBalance() {
-        OperationId lasAppliedOperationId = randomOperationId(before(operationId));
+        OperationId lastAppliedOperationId = randomOperationId(before(operationId));
         Decimal lastBalance = Decimal.ZERO;
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lasAppliedOperationId)
+                .lastAppliedOperationId(lastAppliedOperationId)
                 .build()));
         when(operationDao.markAsFailed(operationId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
@@ -100,12 +100,12 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasNegativeBalance() {
-        OperationId lasAppliedOperationId = randomOperationId(before(operationId));
+        OperationId lastAppliedOperationId = randomOperationId(before(operationId));
         Decimal lastBalance = randomNegativeDecimal();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lasAppliedOperationId)
+                .lastAppliedOperationId(lastAppliedOperationId)
                 .build()));
         when(operationDao.markAsFailed(operationId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
