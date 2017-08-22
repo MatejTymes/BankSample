@@ -26,22 +26,23 @@ public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
         if (!optionalAccount.isPresent()) {
             markAsFailure(operationId, String.format("Account '%s' does not exist", accountId));
         } else {
-            Account account = optionalAccount.get();
-            updateAccountBalance(operationId, account, calculateNewBalance(account, request.amount));
+            depositMoney(operationId, optionalAccount.get(), request);
         }
     }
 
-    private Decimal calculateNewBalance(Account account, Decimal amountToAdd) {
-        return account.balance.plus(amountToAdd);
-    }
-
-    private void updateAccountBalance(OperationId operationId, Account account, Decimal newBalance) {
+    private void depositMoney(OperationId operationId, Account account, DepositMoney request) {
         OperationId lastAppliedId = account.lastAppliedOpId;
+
         if (lastAppliedId.isBefore(operationId)) {
+            Decimal newBalance = calculateNewBalance(account, request.amount);
             accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, operationId);
             markAsSuccess(operationId);
         } else if (lastAppliedId.equals(operationId)) {
             markAsSuccess(operationId);
         }
+    }
+
+    private Decimal calculateNewBalance(Account account, Decimal amountToAdd) {
+        return account.balance.plus(amountToAdd);
     }
 }

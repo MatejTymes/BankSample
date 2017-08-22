@@ -4,9 +4,10 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
-import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.InternalTransfer;
 import mtymes.account.domain.operation.OperationId;
+
+import java.util.Optional;
 
 import static java.lang.String.format;
 
@@ -21,26 +22,33 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
     // todo: test that can be run concurrently
     @Override
     public void handleOperation(OperationId operationId, InternalTransfer request) {
-        Account fromAccount = loadAccount(request.fromAccountId);
-        Account toAccount = loadAccount(request.toAccountId);
+        Optional<Account> optionalFromAccount = accountDao.findAccount(request.fromAccountId);
+        if (!optionalFromAccount.isPresent()) {
+            markAsFailure(operationId, String.format("Account '%s' does not exist", request.fromAccountId));
+            return;
+        }
+        Optional<Account> optionalToAccount = accountDao.findAccount(request.toAccountId);
+        if (!optionalToAccount.isPresent()) {
+            markAsFailure(operationId, String.format("Account '%s' does not exist", request.toAccountId));
+            return;
+        }
 
-        boolean success = withDrawMoney(fromAccount, operationId, request);
+        boolean success = withdrawMoney(operationId, optionalFromAccount.get(), request);
         if (success) {
-            depositMoney(toAccount, operationId, request);
+            depositMoney(operationId, optionalToAccount.get(), request);
         }
     }
 
-    private boolean withDrawMoney(Account account, OperationId operationId, InternalTransfer request) {
-        AccountId accountId = request.fromAccountId;
-
+    private boolean withdrawMoney(OperationId operationId, Account account, InternalTransfer request) {
         OperationId lastAppliedId = account.lastAppliedOpId;
+
         if (lastAppliedId.isBefore(operationId)) {
             Decimal newBalance = account.balance.minus(request.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markAsFailure(operationId, format("Insufficient funds on account '%s'", accountId));
+                markAsFailure(operationId, format("Insufficient funds on account '%s'", request.fromAccountId));
                 return false;
             } else {
-                accountDao.updateBalance(accountId, newBalance, lastAppliedId, operationId);
+                accountDao.updateBalance(request.fromAccountId, newBalance, lastAppliedId, operationId);
                 return true;
             }
         } else {
@@ -48,12 +56,12 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
         }
     }
 
-    private void depositMoney(Account account, OperationId operationId, InternalTransfer request) {
-        AccountId accountId = request.toAccountId;
-
+    private void depositMoney(OperationId operationId, Account account, InternalTransfer request) {
         OperationId lastAppliedId = account.lastAppliedOpId;
+
         if (lastAppliedId.isBefore(operationId)) {
-            accountDao.updateBalance(accountId, account.balance.plus(request.amount), lastAppliedId, operationId);
+            Decimal newBalance = account.balance.plus(request.amount);
+            accountDao.updateBalance(request.toAccountId, newBalance, lastAppliedId, operationId);
             markAsSuccess(operationId);
         } else if (lastAppliedId.equals(operationId)) {
             markAsSuccess(operationId);

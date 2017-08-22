@@ -28,21 +28,23 @@ public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
         if (!optionalAccount.isPresent()) {
             markAsFailure(operationId, String.format("Account '%s' does not exist", accountId));
         } else {
-            Account account = optionalAccount.get();
+            withdrawMoney(operationId, optionalAccount.get(), request);
+        }
+    }
 
-            OperationId lastAppliedId = account.lastAppliedOpId;
-            if (lastAppliedId.isBefore(operationId)) {
-                Decimal newBalance = calculateNewBalance(account, request.amount);
-                if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                    markAsFailure(operationId, format("Insufficient funds on account '%s'", accountId));
-                } else {
-                    accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, operationId);
-                    markAsSuccess(operationId);
-                }
-            } else if (lastAppliedId.equals(operationId)) {
+    private void withdrawMoney(OperationId operationId, Account account, WithdrawMoney request) {
+        OperationId lastAppliedId = account.lastAppliedOpId;
+
+        if (lastAppliedId.isBefore(operationId)) {
+            Decimal newBalance = calculateNewBalance(account, request.amount);
+            if (newBalance.compareTo(Decimal.ZERO) < 0) {
+                markAsFailure(operationId, format("Insufficient funds on account '%s'", account.accountId));
+            } else {
+                accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, operationId);
                 markAsSuccess(operationId);
             }
-
+        } else if (lastAppliedId.equals(operationId)) {
+            markAsSuccess(operationId);
         }
     }
 
