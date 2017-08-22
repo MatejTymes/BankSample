@@ -33,7 +33,7 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
         }
     }
 
-    protected OperationId loadLastAppliedOperationId(AccountId accountId) {
+    private OperationId loadLastAppliedOperationId(AccountId accountId) {
         return accountDao
                 .findLastAppliedOperationId(accountId)
                 .orElseThrow(
