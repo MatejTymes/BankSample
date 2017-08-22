@@ -14,7 +14,7 @@ abstract class MongoBaseDao {
         if (iterator.hasNext()) {
             Document dbItem = iterator.next();
             if (iterator.hasNext()) {
-                throw new IllegalStateException("more than one db item for query: " + query);
+                throw new IllegalStateException("found more than one db item for query: " + query);
             }
 
             return Optional.of(mapper.apply(dbItem));
