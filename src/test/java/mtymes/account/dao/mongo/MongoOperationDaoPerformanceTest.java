@@ -80,5 +80,4 @@ public class MongoOperationDaoPerformanceTest {
         System.out.println(insertsPerSecond + " inserts/second");
         assertThat(insertsPerSecond, greaterThanOrEqualTo(1_000d));
     }
-
 }

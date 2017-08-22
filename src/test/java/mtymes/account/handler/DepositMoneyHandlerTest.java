@@ -27,8 +27,8 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
 
     private OperationId operationId = randomOperationId();
     private AccountId accountId = randomAccountId();
-    private Decimal amount = randomPositiveDecimal();
-    private DepositMoney operation = new DepositMoney(accountId, amount);
+    private Decimal depositAmount = randomPositiveDecimal();
+    private DepositMoney operation = new DepositMoney(accountId, depositAmount);
 
     @Before
     public void setUp() throws Exception {
@@ -46,7 +46,7 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
                 .balance(lastBalance)
                 .lastAppliedOperationId(lasAppliedOperationId)
                 .build()));
-        when(accountDao.updateBalance(accountId, lastBalance.plus(amount), lasAppliedOperationId, operationId)).thenReturn(true);
+        when(accountDao.updateBalance(accountId, lastBalance.plus(depositAmount), lasAppliedOperationId, operationId)).thenReturn(true);
         when(operationDao.markAsSuccessful(operationId)).thenReturn(true);
 
         // When & Then
