@@ -32,7 +32,7 @@ public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
     }
 
     private void withdrawMoney(SeqId seqId, Account account, WithdrawMoney request) {
-        SeqId lastAppliedId = account.lastAppliedOpId;
+        SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = calculateNewBalance(account, request.amount);

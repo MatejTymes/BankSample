@@ -49,7 +49,7 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldCreateAndLoadNewAccount() {
         AccountId accountId = newAccountId();
-        SeqId seqId = randomOperationId();
+        SeqId seqId = randomSeqId();
 
         // When
         boolean success = accountDao.createAccount(accountId, seqId);
@@ -63,10 +63,10 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldFailToCreateAccountIfItAlreadyExists() {
         AccountId accountId = newAccountId();
-        SeqId seqId = randomOperationId();
+        SeqId seqId = randomSeqId();
         accountDao.createAccount(accountId, seqId);
 
-        SeqId newSeqId = randomOperationId(otherThan(seqId));
+        SeqId newSeqId = randomSeqId(otherThan(seqId));
 
         // When
         boolean success = accountDao.createAccount(accountId, newSeqId);
@@ -85,10 +85,10 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldUpdateBalance() {
         AccountId accountId = newAccountId();
-        SeqId lastSeqId = randomOperationId();
+        SeqId lastSeqId = randomSeqId();
         accountDao.createAccount(accountId, lastSeqId);
 
-        SeqId newSeqId = randomOperationId(otherThan(lastSeqId));
+        SeqId newSeqId = randomSeqId(otherThan(lastSeqId));
         Decimal newBalance = randomDecimal();
 
         // When
@@ -101,13 +101,13 @@ public class MongoAccountDaoIntegrationTest {
     }
 
     @Test
-    public void shouldNotUpdateBalanceOnLastOperationIdMismatch() {
+    public void shouldNotUpdateBalanceOnLastAppliedOpSeqIdMismatch() {
         AccountId accountId = newAccountId();
-        SeqId lastSeqId = randomOperationId();
+        SeqId lastSeqId = randomSeqId();
         accountDao.createAccount(accountId, lastSeqId);
 
-        SeqId differentLastSeqId = randomOperationId(otherThan(lastSeqId)) ;
-        SeqId newSeqId = randomOperationId(otherThan(lastSeqId, differentLastSeqId));
+        SeqId differentLastSeqId = randomSeqId(otherThan(lastSeqId)) ;
+        SeqId newSeqId = randomSeqId(otherThan(lastSeqId, differentLastSeqId));
         Decimal newBalance = randomDecimal();
 
         // When
@@ -121,6 +121,6 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldNotUpdateBalanceForNonExistingAccount() {
-        assertThat(accountDao.updateBalance(randomAccountId(), randomDecimal(), randomOperationId(), randomOperationId()), is(false));
+        assertThat(accountDao.updateBalance(randomAccountId(), randomDecimal(), randomSeqId(), randomSeqId()), is(false));
     }
 }

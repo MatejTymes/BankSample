@@ -102,8 +102,8 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + fromAccountId + "'"));
         Account fromAccount = loadAccount(fromAccountId);
-        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance, initialFromAccount.lastAppliedOpId)));
+        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance, initialFromAccount.lastAppliedOpSeqId)));
         Account toAccount = loadAccount(toAccountId);
-        assertThat(toAccount, equalTo(new Account(toAccountId, toBalance, initialToAccount.lastAppliedOpId)));
+        assertThat(toAccount, equalTo(new Account(toAccountId, toBalance, initialToAccount.lastAppliedOpSeqId)));
     }
 }

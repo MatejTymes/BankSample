@@ -38,7 +38,7 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
     }
 
     private boolean withdrawMoney(SeqId seqId, Account account, InternalTransfer request) {
-        SeqId lastAppliedId = account.lastAppliedOpId;
+        SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = account.balance.minus(request.amount);
@@ -55,7 +55,7 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
     }
 
     private void depositMoney(SeqId seqId, Account account, InternalTransfer request) {
-        SeqId lastAppliedId = account.lastAppliedOpId;
+        SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = account.balance.plus(request.amount);

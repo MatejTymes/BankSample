@@ -23,7 +23,7 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
         if (success) {
             markAsSuccess(seqId);
         } else {
-            SeqId lastSeqId = loadLastAppliedOperationId(accountId);
+            SeqId lastSeqId = loadLastAppliedOpSeqId(accountId);
             if (lastSeqId.isBefore(seqId)) {
                 markAsFailure(seqId, format("Account '%s' already exists", accountId));
             } else if (lastSeqId.equals(seqId)) {
@@ -32,11 +32,11 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
         }
     }
 
-    private SeqId loadLastAppliedOperationId(AccountId accountId) {
+    private SeqId loadLastAppliedOpSeqId(AccountId accountId) {
         return accountDao
-                .findLastAppliedOperationId(accountId)
+                .findLastAppliedOpSeqId(accountId)
                 .orElseThrow(
-                        () -> new IllegalStateException(format("Failed to load SeqId for Account '%s'", accountId))
+                        () -> new IllegalStateException(format("Failed to load last applied Operation SeqId for Account '%s'", accountId))
                 );
     }
 }

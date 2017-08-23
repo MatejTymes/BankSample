@@ -25,7 +25,7 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private DepositMoneyHandler handler;
 
-    private SeqId seqId = randomOperationId();
+    private SeqId seqId = randomSeqId();
     private AccountId accountId = randomAccountId();
     private Decimal depositAmount = randomPositiveDecimal();
     private DepositMoney operation = new DepositMoney(accountId, depositAmount);
@@ -39,12 +39,12 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDepositMoney() {
-        SeqId lastAppliedSeqId = randomOperationId(before(seqId));
+        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomDecimal();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastAppliedSeqId)
+                .lastAppliedOpSeqId(lastAppliedSeqId)
                 .build()));
         when(accountDao.updateBalance(accountId, lastBalance.plus(depositAmount), lastAppliedSeqId, seqId)).thenReturn(true);
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
@@ -57,7 +57,7 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
-                .lastAppliedOperationId(seqId)
+                .lastAppliedOpSeqId(seqId)
                 .build()));
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
 
@@ -78,7 +78,7 @@ public class DepositMoneyHandlerTest extends StrictMockTest {
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
-                .lastAppliedOperationId(randomOperationId(after(seqId)))
+                .lastAppliedOpSeqId(randomSeqId(after(seqId)))
                 .build()));
 
         // When & Then

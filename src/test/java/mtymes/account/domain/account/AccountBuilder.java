@@ -10,14 +10,14 @@ public class AccountBuilder {
 
     private AccountId accountId = randomAccountId();
     private Decimal balance = randomDecimal();
-    private SeqId lastAppliedSeqId = randomOperationId();
+    private SeqId lastAppliedOpSeqId = randomSeqId();
 
     public static AccountBuilder accountBuilder() {
         return new AccountBuilder();
     }
 
     public Account build() {
-        return new Account(accountId, balance, lastAppliedSeqId);
+        return new Account(accountId, balance, lastAppliedOpSeqId);
     }
 
     public AccountBuilder accountId(AccountId accountId) {
@@ -30,8 +30,8 @@ public class AccountBuilder {
         return this;
     }
 
-    public AccountBuilder lastAppliedOperationId(SeqId lastAppliedSeqId) {
-        this.lastAppliedSeqId = lastAppliedSeqId;
+    public AccountBuilder lastAppliedOpSeqId(SeqId lastAppliedOpSeqId) {
+        this.lastAppliedOpSeqId = lastAppliedOpSeqId;
         return this;
     }
 }

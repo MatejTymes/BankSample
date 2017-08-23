@@ -10,7 +10,7 @@ import static org.junit.Assert.assertThat;
 public class SeqIdTest {
 
     @Test
-    public void shouldVerifyIfOneOperationIdIsBeforeAnother() {
+    public void shouldVerifyIfOneSeqIdIsBeforeAnother() {
         long value = randomLong(1, 9_999);
 
         assertThat(seqId(value).isBefore(seqId(value + 1)), is(true));

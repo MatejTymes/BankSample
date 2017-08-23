@@ -69,7 +69,7 @@ public abstract class BaseOperationHandlerConcurrencyTest {
         Account account = loadAccount(accountId);
         SeqId seqId = operationDao.storeOperation(new DepositMoney(accountId, amount));
 
-        accountDao.updateBalance(accountId, account.balance.plus(amount), account.lastAppliedOpId, seqId);
+        accountDao.updateBalance(accountId, account.balance.plus(amount), account.lastAppliedOpSeqId, seqId);
 
         operationDao.markAsSuccessful(seqId);
     }
@@ -80,7 +80,7 @@ public abstract class BaseOperationHandlerConcurrencyTest {
         Account account = loadAccount(accountId);
         SeqId seqId = operationDao.storeOperation(new DepositMoney(accountId, amount));
 
-        accountDao.updateBalance(accountId, account.balance.minus(amount), account.lastAppliedOpId, seqId);
+        accountDao.updateBalance(accountId, account.balance.minus(amount), account.lastAppliedOpSeqId, seqId);
 
         operationDao.markAsSuccessful(seqId);
     }

@@ -24,7 +24,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
 
     public static final String ACCOUNT_ID = "accountId";
     public static final String BALANCE = "balance";
-    public static final String LAST_APPLIED_OP_ID = "lastAppliedOpId";
+    public static final String LAST_APPLIED_OP_SEQ_ID = "appliedOpSeqId";
 
     private final MongoCollection<Document> accounts;
 
@@ -38,7 +38,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
             accounts.insertOne(docBuilder()
                     .put(ACCOUNT_ID, accountId)
                     .put(BALANCE, Decimal.ZERO)
-                    .put(LAST_APPLIED_OP_ID, seqId)
+                    .put(LAST_APPLIED_OP_SEQ_ID, seqId)
                     .build());
             return true;
         } catch (MongoWriteException e) {
@@ -52,11 +52,11 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
             UpdateResult result = accounts.updateOne(
                     docBuilder()
                             .put(ACCOUNT_ID, accountId)
-                            .put(LAST_APPLIED_OP_ID, fromSeqId)
+                            .put(LAST_APPLIED_OP_SEQ_ID, fromSeqId)
                             .build(),
                     doc("$set", docBuilder()
                             .put(BALANCE, newBalance)
-                            .put(LAST_APPLIED_OP_ID, toSeqId)
+                            .put(LAST_APPLIED_OP_SEQ_ID, toSeqId)
                             .build())
             );
             return result.getModifiedCount() == 1;
@@ -73,18 +73,18 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
                 doc -> new Account(
                         accountId(UUID.fromString(doc.getString(ACCOUNT_ID))),
                         d(((Decimal128)doc.get(BALANCE)).bigDecimalValue()),
-                        seqId(doc.getLong(LAST_APPLIED_OP_ID))
+                        seqId(doc.getLong(LAST_APPLIED_OP_SEQ_ID))
                 )
         );
     }
 
     // todo: test
     @Override
-    public Optional<SeqId> findLastAppliedOperationId(AccountId accountId) {
+    public Optional<SeqId> findLastAppliedOpSeqId(AccountId accountId) {
         return findOne(
                 accounts,
                 doc(ACCOUNT_ID, accountId),
-                doc -> seqId(doc.getLong(LAST_APPLIED_OP_ID))
+                doc -> seqId(doc.getLong(LAST_APPLIED_OP_SEQ_ID))
         );
     }
 }

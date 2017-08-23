@@ -25,7 +25,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private WithdrawMoneyHandler handler;
 
-    private SeqId seqId = randomOperationId();
+    private SeqId seqId = randomSeqId();
     private AccountId accountId = randomAccountId();
     private Decimal withdrawAmount = randomPositiveDecimal();
     private WithdrawMoney operation = new WithdrawMoney(accountId, withdrawAmount);
@@ -39,12 +39,12 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldWithdrawMoney() {
-        SeqId lastAppliedSeqId = randomOperationId(before(seqId));
+        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = withdrawAmount.plus(randomPositiveDecimal());
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastAppliedSeqId)
+                .lastAppliedOpSeqId(lastAppliedSeqId)
                 .build()));
         when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), lastAppliedSeqId, seqId)).thenReturn(true);
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
@@ -57,7 +57,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
-                .lastAppliedOperationId(seqId)
+                .lastAppliedOpSeqId(seqId)
                 .build()));
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
 
@@ -67,7 +67,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasInsufficientFunds() {
-        SeqId lastAppliedSeqId = randomOperationId(before(seqId));
+        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomPositiveDecimal();
         withdrawAmount = lastBalance.plus(randomPositiveDecimal());
         operation = new WithdrawMoney(accountId, withdrawAmount);
@@ -75,7 +75,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastAppliedSeqId)
+                .lastAppliedOpSeqId(lastAppliedSeqId)
                 .build()));
         when(operationDao.markAsFailed(seqId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
@@ -85,12 +85,12 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasZeroBalance() {
-        SeqId lastAppliedSeqId = randomOperationId(before(seqId));
+        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = Decimal.ZERO;
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastAppliedSeqId)
+                .lastAppliedOpSeqId(lastAppliedSeqId)
                 .build()));
         when(operationDao.markAsFailed(seqId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
@@ -100,12 +100,12 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasNegativeBalance() {
-        SeqId lastAppliedSeqId = randomOperationId(before(seqId));
+        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomNegativeDecimal();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastAppliedSeqId)
+                .lastAppliedOpSeqId(lastAppliedSeqId)
                 .build()));
         when(operationDao.markAsFailed(seqId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
@@ -126,7 +126,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
-                .lastAppliedOperationId(randomOperationId(after(seqId)))
+                .lastAppliedOpSeqId(randomSeqId(after(seqId)))
                 .build()));
 
         // When & Then

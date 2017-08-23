@@ -2,7 +2,6 @@ package mtymes.account.domain.operation;
 
 import javafixes.object.Microtype;
 
-// todo: rename OpId -> SeqId, SeqId -> SeqId
 public class SeqId extends Microtype<Long> implements Comparable<SeqId> {
 
     private SeqId(long value) {

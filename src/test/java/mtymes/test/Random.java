@@ -64,7 +64,7 @@ public class Random {
     }
 
     @SafeVarargs
-    public static SeqId randomOperationId(Condition<SeqId>... validityConditions) {
+    public static SeqId randomSeqId(Condition<SeqId>... validityConditions) {
         return generateValidValue(
                 () -> seqId(randomLong(0, Long.MAX_VALUE)),
                 validityConditions

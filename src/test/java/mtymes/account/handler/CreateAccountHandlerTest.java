@@ -14,7 +14,7 @@ import java.util.Optional;
 import static mtymes.test.Condition.after;
 import static mtymes.test.Condition.before;
 import static mtymes.test.Random.randomAccountId;
-import static mtymes.test.Random.randomOperationId;
+import static mtymes.test.Random.randomSeqId;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +24,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private CreateAccountHandler handler;
 
-    private SeqId seqId = randomOperationId();
+    private SeqId seqId = randomSeqId();
     private AccountId accountId = randomAccountId();
     private CreateAccount operation = new CreateAccount(accountId);
 
@@ -50,7 +50,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldSucceedIfAccountHasBeenAlreadyCreatedByThisOperation() {
         when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
-        when(accountDao.findLastAppliedOperationId(accountId))
+        when(accountDao.findLastAppliedOpSeqId(accountId))
                 .thenReturn(Optional.of(seqId));
         when(operationDao.markAsSuccessful(seqId))
                 .thenReturn(true);
@@ -63,8 +63,8 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldFailIfAccountAlreadyExistedBeforeThisOperation() {
         when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
-        when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(randomOperationId(before(seqId))));
+        when(accountDao.findLastAppliedOpSeqId(accountId))
+                .thenReturn(Optional.of(randomSeqId(before(seqId))));
         when(operationDao.markAsFailed(seqId, "Account '" + accountId + "' already exists"))
                 .thenReturn(true);
 
@@ -76,8 +76,8 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
         when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
-        when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(randomOperationId(after(seqId))));
+        when(accountDao.findLastAppliedOpSeqId(accountId))
+                .thenReturn(Optional.of(randomSeqId(after(seqId))));
 
         // When & Then
         handler.handleOperation(seqId, operation);

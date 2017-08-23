@@ -17,5 +17,5 @@ public interface AccountDao {
     Optional<Account> findAccount(AccountId accountId);
 
     // todo: test
-    Optional<SeqId> findLastAppliedOperationId(AccountId accountId);
+    Optional<SeqId> findLastAppliedOpSeqId(AccountId accountId);
 }

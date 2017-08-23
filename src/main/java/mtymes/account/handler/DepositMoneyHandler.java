@@ -30,7 +30,7 @@ public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
     }
 
     private void depositMoney(SeqId seqId, Account account, DepositMoney request) {
-        SeqId lastAppliedId = account.lastAppliedOpId;
+        SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = calculateNewBalance(account, request.amount);

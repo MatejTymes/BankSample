@@ -94,6 +94,6 @@ public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerCon
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + accountId + "'"));
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance, initialAccount.lastAppliedOpId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance, initialAccount.lastAppliedOpSeqId)));
     }
 }

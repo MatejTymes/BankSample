@@ -24,7 +24,7 @@ public class InternalTransferHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private InternalTransferHandler handler;
 
-    private SeqId seqId = randomOperationId();
+    private SeqId seqId = randomSeqId();
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
     private Decimal amount = randomPositiveDecimal();
@@ -39,29 +39,29 @@ public class InternalTransferHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldTransferMoney() {
-        SeqId lastFromAccountOpId = randomOperationId(before(seqId));
+        SeqId lastFromAccountOpSeqId = randomSeqId(before(seqId));
         Decimal fromAccountBalance = amount.plus(randomPositiveDecimal());
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)
-                .lastAppliedOperationId(lastFromAccountOpId)
+                .lastAppliedOpSeqId(lastFromAccountOpSeqId)
                 .build()));
-        when(accountDao.updateBalance(fromAccountId, fromAccountBalance.minus(amount), lastFromAccountOpId, seqId)).thenReturn(true);
+        when(accountDao.updateBalance(fromAccountId, fromAccountBalance.minus(amount), lastFromAccountOpSeqId, seqId)).thenReturn(true);
 
-        SeqId lastToAccountOpId = randomOperationId(before(seqId), otherThan(lastFromAccountOpId));
+        SeqId lastToAccountOpSeqId = randomSeqId(before(seqId), otherThan(lastFromAccountOpSeqId));
         Decimal toAccountBalance = amount.plus(randomPositiveDecimal());
         doReturn(
                 Optional.of(accountBuilder()
                         .accountId(toAccountId)
                         .balance(toAccountBalance)
-                        .lastAppliedOperationId(lastToAccountOpId)
+                        .lastAppliedOpSeqId(lastToAccountOpSeqId)
                         .build())
         ).when(accountDao)
                 .findAccount(toAccountId);
         doReturn(
                 true
         ).when(accountDao)
-                .updateBalance(toAccountId, toAccountBalance.plus(amount), lastToAccountOpId, seqId);
+                .updateBalance(toAccountId, toAccountBalance.plus(amount), lastToAccountOpSeqId, seqId);
 
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
 
@@ -73,12 +73,12 @@ public class InternalTransferHandlerTest extends StrictMockTest {
     public void shouldSucceedIfMoneyHasBeenAlreadyTransferredByThisOperation() {
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
-                .lastAppliedOperationId(seqId)
+                .lastAppliedOpSeqId(seqId)
                 .build()));
         doReturn(
                 Optional.of(accountBuilder()
                         .accountId(toAccountId)
-                        .lastAppliedOperationId(seqId)
+                        .lastAppliedOpSeqId(seqId)
                         .build())
         ).when(accountDao)
                 .findAccount(toAccountId);
@@ -90,7 +90,7 @@ public class InternalTransferHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfFromAccountHasInsufficientFunds() {
-        SeqId lastFromAccountOpId = randomOperationId(before(seqId));
+        SeqId lastFromAccountOpSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomPositiveDecimal();
         amount = lastBalance.plus(randomPositiveDecimal());
         operation = new InternalTransfer(fromAccountId, toAccountId, amount);
@@ -98,13 +98,13 @@ public class InternalTransferHandlerTest extends StrictMockTest {
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastFromAccountOpId)
+                .lastAppliedOpSeqId(lastFromAccountOpSeqId)
                 .build()));
-        SeqId lastToAccountOpId = randomOperationId(before(seqId), otherThan(lastFromAccountOpId));
+        SeqId lastToAccountOpSeqId = randomSeqId(before(seqId), otherThan(lastFromAccountOpSeqId));
         doReturn(
                 Optional.of(accountBuilder()
                         .accountId(toAccountId)
-                        .lastAppliedOperationId(lastToAccountOpId)
+                        .lastAppliedOpSeqId(lastToAccountOpSeqId)
                         .build())
         ).when(accountDao)
                 .findAccount(toAccountId);
@@ -116,18 +116,18 @@ public class InternalTransferHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfFromAccountHasZeroBalance() {
-        SeqId lastFromAccountOpId = randomOperationId(before(seqId));
+        SeqId lastFromAccountOpSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = Decimal.ZERO;
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastFromAccountOpId)
+                .lastAppliedOpSeqId(lastFromAccountOpSeqId)
                 .build()));
-        SeqId lastToAccountOpId = randomOperationId(before(seqId), otherThan(lastFromAccountOpId));
+        SeqId lastToAccountOpSeqId = randomSeqId(before(seqId), otherThan(lastFromAccountOpSeqId));
         doReturn(
                 Optional.of(accountBuilder()
                         .accountId(toAccountId)
-                        .lastAppliedOperationId(lastToAccountOpId)
+                        .lastAppliedOpSeqId(lastToAccountOpSeqId)
                         .build())
         ).when(accountDao)
                 .findAccount(toAccountId);
@@ -139,18 +139,18 @@ public class InternalTransferHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfFromAccountHasNegativeBalance() {
-        SeqId lastFromAccountOpId = randomOperationId(before(seqId));
+        SeqId lastFromAccountOpSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomNegativeDecimal();
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(lastBalance)
-                .lastAppliedOperationId(lastFromAccountOpId)
+                .lastAppliedOpSeqId(lastFromAccountOpSeqId)
                 .build()));
-        SeqId lastToAccountOpId = randomOperationId(before(seqId), otherThan(lastFromAccountOpId));
+        SeqId lastToAccountOpSeqId = randomSeqId(before(seqId), otherThan(lastFromAccountOpSeqId));
         doReturn(
                 Optional.of(accountBuilder()
                         .accountId(toAccountId)
-                        .lastAppliedOperationId(lastToAccountOpId)
+                        .lastAppliedOpSeqId(lastToAccountOpSeqId)
                         .build())
         ).when(accountDao)
                 .findAccount(toAccountId);
@@ -162,10 +162,10 @@ public class InternalTransferHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfToAccountDoesNotExist() {
-        SeqId lastFromAccountOpId = randomOperationId(before(seqId));
+        SeqId lastFromAccountOpSeqId = randomSeqId(before(seqId));
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
-                .lastAppliedOperationId(lastFromAccountOpId)
+                .lastAppliedOpSeqId(lastFromAccountOpSeqId)
                 .build()));
         doReturn(Optional.empty()).when(accountDao).findAccount(toAccountId);
         when(operationDao.markAsFailed(seqId, "Account '" + toAccountId + "' does not exist")).thenReturn(true);
@@ -187,12 +187,12 @@ public class InternalTransferHandlerTest extends StrictMockTest {
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
-                .lastAppliedOperationId(randomOperationId(after(seqId)))
+                .lastAppliedOpSeqId(randomSeqId(after(seqId)))
                 .build()));
         doReturn(
                 Optional.of(accountBuilder()
                         .accountId(toAccountId)
-                        .lastAppliedOperationId(randomOperationId(after(seqId)))
+                        .lastAppliedOpSeqId(randomSeqId(after(seqId)))
                         .build())
         ).when(accountDao)
                 .findAccount(toAccountId);

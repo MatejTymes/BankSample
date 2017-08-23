@@ -8,11 +8,11 @@ public class Account extends DataObject {
 
     public final AccountId accountId;
     public final Decimal balance;
-    public final SeqId lastAppliedOpId;
+    public final SeqId lastAppliedOpSeqId;
 
-    public Account(AccountId accountId, Decimal balance, SeqId lastAppliedOperation) {
+    public Account(AccountId accountId, Decimal balance, SeqId lastAppliedOpSeqId) {
         this.accountId = accountId;
         this.balance = balance;
-        this.lastAppliedOpId = lastAppliedOperation;
+        this.lastAppliedOpSeqId = lastAppliedOpSeqId;
     }
 }

@@ -72,7 +72,7 @@ public class MongoOperationDaoIntegrationTest {
     }
 
     @Test
-    public void shouldStoreOperationsWithSequentialOperationId() {
+    public void shouldStoreOperationsWithSequentialSeqId() {
         assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(1)));
         assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(2)));
         assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(3)));
@@ -169,7 +169,7 @@ public class MongoOperationDaoIntegrationTest {
     }
 
     @Test
-    public void shouldCreateUniqueSequentialOperationIdsOnConcurrentWrites() {
+    public void shouldCreateUniqueSeqIdsOnConcurrentWrites() {
         int threadCount = 64;
 
         List<SeqId> seqIds = newCopyOnWriteArrayList();
