@@ -41,21 +41,21 @@ public class Random {
     public static Decimal randomDecimal() {
         return decimal(
                 randomLong(Long.MIN_VALUE, Long.MAX_VALUE),
-                randomInt(-5, 5)
+                randomInt(-2, 2)
         );
     }
 
     public static Decimal randomPositiveDecimal() {
         return decimal(
                 randomLong(1L, Long.MAX_VALUE),
-                randomInt(-5, 5)
+                randomInt(-2, 2)
         );
     }
 
     public static Decimal randomNegativeDecimal() {
         return decimal(
                 randomLong(Long.MIN_VALUE, -1),
-                randomInt(-5, 5)
+                randomInt(-2, 2)
         );
     }
 
