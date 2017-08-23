@@ -21,8 +21,8 @@ import static java.util.stream.LongStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
 import static javafixes.common.CollectionUtil.newSet;
 import static javafixes.concurrency.Runner.runner;
-import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.account.domain.operation.PersistedOperation.*;
+import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.account.mongo.Collections.operationsCollection;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
@@ -63,116 +63,116 @@ public class MongoOperationDaoIntegrationTest {
     public void shouldBeAbleToStoreAndLoadEachOperation() {
         for (Operation operation : allOperations) {
             // When
-            OperationId operationId = operationDao.storeOperation(operation);
+            SeqId seqId = operationDao.storeOperation(operation);
 
             // Then
-            Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-            assertThat(actualOperation, isPresentAndEqualTo(newOperation(operationId, operation)));
+            Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+            assertThat(actualOperation, isPresentAndEqualTo(newOperation(seqId, operation)));
         }
     }
 
     @Test
     public void shouldStoreOperationsWithSequentialOperationId() {
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(1)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(2)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(3)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(4)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(operationId(5)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(1)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(2)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(3)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(4)));
+        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(5)));
     }
 
     @Test
     public void shouldMarkOperationAsSuccessful() {
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
+        SeqId seqId = operationDao.storeOperation(operation);
 
         // When
-        boolean success = operationDao.markAsSuccessful(operationId);
+        boolean success = operationDao.markAsSuccessful(seqId);
 
         // Then
         assertThat(success, is(true));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(seqId, operation)));
     }
 
     @Test
     public void shouldMarkOperationAsFailed() {
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
+        SeqId seqId = operationDao.storeOperation(operation);
 
         // When
-        boolean success = operationDao.markAsFailed(operationId, "failure description");
+        boolean success = operationDao.markAsFailed(seqId, "failure description");
 
         // Then
         assertThat(success, is(true));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "failure description")));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(seqId, operation, "failure description")));
     }
 
     @Test
     public void shouldNotMarkOperationAsSuccessfulTwice() {
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
-        operationDao.markAsSuccessful(operationId);
+        SeqId seqId = operationDao.storeOperation(operation);
+        operationDao.markAsSuccessful(seqId);
 
         // When
-        boolean success = operationDao.markAsSuccessful(operationId);
+        boolean success = operationDao.markAsSuccessful(seqId);
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(seqId, operation)));
     }
 
     @Test
     public void shouldNotMarkOperationAsFailedTwice() {
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
-        operationDao.markAsFailed(operationId, "first commentary");
+        SeqId seqId = operationDao.storeOperation(operation);
+        operationDao.markAsFailed(seqId, "first commentary");
 
         // When
-        boolean success = operationDao.markAsFailed(operationId, "second commentary");
+        boolean success = operationDao.markAsFailed(seqId, "second commentary");
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "first commentary")));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(seqId, operation, "first commentary")));
     }
 
     @Test
     public void shouldNotMarkOperationAsSuccessfulIfItIsAlreadyFailed() {
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
-        operationDao.markAsFailed(operationId, "first commentary");
+        SeqId seqId = operationDao.storeOperation(operation);
+        operationDao.markAsFailed(seqId, "first commentary");
 
         // When
-        boolean success = operationDao.markAsSuccessful(operationId);
+        boolean success = operationDao.markAsSuccessful(seqId);
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "first commentary")));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(seqId, operation, "first commentary")));
     }
 
     @Test
     public void shouldNotMarkOperationAsFailedIfItIsAlreadySuccessful() {
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
-        operationDao.markAsSuccessful(operationId);
+        SeqId seqId = operationDao.storeOperation(operation);
+        operationDao.markAsSuccessful(seqId);
 
         // When
-        boolean success = operationDao.markAsFailed(operationId, "failure description");
+        boolean success = operationDao.markAsFailed(seqId, "failure description");
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
-        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
+        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(seqId, operation)));
     }
 
     @Test
     public void shouldCreateUniqueSequentialOperationIdsOnConcurrentWrites() {
         int threadCount = 64;
 
-        List<OperationId> operationIds = newCopyOnWriteArrayList();
+        List<SeqId> seqIds = newCopyOnWriteArrayList();
 
         Runner runner = runner(threadCount);
         ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
@@ -183,7 +183,7 @@ public class MongoOperationDaoIntegrationTest {
                 synchronizer.synchronizeThreadsAtThisPoint();
 
                 // When
-                operationIds.add(
+                seqIds.add(
                         operationDao.storeOperation(operation)
                 );
             });
@@ -191,11 +191,11 @@ public class MongoOperationDaoIntegrationTest {
         runner.waitTillDone().shutdown();
 
         // Then
-        assertThat(operationIds.size(), is(threadCount));
-        Set<OperationId> expectedOperationIds = rangeClosed(1, threadCount)
-                .mapToObj(OperationId::operationId)
+        assertThat(seqIds.size(), is(threadCount));
+        Set<SeqId> expectedSeqIds = rangeClosed(1, threadCount)
+                .mapToObj(SeqId::seqId)
                 .collect(toSet());
-        assertThat(newSet(operationIds), equalTo(expectedOperationIds));
+        assertThat(newSet(seqIds), equalTo(expectedSeqIds));
     }
 
     @Test
@@ -203,7 +203,7 @@ public class MongoOperationDaoIntegrationTest {
         int threadCount = 64;
 
         Operation operation = pickRandomValue(allOperations);
-        OperationId operationId = operationDao.storeOperation(operation);
+        SeqId seqId = operationDao.storeOperation(operation);
 
         List<FinalState> appliedStates = newCopyOnWriteArrayList();
 
@@ -218,9 +218,9 @@ public class MongoOperationDaoIntegrationTest {
                 // When
                 boolean success;
                 if (stateToApply == FinalState.Success) {
-                    success = operationDao.markAsSuccessful(operationId);
+                    success = operationDao.markAsSuccessful(seqId);
                 } else {
-                    success = operationDao.markAsFailed(operationId, "some description");
+                    success = operationDao.markAsFailed(seqId, "some description");
                 }
 
                 if (success) {
@@ -233,11 +233,11 @@ public class MongoOperationDaoIntegrationTest {
         // Then
         assertThat(appliedStates.size(), is(1));
 
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(operationId);
+        Optional<PersistedOperation> actualOperation = operationDao.findOperation(seqId);
         if (appliedStates.get(0) == FinalState.Success) {
-            assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(operationId, operation)));
+            assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(seqId, operation)));
         } else {
-            assertThat(actualOperation, isPresentAndEqualTo(failedOperation(operationId, operation, "some description")));
+            assertThat(actualOperation, isPresentAndEqualTo(failedOperation(seqId, operation, "some description")));
         }
     }
 }

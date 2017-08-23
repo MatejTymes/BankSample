@@ -2,7 +2,7 @@ package mtymes.test;
 
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import static java.util.UUID.randomUUID;
 import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.AccountId.accountId;
-import static mtymes.account.domain.operation.OperationId.operationId;
+import static mtymes.account.domain.operation.SeqId.seqId;
 
 // todo: move into test-infrastructure
 public class Random {
@@ -64,9 +64,9 @@ public class Random {
     }
 
     @SafeVarargs
-    public static OperationId randomOperationId(Condition<OperationId>... validityConditions) {
+    public static SeqId randomOperationId(Condition<SeqId>... validityConditions) {
         return generateValidValue(
-                () -> operationId(randomLong(0, Long.MAX_VALUE)),
+                () -> seqId(randomLong(0, Long.MAX_VALUE)),
                 validityConditions
         );
     }

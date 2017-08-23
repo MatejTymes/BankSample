@@ -7,7 +7,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 
@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
-import static mtymes.account.domain.operation.OperationId.operationId;
+import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
@@ -33,12 +33,12 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     }
 
     @Override
-    public boolean createAccount(AccountId accountId, OperationId operationId) {
+    public boolean createAccount(AccountId accountId, SeqId seqId) {
         try {
             accounts.insertOne(docBuilder()
                     .put(ACCOUNT_ID, accountId)
                     .put(BALANCE, Decimal.ZERO)
-                    .put(LAST_APPLIED_OP_ID, operationId)
+                    .put(LAST_APPLIED_OP_ID, seqId)
                     .build());
             return true;
         } catch (MongoWriteException e) {
@@ -47,16 +47,16 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     }
 
     @Override
-    public boolean updateBalance(AccountId accountId, Decimal newBalance, OperationId fromOperationId, OperationId toOperationId) {
+    public boolean updateBalance(AccountId accountId, Decimal newBalance, SeqId fromSeqId, SeqId toSeqId) {
         try {
             UpdateResult result = accounts.updateOne(
                     docBuilder()
                             .put(ACCOUNT_ID, accountId)
-                            .put(LAST_APPLIED_OP_ID, fromOperationId)
+                            .put(LAST_APPLIED_OP_ID, fromSeqId)
                             .build(),
                     doc("$set", docBuilder()
                             .put(BALANCE, newBalance)
-                            .put(LAST_APPLIED_OP_ID, toOperationId)
+                            .put(LAST_APPLIED_OP_ID, toSeqId)
                             .build())
             );
             return result.getModifiedCount() == 1;
@@ -73,18 +73,18 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
                 doc -> new Account(
                         accountId(UUID.fromString(doc.getString(ACCOUNT_ID))),
                         d(((Decimal128)doc.get(BALANCE)).bigDecimalValue()),
-                        operationId(doc.getLong(LAST_APPLIED_OP_ID))
+                        seqId(doc.getLong(LAST_APPLIED_OP_ID))
                 )
         );
     }
 
     // todo: test
     @Override
-    public Optional<OperationId> findLastAppliedOperationId(AccountId accountId) {
+    public Optional<SeqId> findLastAppliedOperationId(AccountId accountId) {
         return findOne(
                 accounts,
                 doc(ACCOUNT_ID, accountId),
-                doc -> operationId(doc.getLong(LAST_APPLIED_OP_ID))
+                doc -> seqId(doc.getLong(LAST_APPLIED_OP_ID))
         );
     }
 }

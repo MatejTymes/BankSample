@@ -1,18 +1,18 @@
 package mtymes.account.dao;
 
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.PersistedOperation;
+import mtymes.account.domain.operation.SeqId;
 
 import java.util.Optional;
 
 public interface OperationDao {
 
-    OperationId storeOperation(Operation operation);
+    SeqId storeOperation(Operation operation);
 
-    boolean markAsSuccessful(OperationId operationId);
+    boolean markAsSuccessful(SeqId seqId);
 
-    boolean markAsFailed(OperationId operationId, String description);
+    boolean markAsFailed(SeqId seqId, String description);
 
-    Optional<PersistedOperation> findOperation(OperationId operationId);
+    Optional<PersistedOperation> findOperation(SeqId seqId);
 }

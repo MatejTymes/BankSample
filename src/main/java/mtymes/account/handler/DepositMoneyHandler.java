@@ -6,7 +6,7 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositMoney;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 
 import java.util.Optional;
 
@@ -18,26 +18,26 @@ public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(OperationId operationId, DepositMoney request) {
+    public void handleOperation(SeqId seqId, DepositMoney request) {
         AccountId accountId = request.accountId;
 
         Optional<Account> optionalAccount = accountDao.findAccount(accountId);
         if (!optionalAccount.isPresent()) {
-            markAsFailure(operationId, String.format("Account '%s' does not exist", accountId));
+            markAsFailure(seqId, String.format("Account '%s' does not exist", accountId));
         } else {
-            depositMoney(operationId, optionalAccount.get(), request);
+            depositMoney(seqId, optionalAccount.get(), request);
         }
     }
 
-    private void depositMoney(OperationId operationId, Account account, DepositMoney request) {
-        OperationId lastAppliedId = account.lastAppliedOpId;
+    private void depositMoney(SeqId seqId, Account account, DepositMoney request) {
+        SeqId lastAppliedId = account.lastAppliedOpId;
 
-        if (lastAppliedId.isBefore(operationId)) {
+        if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = calculateNewBalance(account, request.amount);
-            accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, operationId);
-            markAsSuccess(operationId);
-        } else if (lastAppliedId.equals(operationId)) {
-            markAsSuccess(operationId);
+            accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, seqId);
+            markAsSuccess(seqId);
+        } else if (lastAppliedId.equals(seqId)) {
+            markAsSuccess(seqId);
         }
     }
 

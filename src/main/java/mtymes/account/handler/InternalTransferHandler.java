@@ -5,7 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.operation.InternalTransfer;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 
 import java.util.Optional;
 
@@ -19,50 +19,50 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(OperationId operationId, InternalTransfer request) {
+    public void handleOperation(SeqId seqId, InternalTransfer request) {
         Optional<Account> optionalFromAccount = accountDao.findAccount(request.fromAccountId);
         if (!optionalFromAccount.isPresent()) {
-            markAsFailure(operationId, String.format("Account '%s' does not exist", request.fromAccountId));
+            markAsFailure(seqId, String.format("Account '%s' does not exist", request.fromAccountId));
             return;
         }
         Optional<Account> optionalToAccount = accountDao.findAccount(request.toAccountId);
         if (!optionalToAccount.isPresent()) {
-            markAsFailure(operationId, String.format("Account '%s' does not exist", request.toAccountId));
+            markAsFailure(seqId, String.format("Account '%s' does not exist", request.toAccountId));
             return;
         }
 
-        boolean success = withdrawMoney(operationId, optionalFromAccount.get(), request);
+        boolean success = withdrawMoney(seqId, optionalFromAccount.get(), request);
         if (success) {
-            depositMoney(operationId, optionalToAccount.get(), request);
+            depositMoney(seqId, optionalToAccount.get(), request);
         }
     }
 
-    private boolean withdrawMoney(OperationId operationId, Account account, InternalTransfer request) {
-        OperationId lastAppliedId = account.lastAppliedOpId;
+    private boolean withdrawMoney(SeqId seqId, Account account, InternalTransfer request) {
+        SeqId lastAppliedId = account.lastAppliedOpId;
 
-        if (lastAppliedId.isBefore(operationId)) {
+        if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = account.balance.minus(request.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markAsFailure(operationId, format("Insufficient funds on account '%s'", request.fromAccountId));
+                markAsFailure(seqId, format("Insufficient funds on account '%s'", request.fromAccountId));
                 return false;
             } else {
-                accountDao.updateBalance(request.fromAccountId, newBalance, lastAppliedId, operationId);
+                accountDao.updateBalance(request.fromAccountId, newBalance, lastAppliedId, seqId);
                 return true;
             }
         } else {
-            return lastAppliedId.equals(operationId);
+            return lastAppliedId.equals(seqId);
         }
     }
 
-    private void depositMoney(OperationId operationId, Account account, InternalTransfer request) {
-        OperationId lastAppliedId = account.lastAppliedOpId;
+    private void depositMoney(SeqId seqId, Account account, InternalTransfer request) {
+        SeqId lastAppliedId = account.lastAppliedOpId;
 
-        if (lastAppliedId.isBefore(operationId)) {
+        if (lastAppliedId.isBefore(seqId)) {
             Decimal newBalance = account.balance.plus(request.amount);
-            accountDao.updateBalance(request.toAccountId, newBalance, lastAppliedId, operationId);
-            markAsSuccess(operationId);
-        } else if (lastAppliedId.equals(operationId)) {
-            markAsSuccess(operationId);
+            accountDao.updateBalance(request.toAccountId, newBalance, lastAppliedId, seqId);
+            markAsSuccess(seqId);
+        } else if (lastAppliedId.equals(seqId)) {
+            markAsSuccess(seqId);
         }
     }
 }

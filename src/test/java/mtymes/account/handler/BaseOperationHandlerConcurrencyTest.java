@@ -10,8 +10,8 @@ import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.DepositMoney;
-import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.PersistedOperation;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -57,9 +57,9 @@ public abstract class BaseOperationHandlerConcurrencyTest {
     }
 
     protected Account createAccount(AccountId accountId) {
-        OperationId operationId = operationDao.storeOperation(new CreateAccount(accountId));
-        accountDao.createAccount(accountId, operationId);
-        operationDao.markAsSuccessful(operationId);
+        SeqId seqId = operationDao.storeOperation(new CreateAccount(accountId));
+        accountDao.createAccount(accountId, seqId);
+        operationDao.markAsSuccessful(seqId);
         return loadAccount(accountId);
     }
 
@@ -67,22 +67,22 @@ public abstract class BaseOperationHandlerConcurrencyTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OperationId operationId = operationDao.storeOperation(new DepositMoney(accountId, amount));
+        SeqId seqId = operationDao.storeOperation(new DepositMoney(accountId, amount));
 
-        accountDao.updateBalance(accountId, account.balance.plus(amount), account.lastAppliedOpId, operationId);
+        accountDao.updateBalance(accountId, account.balance.plus(amount), account.lastAppliedOpId, seqId);
 
-        operationDao.markAsSuccessful(operationId);
+        operationDao.markAsSuccessful(seqId);
     }
 
     protected void withdrawMoney(AccountId accountId, Decimal amount) {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OperationId operationId = operationDao.storeOperation(new DepositMoney(accountId, amount));
+        SeqId seqId = operationDao.storeOperation(new DepositMoney(accountId, amount));
 
-        accountDao.updateBalance(accountId, account.balance.minus(amount), account.lastAppliedOpId, operationId);
+        accountDao.updateBalance(accountId, account.balance.minus(amount), account.lastAppliedOpId, seqId);
 
-        operationDao.markAsSuccessful(operationId);
+        operationDao.markAsSuccessful(seqId);
     }
 
     protected Account loadAccount(AccountId accountId) {
@@ -90,8 +90,8 @@ public abstract class BaseOperationHandlerConcurrencyTest {
                 .orElseThrow(() -> new IllegalStateException(format("Account '%s' should be present", accountId)));
     }
 
-    protected PersistedOperation loadOperation(OperationId operationId) {
-        return operationDao.findOperation(operationId)
-                .orElseThrow(() -> new IllegalStateException(format("Operation '%s' should be present", operationId)));
+    protected PersistedOperation loadOperation(SeqId seqId) {
+        return operationDao.findOperation(seqId)
+                .orElseThrow(() -> new IllegalStateException(format("Operation '%s' should be present", seqId)));
     }
 }

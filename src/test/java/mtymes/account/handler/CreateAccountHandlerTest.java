@@ -4,7 +4,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private CreateAccountHandler handler;
 
-    private OperationId operationId = randomOperationId();
+    private SeqId seqId = randomOperationId();
     private AccountId accountId = randomAccountId();
     private CreateAccount operation = new CreateAccount(accountId);
 
@@ -37,49 +37,49 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedToCreateNewAccount() {
-        when(accountDao.createAccount(accountId, operationId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(true);
-        when(operationDao.markAsSuccessful(operationId))
+        when(operationDao.markAsSuccessful(seqId))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(operationId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldSucceedIfAccountHasBeenAlreadyCreatedByThisOperation() {
-        when(accountDao.createAccount(accountId, operationId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(operationId));
-        when(operationDao.markAsSuccessful(operationId))
+                .thenReturn(Optional.of(seqId));
+        when(operationDao.markAsSuccessful(seqId))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(operationId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldFailIfAccountAlreadyExistedBeforeThisOperation() {
-        when(accountDao.createAccount(accountId, operationId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(randomOperationId(before(operationId))));
-        when(operationDao.markAsFailed(operationId, "Account '" + accountId + "' already exists"))
+                .thenReturn(Optional.of(randomOperationId(before(seqId))));
+        when(operationDao.markAsFailed(seqId, "Account '" + accountId + "' already exists"))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(operationId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        when(accountDao.createAccount(accountId, operationId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findLastAppliedOperationId(accountId))
-                .thenReturn(Optional.of(randomOperationId(after(operationId))));
+                .thenReturn(Optional.of(randomOperationId(after(seqId))));
 
         // When & Then
-        handler.handleOperation(operationId, operation);
+        handler.handleOperation(seqId, operation);
     }
 }

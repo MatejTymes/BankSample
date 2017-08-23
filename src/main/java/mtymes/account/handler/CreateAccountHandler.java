@@ -4,7 +4,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 
 import static java.lang.String.format;
 
@@ -16,27 +16,27 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(OperationId operationId, CreateAccount request) {
+    public void handleOperation(SeqId seqId, CreateAccount request) {
         AccountId accountId = request.accountId;
 
-        boolean success = accountDao.createAccount(accountId, operationId);
+        boolean success = accountDao.createAccount(accountId, seqId);
         if (success) {
-            markAsSuccess(operationId);
+            markAsSuccess(seqId);
         } else {
-            OperationId lastOperationId = loadLastAppliedOperationId(accountId);
-            if (lastOperationId.isBefore(operationId)) {
-                markAsFailure(operationId, format("Account '%s' already exists", accountId));
-            } else if (lastOperationId.equals(operationId)) {
-                markAsSuccess(operationId);
+            SeqId lastSeqId = loadLastAppliedOperationId(accountId);
+            if (lastSeqId.isBefore(seqId)) {
+                markAsFailure(seqId, format("Account '%s' already exists", accountId));
+            } else if (lastSeqId.equals(seqId)) {
+                markAsSuccess(seqId);
             }
         }
     }
 
-    private OperationId loadLastAppliedOperationId(AccountId accountId) {
+    private SeqId loadLastAppliedOperationId(AccountId accountId) {
         return accountDao
                 .findLastAppliedOperationId(accountId)
                 .orElseThrow(
-                        () -> new IllegalStateException(format("Failed to load OperationId for Account '%s'", accountId))
+                        () -> new IllegalStateException(format("Failed to load SeqId for Account '%s'", accountId))
                 );
     }
 }

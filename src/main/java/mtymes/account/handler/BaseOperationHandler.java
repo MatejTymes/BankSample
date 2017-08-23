@@ -3,7 +3,7 @@ package mtymes.account.handler;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 
 public abstract class BaseOperationHandler<T extends Operation> implements OperationHandler<T> {
 
@@ -15,11 +15,11 @@ public abstract class BaseOperationHandler<T extends Operation> implements Opera
         this.operationDao = operationDao;
     }
 
-    protected void markAsSuccess(OperationId operationId) {
-        operationDao.markAsSuccessful(operationId);
+    protected void markAsSuccess(SeqId seqId) {
+        operationDao.markAsSuccessful(seqId);
     }
 
-    protected void markAsFailure(OperationId operationId, String description) {
-        operationDao.markAsFailed(operationId, description);
+    protected void markAsFailure(SeqId seqId, String description) {
+        operationDao.markAsFailed(seqId, description);
     }
 }

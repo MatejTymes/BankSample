@@ -5,8 +5,8 @@ import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.InternalTransfer;
-import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.PersistedOperation;
+import mtymes.account.domain.operation.SeqId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,7 +44,7 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
         AccountId toAccountId = createAccountWithInitialBalance(toBalance).accountId;
 
         InternalTransfer internalTransfer = new InternalTransfer(fromAccountId, toAccountId, amount);
-        OperationId operationId = operationDao.storeOperation(internalTransfer);
+        SeqId seqId = operationDao.storeOperation(internalTransfer);
 
         // When
         Runner runner = runner(threadCount);
@@ -54,19 +54,19 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(operationId, internalTransfer);
+                handler.handleOperation(seqId, internalTransfer);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(operationId);
+        PersistedOperation operation = loadOperation(seqId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Account fromAccount = loadAccount(fromAccountId);
-        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), operationId)));
+        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), seqId)));
         Account toAccount = loadAccount(toAccountId);
-        assertThat(toAccount, equalTo(new Account(toAccountId, toBalance.plus(amount), operationId)));
+        assertThat(toAccount, equalTo(new Account(toAccountId, toBalance.plus(amount), seqId)));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
 
         Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
         InternalTransfer internalTransfer = new InternalTransfer(fromAccountId, toAccountId, amount);
-        OperationId operationId = operationDao.storeOperation(internalTransfer);
+        SeqId seqId = operationDao.storeOperation(internalTransfer);
 
         // When
         Runner runner = runner(threadCount);
@@ -92,13 +92,13 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(operationId, internalTransfer);
+                handler.handleOperation(seqId, internalTransfer);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(operationId);
+        PersistedOperation operation = loadOperation(seqId);
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + fromAccountId + "'"));
         Account fromAccount = loadAccount(fromAccountId);

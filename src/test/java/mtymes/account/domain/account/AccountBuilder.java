@@ -1,7 +1,7 @@
 package mtymes.account.domain.account;
 
 import javafixes.math.Decimal;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 
 import static mtymes.test.Random.*;
 
@@ -10,14 +10,14 @@ public class AccountBuilder {
 
     private AccountId accountId = randomAccountId();
     private Decimal balance = randomDecimal();
-    private OperationId lastAppliedOperationId = randomOperationId();
+    private SeqId lastAppliedSeqId = randomOperationId();
 
     public static AccountBuilder accountBuilder() {
         return new AccountBuilder();
     }
 
     public Account build() {
-        return new Account(accountId, balance, lastAppliedOperationId);
+        return new Account(accountId, balance, lastAppliedSeqId);
     }
 
     public AccountBuilder accountId(AccountId accountId) {
@@ -30,8 +30,8 @@ public class AccountBuilder {
         return this;
     }
 
-    public AccountBuilder lastAppliedOperationId(OperationId lastAppliedOperationId) {
-        this.lastAppliedOperationId = lastAppliedOperationId;
+    public AccountBuilder lastAppliedOperationId(SeqId lastAppliedSeqId) {
+        this.lastAppliedSeqId = lastAppliedSeqId;
         return this;
     }
 }

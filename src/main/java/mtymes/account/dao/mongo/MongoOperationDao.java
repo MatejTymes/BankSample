@@ -7,14 +7,14 @@ import com.mongodb.client.result.UpdateResult;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.operation.FinalState;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.PersistedOperation;
+import mtymes.account.domain.operation.SeqId;
 import org.bson.Document;
 
 import java.util.Optional;
 import java.util.concurrent.locks.StampedLock;
 
-import static mtymes.account.domain.operation.OperationId.operationId;
+import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
@@ -37,7 +37,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     @Override
-    public OperationId storeOperation(Operation operation) {
+    public SeqId storeOperation(Operation operation) {
         long sequenceId = storeWithSequenceId(
                 docBuilder()
                         .put(TYPE, operation.type())
@@ -45,14 +45,14 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
                         .put(BODY, operation.apply(mapper))
                         .build()
         );
-        return operationId(sequenceId);
+        return seqId(sequenceId);
     }
 
     @Override
-    public boolean markAsSuccessful(OperationId operationId) {
+    public boolean markAsSuccessful(SeqId seqId) {
         UpdateResult result = operations.updateOne(
                 docBuilder()
-                        .put(_ID, operationId)
+                        .put(_ID, seqId)
                         .put(FINAL_STATE, null)
                         .build(),
                 doc("$set", doc(FINAL_STATE, "success"))
@@ -61,10 +61,10 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     @Override
-    public boolean markAsFailed(OperationId operationId, String description) {
+    public boolean markAsFailed(SeqId seqId, String description) {
         UpdateResult result = operations.updateOne(
                 docBuilder()
-                        .put(_ID, operationId)
+                        .put(_ID, seqId)
                         .put(FINAL_STATE, null)
                         .build(),
                 doc("$set", docBuilder()
@@ -76,10 +76,10 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     @Override
-    public Optional<PersistedOperation> findOperation(OperationId operationId) {
+    public Optional<PersistedOperation> findOperation(SeqId seqId) {
         return findOne(
                 operations,
-                doc(_ID, operationId),
+                doc(_ID, seqId),
                 this::toPersistedOperation
         );
     }
@@ -139,7 +139,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
             }
         });
         return new PersistedOperation(
-                operationId(doc.getLong(_ID)),
+                seqId(doc.getLong(_ID)),
                 operation,
                 finalState,
                 Optional.ofNullable(doc.getString(DESCRIPTION))

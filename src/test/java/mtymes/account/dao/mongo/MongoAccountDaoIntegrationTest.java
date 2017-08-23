@@ -4,7 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -49,32 +49,32 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldCreateAndLoadNewAccount() {
         AccountId accountId = newAccountId();
-        OperationId operationId = randomOperationId();
+        SeqId seqId = randomOperationId();
 
         // When
-        boolean success = accountDao.createAccount(accountId, operationId);
+        boolean success = accountDao.createAccount(accountId, seqId);
 
         // Then
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, operationId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, seqId)));
     }
 
     @Test
     public void shouldFailToCreateAccountIfItAlreadyExists() {
         AccountId accountId = newAccountId();
-        OperationId operationId = randomOperationId();
-        accountDao.createAccount(accountId, operationId);
+        SeqId seqId = randomOperationId();
+        accountDao.createAccount(accountId, seqId);
 
-        OperationId newOperationId = randomOperationId(otherThan(operationId));
+        SeqId newSeqId = randomOperationId(otherThan(seqId));
 
         // When
-        boolean success = accountDao.createAccount(accountId, newOperationId);
+        boolean success = accountDao.createAccount(accountId, newSeqId);
 
         // Then
         assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, operationId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, seqId)));
     }
 
     @Test
@@ -85,38 +85,38 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldUpdateBalance() {
         AccountId accountId = newAccountId();
-        OperationId lastOperationId = randomOperationId();
-        accountDao.createAccount(accountId, lastOperationId);
+        SeqId lastSeqId = randomOperationId();
+        accountDao.createAccount(accountId, lastSeqId);
 
-        OperationId newOperationId = randomOperationId(otherThan(lastOperationId));
+        SeqId newSeqId = randomOperationId(otherThan(lastSeqId));
         Decimal newBalance = randomDecimal();
 
         // When
-        boolean success = accountDao.updateBalance(accountId, newBalance, lastOperationId, newOperationId);
+        boolean success = accountDao.updateBalance(accountId, newBalance, lastSeqId, newSeqId);
 
         // Then
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, newBalance, newOperationId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, newBalance, newSeqId)));
     }
 
     @Test
     public void shouldNotUpdateBalanceOnLastOperationIdMismatch() {
         AccountId accountId = newAccountId();
-        OperationId lastOperationId = randomOperationId();
-        accountDao.createAccount(accountId, lastOperationId);
+        SeqId lastSeqId = randomOperationId();
+        accountDao.createAccount(accountId, lastSeqId);
 
-        OperationId differentLastOperationId = randomOperationId(otherThan(lastOperationId)) ;
-        OperationId newOperationId = randomOperationId(otherThan(lastOperationId, differentLastOperationId));
+        SeqId differentLastSeqId = randomOperationId(otherThan(lastSeqId)) ;
+        SeqId newSeqId = randomOperationId(otherThan(lastSeqId, differentLastSeqId));
         Decimal newBalance = randomDecimal();
 
         // When
-        boolean success = accountDao.updateBalance(accountId, newBalance, differentLastOperationId, newOperationId);
+        boolean success = accountDao.updateBalance(accountId, newBalance, differentLastSeqId, newSeqId);
 
         // Then
         assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, lastOperationId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, lastSeqId)));
     }
 
     @Test
