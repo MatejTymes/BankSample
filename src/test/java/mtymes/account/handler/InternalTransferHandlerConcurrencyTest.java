@@ -35,7 +35,6 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
     @Test
     public void shouldSucceedToTransferMoneyOnConcurrentExecution() {
         int threadCount = 50;
-        Runner runner = runner(threadCount);
 
         Decimal amount = randomPositiveDecimal();
 
@@ -48,6 +47,7 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
         OperationId operationId = operationDao.storeOperation(internalTransfer);
 
         // When
+        Runner runner = runner(threadCount);
         CountDownLatch startSynchronizer = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
@@ -80,7 +80,7 @@ public class InternalTransferHandlerConcurrencyTest extends BaseOperationHandler
         AccountId fromAccountId = initialFromAccount.accountId;
         AccountId toAccountId = initialToAccount.accountId;
 
-        Decimal amount = fromBalance.signum() > 0 ? fromBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
+        Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
         InternalTransfer internalTransfer = new InternalTransfer(fromAccountId, toAccountId, amount);
         OperationId operationId = operationDao.storeOperation(internalTransfer);
 

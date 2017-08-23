@@ -19,7 +19,6 @@ public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
     }
 
     // todo: test that any dao interaction can fail
-    // todo: test that can be run concurrently
     @Override
     public void handleOperation(OperationId operationId, WithdrawMoney request) {
         AccountId accountId = request.accountId;
