@@ -15,7 +15,6 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
     }
 
     // todo: test that any dao interaction can fail
-    // todo: test that can be run concurrently
     @Override
     public void handleOperation(OperationId operationId, CreateAccount request) {
         AccountId accountId = request.accountId;
