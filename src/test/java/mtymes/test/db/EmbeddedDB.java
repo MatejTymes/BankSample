@@ -7,7 +7,6 @@ import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
 import de.flapdoodle.embed.mongo.config.*;
-import de.flapdoodle.embed.mongo.distribution.Feature;
 import de.flapdoodle.embed.mongo.distribution.IFeatureAwareVersion;
 import de.flapdoodle.embed.mongo.distribution.Versions;
 import de.flapdoodle.embed.process.config.IRuntimeConfig;
@@ -16,15 +15,18 @@ import de.flapdoodle.embed.process.extract.UserTempNaming;
 import de.flapdoodle.embed.process.io.directories.FixedPath;
 import mtymes.common.mongo.DocumentBuilder;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
+import static de.flapdoodle.embed.mongo.distribution.Feature.*;
 import static de.flapdoodle.embed.process.runtime.Network.getFreeServerPort;
 import static de.flapdoodle.embed.process.runtime.Network.localhostIsIPv6;
 
 // doc: https://github.com/flapdoodle-oss/de.flapdoodle.embed.mongo
 public class EmbeddedDB {
 
-    private static final IFeatureAwareVersion V3_4_7 = Versions.withFeatures(new GenericVersion("3.4.7"), Feature.SYNC_DELAY, Feature.STORAGE_ENGINE, Feature.ONLY_64BIT, Feature.NO_CHUNKSIZE_ARG, Feature.MONGOS_CONFIGDB_SET_STYLE);
+    private static final IFeatureAwareVersion V3_4_7 = Versions.withFeatures(new GenericVersion("3.4.7"), SYNC_DELAY, STORAGE_ENGINE, ONLY_64BIT, NO_CHUNKSIZE_ARG, MONGOS_CONFIGDB_SET_STYLE);
 
     private final int port;
     private final String dbName;
@@ -88,7 +90,26 @@ public class EmbeddedDB {
                                     .defaultsForCommand(command)
                                     .artifactStorePath(new FixedPath("build/mongo"))
                                     .build())
-                            .executableNaming(new UserTempNaming()))
+                            .executableNaming(new UserTempNaming() {
+                                @Override
+                                public String nameFor(String prefix, String postfix) {
+                                    String execName = super.nameFor(prefix, postfix);
+
+                                    try {
+                                        String tempFolder = System.getenv("temp") + File.separator;
+                                        File executableFile = new File(tempFolder + execName);
+                                        Files.deleteIfExists(executableFile.toPath());
+                                        File pidFile = execName.contains(".")
+                                                ? new File(tempFolder + execName.substring(0, execName.lastIndexOf(".")) + ".pid")
+                                                : new File(tempFolder + execName + ".pid");
+                                        Files.deleteIfExists(pidFile.toPath());
+                                    } catch (IOException e) {
+                                        throw new IllegalStateException(e);
+                                    }
+
+                                    return execName;
+                                }
+                            }))
                     .build();
 
             // todo: clear previous exe file

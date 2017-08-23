@@ -39,7 +39,7 @@ public class MongoManager {
 
     private static InstanceManager<EmbeddedDB> createNewInstanceManager() {
         return new NewInstanceManager<>(
-                embeddedDB()::start,
+                () -> embeddedDB().start(),
                 EmbeddedDB::stop
         );
     }
