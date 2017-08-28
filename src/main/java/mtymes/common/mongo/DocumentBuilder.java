@@ -53,7 +53,9 @@ public class DocumentBuilder {
         if (valueToStore instanceof Decimal) {
             valueToStore = new Decimal128(((Decimal) valueToStore).bigDecimalValue());
         } else if (valueToStore instanceof UUID) {
-            valueToStore = ((UUID) valueToStore).toString();
+            valueToStore = valueToStore.toString();
+        } else if (valueToStore instanceof  Enum) {
+            valueToStore = ((Enum) valueToStore).name();
         } else if (valueToStore instanceof Iterable) {
             valueToStore = toStream((Iterable) valueToStore)
                     .map(this::toValueToStore)

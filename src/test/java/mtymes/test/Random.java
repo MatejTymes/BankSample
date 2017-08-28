@@ -3,6 +3,7 @@ package mtymes.test;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.TransferId;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,6 +14,7 @@ import static java.util.UUID.randomUUID;
 import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.operation.SeqId.seqId;
+import static mtymes.account.domain.operation.TransferId.transferId;
 
 // todo: move into test-infrastructure
 public class Random {
@@ -61,6 +63,10 @@ public class Random {
 
     public static AccountId randomAccountId() {
         return accountId(randomUUID());
+    }
+
+    public static TransferId randomTransferId() {
+        return transferId(randomUUID());
     }
 
     @SafeVarargs

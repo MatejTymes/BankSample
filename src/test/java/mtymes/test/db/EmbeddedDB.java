@@ -112,8 +112,6 @@ public class EmbeddedDB {
                             }))
                     .build();
 
-            // todo: clear previous exe file
-
             MongodStarter starter = MongodStarter.getInstance(runtimeConfig);
             executable = starter.prepare(config);
             process = executable.start();

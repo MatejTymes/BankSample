@@ -14,6 +14,8 @@ import org.bson.Document;
 import java.util.Optional;
 import java.util.concurrent.locks.StampedLock;
 
+import static mtymes.account.domain.operation.FinalState.Failure;
+import static mtymes.account.domain.operation.FinalState.Success;
 import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
@@ -39,6 +41,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     @Override
     public SeqId storeOperation(Operation operation) {
         long sequenceId = storeWithSequenceId(
+                // todo: move this into OperationDbMapper
                 docBuilder()
                         .put(TYPE, operation.type())
                         .put(ACCOUNT_IDS, operation.affectedAccountIds())
@@ -50,29 +53,12 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
 
     @Override
     public boolean markAsSuccessful(SeqId seqId) {
-        UpdateResult result = operations.updateOne(
-                docBuilder()
-                        .put(_ID, seqId)
-                        .put(FINAL_STATE, null)
-                        .build(),
-                doc("$set", doc(FINAL_STATE, "success"))
-        );
-        return result.getModifiedCount() == 1;
+        return markAsFinished(seqId, Success, Optional.empty());
     }
 
     @Override
     public boolean markAsFailed(SeqId seqId, String description) {
-        UpdateResult result = operations.updateOne(
-                docBuilder()
-                        .put(_ID, seqId)
-                        .put(FINAL_STATE, null)
-                        .build(),
-                doc("$set", docBuilder()
-                        .put(FINAL_STATE, "failure")
-                        .put(DESCRIPTION, description)
-                        .build())
-        );
-        return result.getModifiedCount() == 1;
+        return markAsFinished(seqId, Failure, Optional.of(description));
     }
 
     @Override
@@ -124,20 +110,26 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
         return idIterator.hasNext() ? idIterator.next().getLong(_ID) : 0;
     }
 
+    private boolean markAsFinished(SeqId seqId, FinalState state, Optional<String> description) {
+        UpdateResult result = operations.updateOne(
+                docBuilder()
+                        .put(_ID, seqId)
+                        .put(FINAL_STATE, null)
+                        .build(),
+                doc("$set", docBuilder()
+                        .put(FINAL_STATE, state)
+                        .put(DESCRIPTION, description)
+                        .build())
+        );
+        return result.getModifiedCount() == 1;
+    }
+
     private PersistedOperation toPersistedOperation(Document doc) {
         Operation operation = mapper.toOperation(
                 doc.getString(TYPE),
                 (Document) doc.get(BODY)
         );
-        Optional<FinalState> finalState = Optional.ofNullable(doc.getString(FINAL_STATE)).map(state -> {
-            if ("success".equals(state)) {
-                return FinalState.Success;
-            } else if ("failure".equals(state)) {
-                return FinalState.Failure;
-            } else {
-                throw new IllegalStateException(String.format("Unknown state '%s'", state));
-            }
-        });
+        Optional<FinalState> finalState = Optional.ofNullable(doc.getString(FINAL_STATE)).map(FinalState::valueOf);
         return new PersistedOperation(
                 seqId(doc.getLong(_ID)),
                 operation,
