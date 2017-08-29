@@ -20,12 +20,12 @@ public class InternalTransferHandler extends BaseOperationHandler<InternalTransf
     // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(SeqId seqId, InternalTransfer request) {
-        Optional<Account> optionalFromAccount = accountDao.findAccount(request.fromAccountId);
+        Optional<Account> optionalFromAccount = loadAccount(request.fromAccountId);
         if (!optionalFromAccount.isPresent()) {
             markAsFailure(seqId, String.format("Account '%s' does not exist", request.fromAccountId));
             return;
         }
-        Optional<Account> optionalToAccount = accountDao.findAccount(request.toAccountId);
+        Optional<Account> optionalToAccount = loadAccount(request.toAccountId);
         if (!optionalToAccount.isPresent()) {
             markAsFailure(seqId, String.format("Account '%s' does not exist", request.toAccountId));
             return;

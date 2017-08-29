@@ -8,7 +8,9 @@ import org.bson.Document;
 import java.util.function.Consumer;
 
 import static com.mongodb.client.model.Indexes.ascending;
+import static com.mongodb.client.model.Indexes.descending;
 import static javafixes.common.CollectionUtil.newSet;
+import static mtymes.common.mongo.DocumentBuilder.doc;
 
 public class Collections {
 
@@ -27,9 +29,15 @@ public class Collections {
         return getOrCreateCollection(
                 database,
                 "operations",
-                operations -> operations.createIndex(
-                        ascending("accountIds", "finalState")
-                )
+                operations -> {
+                    operations.createIndex(
+                            descending("accountIds", "finalState")
+                    );
+                    operations.createIndex(
+                            ascending("transferId", "type"),
+                            new IndexOptions().unique(true).partialFilterExpression(doc("transferId", doc("$exists", true)))
+                    );
+                }
         );
     }
 

@@ -20,7 +20,7 @@ public class TransferMoneyToHandler extends BaseOperationHandler<TransferMoneyTo
     @Override
     public void handleOperation(SeqId seqId, TransferMoneyTo request) {
         TransferDetail detail = request.detail;
-        Optional<Account> optionalToAccount = accountDao.findAccount(detail.toAccountId);
+        Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (!optionalToAccount.isPresent()) {
             markAsFailure(seqId, String.format("To Account '%s' does not exist", detail.toAccountId));
             return;

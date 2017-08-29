@@ -23,7 +23,7 @@ public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
     public void handleOperation(SeqId seqId, WithdrawMoney request) {
         AccountId accountId = request.accountId;
 
-        Optional<Account> optionalAccount = accountDao.findAccount(accountId);
+        Optional<Account> optionalAccount = loadAccount(accountId);
         if (!optionalAccount.isPresent()) {
             markAsFailure(seqId, String.format("Account '%s' does not exist", accountId));
         } else {

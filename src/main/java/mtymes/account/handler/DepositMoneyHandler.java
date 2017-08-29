@@ -21,7 +21,7 @@ public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
     public void handleOperation(SeqId seqId, DepositMoney request) {
         AccountId accountId = request.accountId;
 
-        Optional<Account> optionalAccount = accountDao.findAccount(accountId);
+        Optional<Account> optionalAccount = loadAccount(accountId);
         if (!optionalAccount.isPresent()) {
             markAsFailure(seqId, String.format("Account '%s' does not exist", accountId));
         } else {

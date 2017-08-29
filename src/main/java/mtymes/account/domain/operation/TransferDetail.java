@@ -1,12 +1,13 @@
 package mtymes.account.domain.operation;
 
 import javafixes.math.Decimal;
+import javafixes.object.DataObject;
 import mtymes.account.domain.account.AccountId;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class TransferDetail {
+public class TransferDetail extends DataObject {
 
     public final TransferId transferId;
     public final AccountId fromAccountId;

@@ -8,6 +8,7 @@ import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferMoneyFrom;
 import mtymes.account.domain.operation.TransferMoneyTo;
+import mtymes.account.exception.DuplicateOperationException;
 
 import java.util.Optional;
 
@@ -22,18 +23,16 @@ public class TransferMoneyFromHandler extends BaseOperationHandler<TransferMoney
         this.toProcessQueue = toProcessQueue;
     }
 
-    // todo: test
     // todo: test that any dao interaction can fail
-    // todo: test that can be run concurrently
     @Override
     public void handleOperation(SeqId seqId, TransferMoneyFrom request) {
         TransferDetail detail = request.detail;
-        Optional<Account> optionalFromAccount = accountDao.findAccount(detail.fromAccountId);
+        Optional<Account> optionalFromAccount = loadAccount(detail.fromAccountId);
         if (!optionalFromAccount.isPresent()) {
             markAsFailure(seqId, String.format("From Account '%s' does not exist", detail.fromAccountId));
             return;
         }
-        Optional<Account> optionalToAccount = accountDao.findAccount(detail.toAccountId);
+        Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (!optionalToAccount.isPresent()) {
             markAsFailure(seqId, String.format("To Account '%s' does not exist", detail.toAccountId));
             return;
@@ -63,8 +62,11 @@ public class TransferMoneyFromHandler extends BaseOperationHandler<TransferMoney
     }
 
     private void submitTransferToOperation(SeqId seqId, TransferDetail detail) {
-        // todo: make sure only one copy can be stored - add unique index for transactionId + accountId
-        operationDao.storeOperation(new TransferMoneyTo(detail));
+        try {
+            operationDao.storeOperation(new TransferMoneyTo(detail));
+        } catch (DuplicateOperationException e) {
+            // do nothing
+        }
         toProcessQueue.add(detail.toAccountId);
         markAsSuccess(seqId);
     }

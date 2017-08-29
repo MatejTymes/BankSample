@@ -9,6 +9,7 @@ import mtymes.account.domain.operation.FinalState;
 import mtymes.account.domain.operation.Operation;
 import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.domain.operation.SeqId;
+import mtymes.account.exception.DuplicateOperationException;
 import org.bson.Document;
 
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     private static final String BODY = "body";
     private static final String FINAL_STATE = "finalState";
     private static final String DESCRIPTION = "description";
+    public static final int DUPLICATE = 11000;
 
     private final MongoCollection<Document> operations;
     private final OperationDbMapper mapper = new OperationDbMapper();
@@ -39,7 +41,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     @Override
-    public SeqId storeOperation(Operation operation) {
+    public SeqId storeOperation(Operation operation) throws DuplicateOperationException {
         long sequenceId = storeWithSequenceId(
                 // todo: move this into OperationDbMapper
                 docBuilder()
@@ -72,7 +74,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
 
     // using "Optimistic Loop" to guarantee the sequencing of Operations
     // look at: https://docs.mongodb.com/v3.0/tutorial/create-an-auto-incrementing-field/ for more details
-    private long storeWithSequenceId(Document document) {
+    private long storeWithSequenceId(Document document) throws DuplicateOperationException {
         long idToUse;
 
         int attemptCount = 0; // use of this is relevant only in case of multi-node scenario
@@ -87,12 +89,20 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
                     document.put(_ID, idToUse);
                     operations.insertOne(document);
                 } catch (MongoWriteException e) {
-                    retry = true;
-                    if (++attemptCount < 3) {
-                        idToUse++;
+                    if (e.getError().getCode() == DUPLICATE) {
+                        if (e.getError().getMessage().contains("_id")) {
+                            retry = true;
+                            if (++attemptCount < 3) {
+                                idToUse++;
+                            } else {
+                                attemptCount = 0;
+                                idToUse = getLastId() + 1;
+                            }
+                        } else {
+                            throw new DuplicateOperationException(e);
+                        }
                     } else {
-                        attemptCount = 0;
-                        idToUse = getLastId() + 1;
+                        throw e;
                     }
                 }
             } while (retry);
