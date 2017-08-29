@@ -29,7 +29,7 @@ public class WithdrawFromTest extends StrictMockTest {
         // Then
         assertThat(WithdrawFrom.accountId, equalTo(accountId));
         assertThat(WithdrawFrom.amount, equalTo(amount));
-        assertThat(WithdrawFrom.affectedAccountIds(), equalTo(newSet(accountId)));
+        assertThat(WithdrawFrom.affectedAccountId(), equalTo(newSet(accountId)));
     }
 
     @Test

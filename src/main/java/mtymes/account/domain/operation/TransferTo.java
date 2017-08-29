@@ -2,10 +2,7 @@ package mtymes.account.domain.operation;
 
 import mtymes.account.domain.account.AccountId;
 
-import java.util.Set;
-
 import static com.google.common.base.Preconditions.checkNotNull;
-import static javafixes.common.CollectionUtil.newSet;
 
 public class TransferTo extends Operation {
 
@@ -17,8 +14,8 @@ public class TransferTo extends Operation {
     }
 
     @Override
-    public Set<AccountId> affectedAccountIds() {
-        return newSet(detail.toAccountId);
+    public AccountId affectedAccountId() {
+        return detail.toAccountId;
     }
 
     @Override

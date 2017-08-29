@@ -3,11 +3,8 @@ package mtymes.account.domain.operation;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
 
-import java.util.Set;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static javafixes.common.CollectionUtil.newSet;
 
 public class DepositTo extends Operation {
 
@@ -24,8 +21,8 @@ public class DepositTo extends Operation {
     }
 
     @Override
-    public Set<AccountId> affectedAccountIds() {
-        return newSet(accountId);
+    public AccountId affectedAccountId() {
+        return accountId;
     }
 
     @Override

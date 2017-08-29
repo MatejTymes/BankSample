@@ -26,7 +26,7 @@ public class CreateAccountTest extends StrictMockTest {
 
         // Then
         assertThat(createAccount.accountId, equalTo(accountId));
-        assertThat(createAccount.affectedAccountIds(), equalTo(newSet(accountId)));
+        assertThat(createAccount.affectedAccountId(), equalTo(newSet(accountId)));
     }
 
     @Test

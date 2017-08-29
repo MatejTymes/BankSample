@@ -29,7 +29,7 @@ public class DepositToTest extends StrictMockTest {
         // Then
         assertThat(depositTo.accountId, equalTo(accountId));
         assertThat(depositTo.amount, equalTo(amount));
-        assertThat(depositTo.affectedAccountIds(), equalTo(newSet(accountId)));
+        assertThat(depositTo.affectedAccountId(), equalTo(newSet(accountId)));
     }
 
     @Test

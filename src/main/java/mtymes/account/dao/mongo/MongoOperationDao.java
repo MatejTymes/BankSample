@@ -25,7 +25,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
 
     private static final String _ID = "_id";
     private static final String TYPE = "type";
-    private static final String ACCOUNT_IDS = "accountIds";
+    private static final String ACCOUNT_ID = "accountId";
     private static final String BODY = "body";
     private static final String FINAL_STATE = "finalState";
     private static final String DESCRIPTION = "description";
@@ -46,7 +46,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
                 // todo: move this into OperationDbMapper
                 docBuilder()
                         .put(TYPE, operation.type())
-                        .put(ACCOUNT_IDS, operation.affectedAccountIds())
+                        .put(ACCOUNT_ID, operation.affectedAccountId())
                         .put(BODY, operation.apply(mapper))
                         .build()
         );

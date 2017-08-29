@@ -25,7 +25,7 @@ public class TransferFromTest extends StrictMockTest {
 
         // Then
         assertThat(transferFrom.detail, equalTo(detail));
-        assertThat(transferFrom.affectedAccountIds(), equalTo(newSet(detail.fromAccountId)));
+        assertThat(transferFrom.affectedAccountId(), equalTo(newSet(detail.fromAccountId)));
     }
 
     @Test
