@@ -7,11 +7,11 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static javafixes.common.CollectionUtil.newSet;
 
-public class TransferMoneyTo extends Operation {
+public class TransferTo extends Operation {
 
     public final TransferDetail detail;
 
-    public TransferMoneyTo(TransferDetail detail) {
+    public TransferTo(TransferDetail detail) {
         checkNotNull(detail, "detail can't be null");
         this.detail = detail;
     }

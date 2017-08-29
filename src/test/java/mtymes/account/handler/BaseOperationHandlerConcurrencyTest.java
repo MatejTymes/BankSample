@@ -9,7 +9,7 @@ import mtymes.account.dao.mongo.MongoOperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.DepositMoney;
+import mtymes.account.domain.operation.DepositTo;
 import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.domain.operation.SeqId;
 import mtymes.test.db.EmbeddedDB;
@@ -67,7 +67,7 @@ public abstract class BaseOperationHandlerConcurrencyTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        SeqId seqId = operationDao.storeOperation(new DepositMoney(accountId, amount));
+        SeqId seqId = operationDao.storeOperation(new DepositTo(accountId, amount));
 
         accountDao.updateBalance(accountId, account.balance.plus(amount), account.lastAppliedOpSeqId, seqId);
 
@@ -78,7 +78,7 @@ public abstract class BaseOperationHandlerConcurrencyTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        SeqId seqId = operationDao.storeOperation(new DepositMoney(accountId, amount));
+        SeqId seqId = operationDao.storeOperation(new DepositTo(accountId, amount));
 
         accountDao.updateBalance(accountId, account.balance.minus(amount), account.lastAppliedOpSeqId, seqId);
 

@@ -14,24 +14,24 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TransferMoneyFromTest extends StrictMockTest {
+public class TransferToTest extends StrictMockTest {
 
     @Test
     public void shouldCreateOperation() {
         TransferDetail detail = randomTransferDetail();
 
         // When
-        TransferMoneyFrom transferMoneyFrom = new TransferMoneyFrom(detail);
+        TransferTo transferTo = new TransferTo(detail);
 
         // Then
-        assertThat(transferMoneyFrom.detail, equalTo(detail));
-        assertThat(transferMoneyFrom.affectedAccountIds(), equalTo(newSet(detail.fromAccountId)));
+        assertThat(transferTo.detail, equalTo(detail));
+        assertThat(transferTo.affectedAccountIds(), equalTo(newSet(detail.toAccountId)));
     }
 
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new TransferMoneyFrom(null);
+            new TransferTo(null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -42,13 +42,13 @@ public class TransferMoneyFromTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        TransferMoneyFrom transferMoneyFrom = new TransferMoneyFrom(randomTransferDetail());
+        TransferTo transferTo = new TransferTo(randomTransferDetail());
 
         UUID expectedResponse = randomUUID();
-        when(visitor.visit(transferMoneyFrom)).thenReturn(expectedResponse);
+        when(visitor.visit(transferTo)).thenReturn(expectedResponse);
 
         // When
-        UUID actualResponse = transferMoneyFrom.apply(visitor);
+        UUID actualResponse = transferTo.apply(visitor);
 
         // Then
         assertThat(actualResponse, equalTo(expectedResponse));
@@ -57,4 +57,5 @@ public class TransferMoneyFromTest extends StrictMockTest {
     private TransferDetail randomTransferDetail() {
         return new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal());
     }
+
 }

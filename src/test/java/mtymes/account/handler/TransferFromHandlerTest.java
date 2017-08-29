@@ -18,14 +18,14 @@ import static mtymes.test.Condition.before;
 import static mtymes.test.Random.*;
 import static org.mockito.Mockito.*;
 
-public class TransferMoneyFromHandlerTest extends StrictMockTest {
+public class TransferFromHandlerTest extends StrictMockTest {
 
     // todo: implement
 
     private AccountDao accountDao;
     private OperationDao operationDao;
     private ToProcessQueue queue;
-    private TransferMoneyFromHandler handler;
+    private TransferFromHandler handler;
 
     private SeqId seqId = randomSeqId();
     private TransferId transferId = randomTransferId();
@@ -33,14 +33,14 @@ public class TransferMoneyFromHandlerTest extends StrictMockTest {
     private AccountId toAccountId = randomAccountId();
     private Decimal amount = randomPositiveDecimal();
     private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
-    private TransferMoneyFrom operation = new TransferMoneyFrom(detail);
+    private TransferFrom operation = new TransferFrom(detail);
 
     @Before
     public void setUp() throws Exception {
         accountDao = mock(AccountDao.class);
         operationDao = mock(OperationDao.class);
         queue = mock(ToProcessQueue.class);
-        handler = new TransferMoneyFromHandler(accountDao, operationDao, queue);
+        handler = new TransferFromHandler(accountDao, operationDao, queue);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class TransferMoneyFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.storeOperation(new TransferMoneyTo(detail))).thenReturn(randomSeqId());
+        when(operationDao.storeOperation(new TransferTo(detail))).thenReturn(randomSeqId());
         doNothing().when(queue).add(toAccountId);
 
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
@@ -86,7 +86,7 @@ public class TransferMoneyFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.storeOperation(new TransferMoneyTo(detail))).thenThrow(new DuplicateOperationException());
+        when(operationDao.storeOperation(new TransferTo(detail))).thenThrow(new DuplicateOperationException());
         doNothing().when(queue).add(toAccountId);
 
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
@@ -107,7 +107,7 @@ public class TransferMoneyFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.storeOperation(new TransferMoneyTo(detail))).thenReturn(randomSeqId());
+        when(operationDao.storeOperation(new TransferTo(detail))).thenReturn(randomSeqId());
         doNothing().when(queue).add(toAccountId);
 
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
@@ -122,7 +122,7 @@ public class TransferMoneyFromHandlerTest extends StrictMockTest {
         Decimal fromAccountBalance = randomPositiveDecimal();
         amount = fromAccountBalance.plus(randomPositiveDecimal());
         detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
-        operation = new TransferMoneyFrom(detail);
+        operation = new TransferFrom(detail);
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)

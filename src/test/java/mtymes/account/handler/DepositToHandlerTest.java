@@ -4,10 +4,8 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.DepositTo;
 import mtymes.account.domain.operation.SeqId;
-import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferId;
-import mtymes.account.domain.operation.TransferMoneyTo;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,37 +19,34 @@ import static mtymes.test.Random.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TransferMoneyToHandlerTest extends StrictMockTest {
+public class DepositToHandlerTest extends StrictMockTest {
 
     private AccountDao accountDao;
     private OperationDao operationDao;
-    private TransferMoneyToHandler handler;
+    private DepositToHandler handler;
 
     private SeqId seqId = randomSeqId();
-    private TransferId transferId = randomTransferId();
-    private AccountId fromAccountId = randomAccountId();
-    private AccountId toAccountId = randomAccountId();
-    private Decimal amount = randomPositiveDecimal();
-    private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
-    private TransferMoneyTo operation = new TransferMoneyTo(detail);
+    private AccountId accountId = randomAccountId();
+    private Decimal depositAmount = randomPositiveDecimal();
+    private DepositTo operation = new DepositTo(accountId, depositAmount);
 
     @Before
     public void setUp() throws Exception {
         accountDao = mock(AccountDao.class);
         operationDao = mock(OperationDao.class);
-        handler = new TransferMoneyToHandler(accountDao, operationDao);
+        handler = new DepositToHandler(accountDao, operationDao);
     }
 
     @Test
-    public void shouldDepositMoney() {
+    public void shouldDepositTo() {
         SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomDecimal();
-        when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
-                .accountId(toAccountId)
+        when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
+                .accountId(accountId)
                 .balance(lastBalance)
                 .lastAppliedOpSeqId(lastAppliedSeqId)
                 .build()));
-        when(accountDao.updateBalance(toAccountId, lastBalance.plus(amount), lastAppliedSeqId, seqId)).thenReturn(true);
+        when(accountDao.updateBalance(accountId, lastBalance.plus(depositAmount), lastAppliedSeqId, seqId)).thenReturn(true);
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
 
         // When & Then
@@ -60,8 +55,8 @@ public class TransferMoneyToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
-        when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
-                .accountId(toAccountId)
+        when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
+                .accountId(accountId)
                 .lastAppliedOpSeqId(seqId)
                 .build()));
         when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
@@ -72,8 +67,8 @@ public class TransferMoneyToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountDoesNotExist() {
-        when(accountDao.findAccount(toAccountId)).thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(seqId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
+        when(accountDao.findAccount(accountId)).thenReturn(Optional.empty());
+        when(operationDao.markAsFailed(seqId, "Account '" + accountId + "' does not exist")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(seqId, operation);
@@ -81,8 +76,8 @@ public class TransferMoneyToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
-                .accountId(toAccountId)
+        when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
+                .accountId(accountId)
                 .lastAppliedOpSeqId(randomSeqId(after(seqId)))
                 .build()));
 

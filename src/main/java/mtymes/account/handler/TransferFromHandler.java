@@ -6,26 +6,26 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferMoneyFrom;
-import mtymes.account.domain.operation.TransferMoneyTo;
+import mtymes.account.domain.operation.TransferFrom;
+import mtymes.account.domain.operation.TransferTo;
 import mtymes.account.exception.DuplicateOperationException;
 
 import java.util.Optional;
 
 import static java.lang.String.format;
 
-public class TransferMoneyFromHandler extends BaseOperationHandler<TransferMoneyFrom> {
+public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
 
     private final ToProcessQueue toProcessQueue;
 
-    public TransferMoneyFromHandler(AccountDao accountDao, OperationDao operationDao, ToProcessQueue toProcessQueue) {
+    public TransferFromHandler(AccountDao accountDao, OperationDao operationDao, ToProcessQueue toProcessQueue) {
         super(accountDao, operationDao);
         this.toProcessQueue = toProcessQueue;
     }
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, TransferMoneyFrom request) {
+    public void handleOperation(SeqId seqId, TransferFrom request) {
         TransferDetail detail = request.detail;
         Optional<Account> optionalFromAccount = loadAccount(detail.fromAccountId);
         if (!optionalFromAccount.isPresent()) {
@@ -63,7 +63,7 @@ public class TransferMoneyFromHandler extends BaseOperationHandler<TransferMoney
 
     private void submitTransferToOperation(SeqId seqId, TransferDetail detail) {
         try {
-            operationDao.storeOperation(new TransferMoneyTo(detail));
+            operationDao.storeOperation(new TransferTo(detail));
         } catch (DuplicateOperationException e) {
             // do nothing
         }

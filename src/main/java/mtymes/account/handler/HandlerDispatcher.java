@@ -5,17 +5,17 @@ import mtymes.account.domain.operation.*;
 public class HandlerDispatcher implements OperationVisitor<OperationHandler<?>> {
 
     private final CreateAccountHandler createAccountHandler;
-    private final DepositMoneyHandler depositMoneyHandler;
-    private final WithdrawMoneyHandler withdrawMoneyHandler;
-    private final TransferMoneyFromHandler transferMoneyFromHandler;
-    private final TransferMoneyToHandler transferMoneyToHandler;
+    private final DepositToHandler depositToHandler;
+    private final WithdrawFromHandler withdrawFromHandler;
+    private final TransferFromHandler transferFromHandler;
+    private final TransferToHandler transferToHandler;
 
-    public HandlerDispatcher(CreateAccountHandler createAccountHandler, DepositMoneyHandler depositMoneyHandler, WithdrawMoneyHandler withdrawMoneyHandler, TransferMoneyFromHandler transferMoneyFromHandler, TransferMoneyToHandler transferMoneyToHandler) {
+    public HandlerDispatcher(CreateAccountHandler createAccountHandler, DepositToHandler depositToHandler, WithdrawFromHandler withdrawFromHandler, TransferFromHandler transferFromHandler, TransferToHandler transferToHandler) {
         this.createAccountHandler = createAccountHandler;
-        this.depositMoneyHandler = depositMoneyHandler;
-        this.withdrawMoneyHandler = withdrawMoneyHandler;
-        this.transferMoneyFromHandler = transferMoneyFromHandler;
-        this.transferMoneyToHandler = transferMoneyToHandler;
+        this.depositToHandler = depositToHandler;
+        this.withdrawFromHandler = withdrawFromHandler;
+        this.transferFromHandler = transferFromHandler;
+        this.transferToHandler = transferToHandler;
     }
 
     @Override
@@ -24,22 +24,22 @@ public class HandlerDispatcher implements OperationVisitor<OperationHandler<?>> 
     }
 
     @Override
-    public OperationHandler<DepositMoney> visit(DepositMoney request) {
-        return depositMoneyHandler;
+    public OperationHandler<DepositTo> visit(DepositTo request) {
+        return depositToHandler;
     }
 
     @Override
-    public OperationHandler<WithdrawMoney> visit(WithdrawMoney request) {
-        return withdrawMoneyHandler;
+    public OperationHandler<WithdrawFrom> visit(WithdrawFrom request) {
+        return withdrawFromHandler;
     }
 
     @Override
-    public OperationHandler<TransferMoneyFrom> visit(TransferMoneyFrom request) {
-        return transferMoneyFromHandler;
+    public OperationHandler<TransferFrom> visit(TransferFrom request) {
+        return transferFromHandler;
     }
 
     @Override
-    public OperationHandler<TransferMoneyTo> visit(TransferMoneyTo request) {
-        return transferMoneyToHandler;
+    public OperationHandler<TransferTo> visit(TransferTo request) {
+        return transferToHandler;
     }
 }

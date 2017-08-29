@@ -6,29 +6,29 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferMoneyTo;
+import mtymes.account.domain.operation.TransferTo;
 
 import java.util.Optional;
 
-public class TransferMoneyToHandler extends BaseOperationHandler<TransferMoneyTo>{
+public class TransferToHandler extends BaseOperationHandler<TransferTo>{
 
-    public TransferMoneyToHandler(AccountDao accountDao, OperationDao operationDao) {
+    public TransferToHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
     }
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, TransferMoneyTo request) {
+    public void handleOperation(SeqId seqId, TransferTo request) {
         TransferDetail detail = request.detail;
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (!optionalToAccount.isPresent()) {
             markAsFailure(seqId, String.format("To Account '%s' does not exist", detail.toAccountId));
             return;
         }
-        depositMoney(seqId, optionalToAccount.get(), detail);
+        depositTo(seqId, optionalToAccount.get(), detail);
     }
 
-    private void depositMoney(SeqId seqId, Account account, TransferDetail detail) {
+    private void depositTo(SeqId seqId, Account account, TransferDetail detail) {
         SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {

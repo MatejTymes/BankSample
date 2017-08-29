@@ -5,20 +5,20 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.DepositMoney;
+import mtymes.account.domain.operation.DepositTo;
 import mtymes.account.domain.operation.SeqId;
 
 import java.util.Optional;
 
-public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
+public class DepositToHandler extends BaseOperationHandler<DepositTo> {
 
-    public DepositMoneyHandler(AccountDao accountDao, OperationDao operationDao) {
+    public DepositToHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
     }
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, DepositMoney request) {
+    public void handleOperation(SeqId seqId, DepositTo request) {
         AccountId accountId = request.accountId;
 
         Optional<Account> optionalAccount = loadAccount(accountId);
@@ -29,7 +29,7 @@ public class DepositMoneyHandler extends BaseOperationHandler<DepositMoney> {
         }
     }
 
-    private void depositMoney(SeqId seqId, Account account, DepositMoney request) {
+    private void depositMoney(SeqId seqId, Account account, DepositTo request) {
         SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {

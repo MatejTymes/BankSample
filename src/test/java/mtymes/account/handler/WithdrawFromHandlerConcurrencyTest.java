@@ -6,7 +6,7 @@ import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.domain.operation.SeqId;
-import mtymes.account.domain.operation.WithdrawMoney;
+import mtymes.account.domain.operation.WithdrawFrom;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,18 +21,18 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
 
-    private WithdrawMoneyHandler handler;
+    private WithdrawFromHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new WithdrawMoneyHandler(accountDao, operationDao);
+        handler = new WithdrawFromHandler(accountDao, operationDao);
     }
 
     @Test
-    public void shouldSucceedToWithdrawMoneyOnConcurrentExecution() {
+    public void shouldSucceedToWithdrawFromOnConcurrentExecution() {
         int threadCount = 50;
 
         Decimal amount = randomPositiveDecimal();
@@ -40,8 +40,8 @@ public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerCon
         Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveDecimal()));
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        WithdrawMoney withdrawMoney = new WithdrawMoney(accountId, amount);
-        SeqId seqId = operationDao.storeOperation(withdrawMoney);
+        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
+        SeqId seqId = operationDao.storeOperation(withdrawFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -51,7 +51,7 @@ public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerCon
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, withdrawMoney);
+                handler.handleOperation(seqId, withdrawFrom);
             });
         }
         runner.waitTillDone().shutdown();
@@ -65,7 +65,7 @@ public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerCon
     }
 
     @Test
-    public void shouldFailToWithdrawMoneyOnConcurrentExecutionIfThereIsInsufficientBalance() {
+    public void shouldFailToWithdrawFromOnConcurrentExecutionIfThereIsInsufficientBalance() {
         int threadCount = 50;
 
         Decimal initialBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
@@ -73,8 +73,8 @@ public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerCon
         AccountId accountId = initialAccount.accountId;
 
         Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
-        WithdrawMoney withdrawMoney = new WithdrawMoney(accountId, amount);
-        SeqId seqId = operationDao.storeOperation(withdrawMoney);
+        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
+        SeqId seqId = operationDao.storeOperation(withdrawFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -84,7 +84,7 @@ public class WithdrawMoneyHandlerConcurrencyTest extends BaseOperationHandlerCon
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, withdrawMoney);
+                handler.handleOperation(seqId, withdrawFrom);
             });
         }
         runner.waitTillDone().shutdown();

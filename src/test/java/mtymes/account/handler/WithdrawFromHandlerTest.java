@@ -5,7 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.SeqId;
-import mtymes.account.domain.operation.WithdrawMoney;
+import mtymes.account.domain.operation.WithdrawFrom;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,26 +19,26 @@ import static mtymes.test.Random.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WithdrawMoneyHandlerTest extends StrictMockTest {
+public class WithdrawFromHandlerTest extends StrictMockTest {
 
     private AccountDao accountDao;
     private OperationDao operationDao;
-    private WithdrawMoneyHandler handler;
+    private WithdrawFromHandler handler;
 
     private SeqId seqId = randomSeqId();
     private AccountId accountId = randomAccountId();
     private Decimal withdrawAmount = randomPositiveDecimal();
-    private WithdrawMoney operation = new WithdrawMoney(accountId, withdrawAmount);
+    private WithdrawFrom operation = new WithdrawFrom(accountId, withdrawAmount);
 
     @Before
     public void setUp() throws Exception {
         accountDao = mock(AccountDao.class);
         operationDao = mock(OperationDao.class);
-        handler = new WithdrawMoneyHandler(accountDao, operationDao);
+        handler = new WithdrawFromHandler(accountDao, operationDao);
     }
 
     @Test
-    public void shouldWithdrawMoney() {
+    public void shouldWithdrawFrom() {
         SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = withdrawAmount.plus(randomPositiveDecimal());
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
@@ -70,7 +70,7 @@ public class WithdrawMoneyHandlerTest extends StrictMockTest {
         SeqId lastAppliedSeqId = randomSeqId(before(seqId));
         Decimal lastBalance = randomPositiveDecimal();
         withdrawAmount = lastBalance.plus(randomPositiveDecimal());
-        operation = new WithdrawMoney(accountId, withdrawAmount);
+        operation = new WithdrawFrom(accountId, withdrawAmount);
 
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)

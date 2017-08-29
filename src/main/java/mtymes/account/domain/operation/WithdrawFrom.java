@@ -9,12 +9,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static javafixes.common.CollectionUtil.newSet;
 
-public class DepositMoney extends Operation {
+public class WithdrawFrom extends Operation {
 
     public final AccountId accountId;
     public final Decimal amount;
 
-    public DepositMoney(AccountId accountId, Decimal amount) {
+    public WithdrawFrom(AccountId accountId, Decimal amount) {
         checkNotNull(accountId, "accountId can't be null");
         checkNotNull(amount, "amount can't be null");
         checkArgument(amount.compareTo(Decimal.ZERO) > 0, "amount must be a positive value");

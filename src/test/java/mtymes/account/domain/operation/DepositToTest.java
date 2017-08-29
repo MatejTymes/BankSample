@@ -16,7 +16,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WithdrawMoneyTest extends StrictMockTest {
+public class DepositToTest extends StrictMockTest {
 
     @Test
     public void shouldCreateOperation() {
@@ -24,39 +24,39 @@ public class WithdrawMoneyTest extends StrictMockTest {
         Decimal amount = randomPositiveDecimal();
 
         // When
-        WithdrawMoney WithdrawMoney = new WithdrawMoney(accountId, amount);
+        DepositTo depositTo = new DepositTo(accountId, amount);
 
         // Then
-        assertThat(WithdrawMoney.accountId, equalTo(accountId));
-        assertThat(WithdrawMoney.amount, equalTo(amount));
-        assertThat(WithdrawMoney.affectedAccountIds(), equalTo(newSet(accountId)));
+        assertThat(depositTo.accountId, equalTo(accountId));
+        assertThat(depositTo.amount, equalTo(amount));
+        assertThat(depositTo.affectedAccountIds(), equalTo(newSet(accountId)));
     }
 
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new WithdrawMoney(null, randomPositiveDecimal());
+            new DepositTo(null, randomPositiveDecimal());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("accountId can't be null"));
         }
         try {
-            new WithdrawMoney(randomAccountId(), null);
+            new DepositTo(randomAccountId(), null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("amount can't be null"));
         }
         try {
-            new WithdrawMoney(randomAccountId(), Decimal.ZERO);
+            new DepositTo(randomAccountId(), Decimal.ZERO);
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
         try {
-            new WithdrawMoney(randomAccountId(), randomNegativeDecimal());
+            new DepositTo(randomAccountId(), randomNegativeDecimal());
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
@@ -67,13 +67,13 @@ public class WithdrawMoneyTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        WithdrawMoney WithdrawMoney = new WithdrawMoney(randomAccountId(), randomPositiveDecimal());
+        DepositTo depositTo = new DepositTo(randomAccountId(), randomPositiveDecimal());
 
         UUID expectedResponse = randomUUID();
-        when(visitor.visit(WithdrawMoney)).thenReturn(expectedResponse);
+        when(visitor.visit(depositTo)).thenReturn(expectedResponse);
 
         // When
-        UUID actualResponse = WithdrawMoney.apply(visitor);
+        UUID actualResponse = depositTo.apply(visitor);
 
         // Then
         assertThat(actualResponse, equalTo(expectedResponse));

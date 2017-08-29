@@ -30,7 +30,7 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     }
 
     @Override
-    public Document visit(DepositMoney request) {
+    public Document visit(DepositTo request) {
         return docBuilder()
                 .put(ACCOUNT_ID, request.accountId)
                 .put(AMOUNT, request.amount)
@@ -38,7 +38,7 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     }
 
     @Override
-    public Document visit(WithdrawMoney request) {
+    public Document visit(WithdrawFrom request) {
         return docBuilder()
                 .put(ACCOUNT_ID, request.accountId)
                 .put(AMOUNT, request.amount)
@@ -46,12 +46,12 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     }
 
     @Override
-    public Document visit(TransferMoneyFrom request) {
+    public Document visit(TransferFrom request) {
         return toDocument(request.detail);
     }
 
     @Override
-    public Document visit(TransferMoneyTo request) {
+    public Document visit(TransferTo request) {
         return toDocument(request.detail);
     }
 
@@ -61,22 +61,22 @@ public class OperationDbMapper implements OperationVisitor<Document> {
                 return new CreateAccount(
                         getAccountId(body, ACCOUNT_ID)
                 );
-            case "DepositMoney":
-                return new DepositMoney(
+            case "DepositTo":
+                return new DepositTo(
                         getAccountId(body, ACCOUNT_ID),
                         getDecimal(body, AMOUNT)
                 );
-            case "WithdrawMoney":
-                return new WithdrawMoney(
+            case "WithdrawFrom":
+                return new WithdrawFrom(
                         getAccountId(body, ACCOUNT_ID),
                         getDecimal(body, AMOUNT)
                 );
-            case "TransferMoneyFrom":
-                return new TransferMoneyFrom(
+            case "TransferFrom":
+                return new TransferFrom(
                         toTransferDetail(body)
                 );
-            case "TransferMoneyTo":
-                return new TransferMoneyTo(
+            case "TransferTo":
+                return new TransferTo(
                         toTransferDetail(body)
                 );
         }

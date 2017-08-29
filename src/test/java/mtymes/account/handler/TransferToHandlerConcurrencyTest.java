@@ -4,9 +4,7 @@ import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.DepositMoney;
-import mtymes.account.domain.operation.PersistedOperation;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,18 +18,19 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class DepositMoneyHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+// todo: move into test-stability
+public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
 
-    private DepositMoneyHandler handler;
+    private TransferToHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new DepositMoneyHandler(accountDao, operationDao);
+        handler = new TransferToHandler(accountDao, operationDao);
     }
 
     @Test
-    public void shouldSucceedToDepositMoneyOnConcurrentExecution() {
+    public void shouldSucceedToDepositToOnConcurrentExecution() {
         int threadCount = 50;
 
         Decimal amount = randomPositiveDecimal();
@@ -39,8 +38,11 @@ public class DepositMoneyHandlerConcurrencyTest extends BaseOperationHandlerConc
         Decimal initialBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        DepositMoney depositMoney = new DepositMoney(accountId, amount);
-        SeqId seqId = operationDao.storeOperation(depositMoney);
+        TransferId transferId = randomTransferId();
+        TransferTo transferTo = new TransferTo(new TransferDetail(
+                transferId, randomAccountId(), accountId, amount
+        ));
+        SeqId seqId = operationDao.storeOperation(transferTo);
 
         // When
         Runner runner = runner(threadCount);
@@ -50,7 +52,7 @@ public class DepositMoneyHandlerConcurrencyTest extends BaseOperationHandlerConc
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, depositMoney);
+                handler.handleOperation(seqId, transferTo);
             });
         }
         runner.waitTillDone().shutdown();

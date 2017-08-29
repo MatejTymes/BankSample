@@ -7,7 +7,7 @@ import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferMoneyFrom;
+import mtymes.account.domain.operation.TransferFrom;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,15 +23,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 // todo: move into test-stability
-public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
 
     private ToProcessQueue toProcessQueue = new ToProcessQueue();
-    private TransferMoneyFromHandler handler;
+    private TransferFromHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new TransferMoneyFromHandler(accountDao, operationDao, toProcessQueue);
+        handler = new TransferFromHandler(accountDao, operationDao, toProcessQueue);
     }
 
     @Test
@@ -46,8 +46,8 @@ public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandle
         Account toAccount = createAccountWithInitialBalance(toBalance);
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccount.accountId, amount);
 
-        TransferMoneyFrom transferMoneyFrom = new TransferMoneyFrom(detail);
-        SeqId seqId = operationDao.storeOperation(transferMoneyFrom);
+        TransferFrom transferFrom = new TransferFrom(detail);
+        SeqId seqId = operationDao.storeOperation(transferFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -57,7 +57,7 @@ public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandle
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, transferMoneyFrom);
+                handler.handleOperation(seqId, transferFrom);
             });
         }
         runner.waitTillDone().shutdown();
@@ -74,11 +74,11 @@ public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandle
         assertThat(toProcessQueue.takeNextAvailable(), isPresentAndEqualTo(toAccount.accountId));
         assertThat(toProcessQueue.takeNextAvailable(), isNotPresent());
 
-        // todo: verify TransferMoneyTo has been created
+        // todo: verify TransferTo has been created
     }
 
     @Test
-    public void shouldFailToTransferMoneyOnConcurrentExecutionIfThereIsInsufficientBalance() {
+    public void shouldFailToTransferFromOnConcurrentExecutionIfThereIsInsufficientBalance() {
         int threadCount = 50;
 
         Decimal fromBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
@@ -91,8 +91,8 @@ public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandle
         Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
 
-        TransferMoneyFrom transferMoneyFrom = new TransferMoneyFrom(detail);
-        SeqId seqId = operationDao.storeOperation(transferMoneyFrom);
+        TransferFrom transferFrom = new TransferFrom(detail);
+        SeqId seqId = operationDao.storeOperation(transferFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -102,7 +102,7 @@ public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandle
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, transferMoneyFrom);
+                handler.handleOperation(seqId, transferFrom);
             });
         }
         runner.waitTillDone().shutdown();
@@ -119,6 +119,6 @@ public class TransferMoneyFromHandlerConcurrencyTest extends BaseOperationHandle
 
         assertThat(toProcessQueue.takeNextAvailable(), isNotPresent());
 
-        // todo: verify TransferMoneyTo has NOT been created
+        // todo: verify TransferTo has NOT been created
     }
 }

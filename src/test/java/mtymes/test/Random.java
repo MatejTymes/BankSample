@@ -79,10 +79,10 @@ public class Random {
     public static Operation randomOperation() {
         return pickRandomValue(
                 new CreateAccount(randomAccountId()),
-                new DepositMoney(randomAccountId(), randomPositiveDecimal()),
-                new WithdrawMoney(randomAccountId(), randomPositiveDecimal()),
-                new TransferMoneyFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
-                new TransferMoneyTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
+                new DepositTo(randomAccountId(), randomPositiveDecimal()),
+                new WithdrawFrom(randomAccountId(), randomPositiveDecimal()),
+                new TransferFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
+                new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
         );
     }
 

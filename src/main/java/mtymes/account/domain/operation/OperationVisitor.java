@@ -4,11 +4,11 @@ public interface OperationVisitor<T> {
 
     T visit(CreateAccount request);
 
-    T visit(DepositMoney request);
+    T visit(DepositTo request);
 
-    T visit(WithdrawMoney request);
+    T visit(WithdrawFrom request);
 
-    T visit(TransferMoneyFrom request);
+    T visit(TransferFrom request);
 
-    T visit(TransferMoneyTo request);
+    T visit(TransferTo request);
 }

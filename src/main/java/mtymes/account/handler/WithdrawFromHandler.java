@@ -6,21 +6,21 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.SeqId;
-import mtymes.account.domain.operation.WithdrawMoney;
+import mtymes.account.domain.operation.WithdrawFrom;
 
 import java.util.Optional;
 
 import static java.lang.String.format;
 
-public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
+public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
 
-    public WithdrawMoneyHandler(AccountDao accountDao, OperationDao operationDao) {
+    public WithdrawFromHandler(AccountDao accountDao, OperationDao operationDao) {
         super(accountDao, operationDao);
     }
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, WithdrawMoney request) {
+    public void handleOperation(SeqId seqId, WithdrawFrom request) {
         AccountId accountId = request.accountId;
 
         Optional<Account> optionalAccount = loadAccount(accountId);
@@ -31,7 +31,7 @@ public class WithdrawMoneyHandler extends BaseOperationHandler<WithdrawMoney> {
         }
     }
 
-    private void withdrawMoney(SeqId seqId, Account account, WithdrawMoney request) {
+    private void withdrawMoney(SeqId seqId, Account account, WithdrawFrom request) {
         SeqId lastAppliedId = account.lastAppliedOpSeqId;
 
         if (lastAppliedId.isBefore(seqId)) {
