@@ -2,8 +2,7 @@ package mtymes.test;
 
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.SeqId;
-import mtymes.account.domain.operation.TransferId;
+import mtymes.account.domain.operation.*;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -74,6 +73,16 @@ public class Random {
         return generateValidValue(
                 () -> seqId(randomLong(0, Long.MAX_VALUE)),
                 validityConditions
+        );
+    }
+
+    public static Operation randomOperation() {
+        return pickRandomValue(
+                new CreateAccount(randomAccountId()),
+                new DepositMoney(randomAccountId(), randomPositiveDecimal()),
+                new WithdrawMoney(randomAccountId(), randomPositiveDecimal()),
+                new TransferMoneyFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
+                new TransferMoneyTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
         );
     }
 

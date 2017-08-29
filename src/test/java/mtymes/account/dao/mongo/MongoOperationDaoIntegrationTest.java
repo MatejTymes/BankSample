@@ -33,13 +33,6 @@ import static org.junit.Assert.assertThat;
 // todo: move into test-integration
 public class MongoOperationDaoIntegrationTest {
 
-    private final List<Operation> allOperations = newList(
-            new CreateAccount(randomAccountId()),
-            new DepositMoney(randomAccountId(), randomPositiveDecimal()),
-            new WithdrawMoney(randomAccountId(), randomPositiveDecimal()),
-            new InternalTransfer(randomAccountId(), randomAccountId(), randomPositiveDecimal())
-    );
-
     private static EmbeddedDB db;
     private static OperationDao operationDao;
 
@@ -61,6 +54,13 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldBeAbleToStoreAndLoadEachOperation() {
+        List<Operation> allOperations = newList(
+                new CreateAccount(randomAccountId()),
+                new DepositMoney(randomAccountId(), randomPositiveDecimal()),
+                new WithdrawMoney(randomAccountId(), randomPositiveDecimal()),
+                new TransferMoneyFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
+                new TransferMoneyTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
+        );
         for (Operation operation : allOperations) {
             // When
             SeqId seqId = operationDao.storeOperation(operation);
@@ -73,16 +73,16 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldStoreOperationsWithSequentialSeqId() {
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(1)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(2)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(3)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(4)));
-        assertThat(operationDao.storeOperation(pickRandomValue(allOperations)), equalTo(seqId(5)));
+        assertThat(operationDao.storeOperation(randomOperation()), equalTo(seqId(1)));
+        assertThat(operationDao.storeOperation(randomOperation()), equalTo(seqId(2)));
+        assertThat(operationDao.storeOperation(randomOperation()), equalTo(seqId(3)));
+        assertThat(operationDao.storeOperation(randomOperation()), equalTo(seqId(4)));
+        assertThat(operationDao.storeOperation(randomOperation()), equalTo(seqId(5)));
     }
 
     @Test
     public void shouldMarkOperationAsSuccessful() {
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
 
         // When
@@ -96,7 +96,7 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldMarkOperationAsFailed() {
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
 
         // When
@@ -110,7 +110,7 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldNotMarkOperationAsSuccessfulTwice() {
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
         operationDao.markAsSuccessful(seqId);
 
@@ -125,7 +125,7 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldNotMarkOperationAsFailedTwice() {
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
         operationDao.markAsFailed(seqId, "first commentary");
 
@@ -140,7 +140,7 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldNotMarkOperationAsSuccessfulIfItIsAlreadyFailed() {
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
         operationDao.markAsFailed(seqId, "first commentary");
 
@@ -155,7 +155,7 @@ public class MongoOperationDaoIntegrationTest {
 
     @Test
     public void shouldNotMarkOperationAsFailedIfItIsAlreadySuccessful() {
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
         operationDao.markAsSuccessful(seqId);
 
@@ -178,7 +178,7 @@ public class MongoOperationDaoIntegrationTest {
         ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                Operation operation = pickRandomValue(allOperations);
+                Operation operation = randomOperation();
 
                 synchronizer.synchronizeThreadsAtThisPoint();
 
@@ -202,7 +202,7 @@ public class MongoOperationDaoIntegrationTest {
     public void shouldAllowOnlyOneFinalizationMethodOnConcurrentRequests() {
         int threadCount = 64;
 
-        Operation operation = pickRandomValue(allOperations);
+        Operation operation = randomOperation();
         SeqId seqId = operationDao.storeOperation(operation);
 
         List<FinalState> appliedStates = newCopyOnWriteArrayList();

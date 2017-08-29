@@ -46,21 +46,10 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     }
 
     @Override
-    public Document visit(InternalTransfer request) {
-        return docBuilder()
-                .put(FROM_ACCOUNT_ID, request.fromAccountId)
-                .put(TO_ACCOUNT_ID, request.toAccountId)
-                .put(AMOUNT, request.amount)
-                .build();
-    }
-
-    // todo: test this
-    @Override
     public Document visit(TransferMoneyFrom request) {
         return toDocument(request.detail);
     }
 
-    // todo: test this
     @Override
     public Document visit(TransferMoneyTo request) {
         return toDocument(request.detail);
@@ -82,18 +71,10 @@ public class OperationDbMapper implements OperationVisitor<Document> {
                         getAccountId(body, ACCOUNT_ID),
                         getDecimal(body, AMOUNT)
                 );
-            case "InternalTransfer":
-                return new InternalTransfer(
-                        getAccountId(body, FROM_ACCOUNT_ID),
-                        getAccountId(body, TO_ACCOUNT_ID),
-                        getDecimal(body, AMOUNT)
-                );
-            // todo: test this
             case "TransferMoneyFrom":
                 return new TransferMoneyFrom(
                         toTransferDetail(body)
                 );
-            // todo: test this
             case "TransferMoneyTo":
                 return new TransferMoneyTo(
                         toTransferDetail(body)

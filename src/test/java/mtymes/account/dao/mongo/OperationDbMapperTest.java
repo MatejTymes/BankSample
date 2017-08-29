@@ -7,8 +7,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static javafixes.common.CollectionUtil.newList;
-import static mtymes.test.Random.randomAccountId;
-import static mtymes.test.Random.randomPositiveDecimal;
+import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -22,7 +21,8 @@ public class OperationDbMapperTest {
                 new CreateAccount(randomAccountId()),
                 new DepositMoney(randomAccountId(), randomPositiveDecimal()),
                 new WithdrawMoney(randomAccountId(), randomPositiveDecimal()),
-                new InternalTransfer(randomAccountId(), randomAccountId(), randomPositiveDecimal())
+                new TransferMoneyFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
+                new TransferMoneyTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
         );
 
         for (Operation originalOperation : allOperations) {

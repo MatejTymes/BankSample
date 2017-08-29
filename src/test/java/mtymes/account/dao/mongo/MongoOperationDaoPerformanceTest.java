@@ -2,7 +2,6 @@ package mtymes.account.dao.mongo;
 
 import javafixes.concurrency.Runner;
 import mtymes.account.dao.OperationDao;
-import mtymes.account.domain.operation.*;
 import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
@@ -11,25 +10,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static javafixes.common.CollectionUtil.newList;
 import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.mongo.Collections.operationsCollection;
-import static mtymes.test.Random.*;
+import static mtymes.test.Random.randomOperation;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
 // todo: move into test-performance
 public class MongoOperationDaoPerformanceTest {
-
-    private final List<Operation> allOperations = newList(
-            new CreateAccount(randomAccountId()),
-            new DepositMoney(randomAccountId(), randomPositiveDecimal()),
-            new WithdrawMoney(randomAccountId(), randomPositiveDecimal()),
-            new InternalTransfer(randomAccountId(), randomAccountId(), randomPositiveDecimal())
-    );
 
     private static EmbeddedDB db;
     private static OperationDao operationDao;
@@ -63,7 +53,7 @@ public class MongoOperationDaoPerformanceTest {
                 synchronizer.synchronizeThreadsAtThisPoint();
 
                 while (insertCounter.getAndDecrement() > 0) {
-                    operationDao.storeOperation(pickRandomValue(allOperations));
+                    operationDao.storeOperation(randomOperation());
                 }
             });
         }

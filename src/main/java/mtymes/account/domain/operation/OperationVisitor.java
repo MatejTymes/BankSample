@@ -8,9 +8,6 @@ public interface OperationVisitor<T> {
 
     T visit(WithdrawMoney request);
 
-    @Deprecated // todo: remove
-    T visit(InternalTransfer request);
-
     T visit(TransferMoneyFrom request);
 
     T visit(TransferMoneyTo request);
