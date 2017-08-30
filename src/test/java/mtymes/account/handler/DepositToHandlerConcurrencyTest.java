@@ -5,8 +5,8 @@ import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositTo;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.PersistedOperation;
-import mtymes.account.domain.operation.SeqId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurr
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
         DepositTo depositTo = new DepositTo(accountId, amount);
-        SeqId seqId = operationDao.storeOperation(depositTo);
+        OpLogId opLogId = operationDao.storeOperation(depositTo);
 
         // When
         Runner runner = runner(threadCount);
@@ -50,16 +50,16 @@ public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurr
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, depositTo);
+                handler.handleOperation(opLogId, depositTo);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), seqId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), opLogId.version)));
     }
 }

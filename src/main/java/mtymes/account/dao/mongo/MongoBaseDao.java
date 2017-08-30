@@ -22,4 +22,18 @@ abstract class MongoBaseDao {
             return Optional.empty();
         }
     }
+
+    protected <T> Optional<T> findOne(MongoCollection<Document> collection, Document query, Document fields, Function<Document, T> mapper) {
+        MongoCursor<Document> iterator = collection.find(query).projection(fields).iterator();
+        if (iterator.hasNext()) {
+            Document dbItem = iterator.next();
+            if (iterator.hasNext()) {
+                throw new IllegalStateException("found more than one db item for query: " + query);
+            }
+
+            return Optional.of(mapper.apply(dbItem));
+        } else {
+            return Optional.empty();
+        }
+    }
 }

@@ -4,7 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.Version;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -15,8 +15,8 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static javafixes.math.Decimal.ZERO;
+import static mtymes.account.dao.mongo.Collections.accountsCollection;
 import static mtymes.account.domain.account.AccountId.newAccountId;
-import static mtymes.account.mongo.Collections.accountsCollection;
 import static mtymes.test.Condition.otherThan;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
@@ -49,32 +49,32 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldCreateAndLoadNewAccount() {
         AccountId accountId = newAccountId();
-        SeqId seqId = randomSeqId();
+        Version version = randomVersion();
 
         // When
-        boolean success = accountDao.createAccount(accountId, seqId);
+        boolean success = accountDao.createAccount(accountId, version);
 
         // Then
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, seqId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, version)));
     }
 
     @Test
     public void shouldFailToCreateAccountIfItAlreadyExists() {
         AccountId accountId = newAccountId();
-        SeqId seqId = randomSeqId();
-        accountDao.createAccount(accountId, seqId);
+        Version version = randomVersion();
+        accountDao.createAccount(accountId, version);
 
-        SeqId newSeqId = randomSeqId(otherThan(seqId));
+        Version newVersion = randomVersion(otherThan(version));
 
         // When
-        boolean success = accountDao.createAccount(accountId, newSeqId);
+        boolean success = accountDao.createAccount(accountId, newVersion);
 
         // Then
         assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, seqId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, version)));
     }
 
     @Test
@@ -85,42 +85,42 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldUpdateBalance() {
         AccountId accountId = newAccountId();
-        SeqId lastSeqId = randomSeqId();
-        accountDao.createAccount(accountId, lastSeqId);
+        Version version = randomVersion();
+        accountDao.createAccount(accountId, version);
 
-        SeqId newSeqId = randomSeqId(otherThan(lastSeqId));
+        Version newVersion = randomVersion(otherThan(version));
         Decimal newBalance = randomDecimal();
 
         // When
-        boolean success = accountDao.updateBalance(accountId, newBalance, lastSeqId, newSeqId);
+        boolean success = accountDao.updateBalance(accountId, newBalance, version, newVersion);
 
         // Then
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, newBalance, newSeqId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, newBalance, newVersion)));
     }
 
     @Test
-    public void shouldNotUpdateBalanceOnLastAppliedOpSeqIdMismatch() {
+    public void shouldNotUpdateBalanceOnVersionMismatch() {
         AccountId accountId = newAccountId();
-        SeqId lastSeqId = randomSeqId();
-        accountDao.createAccount(accountId, lastSeqId);
+        Version version = randomVersion();
+        accountDao.createAccount(accountId, version);
 
-        SeqId differentLastSeqId = randomSeqId(otherThan(lastSeqId)) ;
-        SeqId newSeqId = randomSeqId(otherThan(lastSeqId, differentLastSeqId));
+        Version differentVersion = randomVersion(otherThan(version)) ;
+        Version newVersion = randomVersion(otherThan(version, differentVersion));
         Decimal newBalance = randomDecimal();
 
         // When
-        boolean success = accountDao.updateBalance(accountId, newBalance, differentLastSeqId, newSeqId);
+        boolean success = accountDao.updateBalance(accountId, newBalance, differentVersion, newVersion);
 
         // Then
         assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, lastSeqId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, version)));
     }
 
     @Test
     public void shouldNotUpdateBalanceForNonExistingAccount() {
-        assertThat(accountDao.updateBalance(randomAccountId(), randomDecimal(), randomSeqId(), randomSeqId()), is(false));
+        assertThat(accountDao.updateBalance(randomAccountId(), randomDecimal(), randomVersion(), randomVersion()), is(false));
     }
 }

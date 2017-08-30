@@ -1,25 +1,25 @@
-package mtymes.account.domain.account;
+package mtymes.account.domain.operation;
 
-import javafixes.math.Decimal;
 import javafixes.object.DataObject;
-import mtymes.account.domain.operation.Version;
+import mtymes.account.domain.account.AccountId;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Account extends DataObject {
+public class OpLogId extends DataObject {
 
     public final AccountId accountId;
-    public final Decimal balance;
     public final Version version;
 
-    public Account(AccountId accountId, Decimal balance, Version version) {
+    public OpLogId(AccountId accountId, Version version) {
         // todo: test this
         checkNotNull(accountId, "accountId can't be null");
-        checkNotNull(balance, "balance can't be null");
         checkNotNull(version, "version can't be null");
 
         this.accountId = accountId;
-        this.balance = balance;
         this.version = version;
+    }
+
+    public static OpLogId opLogId(AccountId accountId, Version version) {
+        return new OpLogId(accountId, version);
     }
 }

@@ -6,9 +6,11 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositTo;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.OpLogId;
 
 import java.util.Optional;
+
+import static java.lang.String.format;
 
 public class DepositToHandler extends BaseOperationHandler<DepositTo> {
 
@@ -18,30 +20,24 @@ public class DepositToHandler extends BaseOperationHandler<DepositTo> {
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, DepositTo request) {
+    public void handleOperation(OpLogId opLogId, DepositTo request) {
         AccountId accountId = request.accountId;
 
         Optional<Account> optionalAccount = loadAccount(accountId);
         if (!optionalAccount.isPresent()) {
-            markAsFailure(seqId, String.format("Account '%s' does not exist", accountId));
+            markAsFailure(opLogId, format("Account '%s' does not exist", accountId));
         } else {
-            depositMoney(seqId, optionalAccount.get(), request);
+            depositMoney(opLogId, optionalAccount.get(), request);
         }
     }
 
-    private void depositMoney(SeqId seqId, Account account, DepositTo request) {
-        SeqId lastAppliedId = account.lastAppliedOpSeqId;
-
-        if (lastAppliedId.isBefore(seqId)) {
-            Decimal newBalance = calculateNewBalance(account, request.amount);
-            accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, seqId);
-            markAsSuccess(seqId);
-        } else if (lastAppliedId.equals(seqId)) {
-            markAsSuccess(seqId);
+    private void depositMoney(OpLogId opLogId, Account account, DepositTo request) {
+        if (account.version.isBefore(opLogId.version)) {
+            Decimal newBalance = account.balance.plus(request.amount);
+            accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.version);
+            markAsSuccess(opLogId);
+        } else if (account.version.equals(opLogId.version)) {
+            markAsSuccess(opLogId);
         }
-    }
-
-    private Decimal calculateNewBalance(Account account, Decimal amountToAdd) {
-        return account.balance.plus(amountToAdd);
     }
 }

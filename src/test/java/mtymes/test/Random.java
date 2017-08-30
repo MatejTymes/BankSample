@@ -12,8 +12,9 @@ import java.util.function.Supplier;
 import static java.util.UUID.randomUUID;
 import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.AccountId.accountId;
-import static mtymes.account.domain.operation.SeqId.seqId;
+import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.account.domain.operation.TransferId.transferId;
+import static mtymes.account.domain.operation.Version.version;
 
 // todo: move into test-infrastructure
 public class Random {
@@ -69,21 +70,34 @@ public class Random {
     }
 
     @SafeVarargs
-    public static SeqId randomSeqId(Condition<SeqId>... validityConditions) {
+    public static Version randomVersion(Condition<Version>... validityConditions) {
         return generateValidValue(
-                () -> seqId(randomLong(0, Long.MAX_VALUE)),
+                () -> version(randomLong(0, Long.MAX_VALUE)),
                 validityConditions
         );
     }
 
+    public static OpLogId randomOpLogId(AccountId accountId) {
+        return opLogId(accountId, randomVersion());
+    }
+
+    public static Operation randomOperation(AccountId accountId) {
+        switch (randomInt(1, 5)) {
+            case 1:
+                return new CreateAccount(accountId);
+            case 2:
+                return new DepositTo(accountId, randomPositiveDecimal());
+            case 3:
+                return new WithdrawFrom(accountId, randomPositiveDecimal());
+            case 4:
+                return new TransferFrom(new TransferDetail(randomTransferId(), accountId, randomAccountId(), randomPositiveDecimal()));
+            default:
+                return new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), accountId, randomPositiveDecimal()));
+        }
+    }
+
     public static Operation randomOperation() {
-        return pickRandomValue(
-                new CreateAccount(randomAccountId()),
-                new DepositTo(randomAccountId(), randomPositiveDecimal()),
-                new WithdrawFrom(randomAccountId(), randomPositiveDecimal()),
-                new TransferFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
-                new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
-        );
+        return randomOperation(randomAccountId());
     }
 
     @SafeVarargs

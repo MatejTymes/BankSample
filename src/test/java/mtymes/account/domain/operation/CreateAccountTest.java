@@ -7,7 +7,6 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
-import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.test.Random.randomAccountId;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -26,7 +25,7 @@ public class CreateAccountTest extends StrictMockTest {
 
         // Then
         assertThat(createAccount.accountId, equalTo(accountId));
-        assertThat(createAccount.affectedAccountId(), equalTo(newSet(accountId)));
+        assertThat(createAccount.affectedAccountId(), equalTo(accountId));
     }
 
     @Test

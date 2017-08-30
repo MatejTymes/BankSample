@@ -104,7 +104,7 @@ public class OpStoragePerformanceTest {
         do {
             retry = false;
             try {
-                document.put("seqId", idToUse);
+                document.put("version", idToUse);
                 operations.insertOne(document);
             } catch (MongoWriteException e) {
                 retry = true;
@@ -125,10 +125,10 @@ public class OpStoragePerformanceTest {
     private static long getLastId(AccountId accountId) {
         MongoCursor<Document> idIterator = operations
                 .find(doc("accountId", accountId))
-                .projection(doc("seqId", 1))
-                .sort(doc("seqId", -1)).limit(1)
+                .projection(doc("version", 1))
+                .sort(doc("version", -1)).limit(1)
                 .iterator();
-        return idIterator.hasNext() ? idIterator.next().getLong("seqId") : 0;
+        return idIterator.hasNext() ? idIterator.next().getLong("version") : 0;
     }
 
     private static MongoCollection<Document> operationsCollection(MongoDatabase database) {
@@ -136,7 +136,7 @@ public class OpStoragePerformanceTest {
                 database,
                 "operations",
                 operations -> operations.createIndex(
-                        descending("accountId", "seqId"),
+                        descending("accountId", "version"),
                         new IndexOptions().unique(true)
                 )
         );

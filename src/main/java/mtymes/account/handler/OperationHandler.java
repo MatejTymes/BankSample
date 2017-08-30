@@ -1,9 +1,9 @@
 package mtymes.account.handler;
 
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.SeqId;
 
 public interface OperationHandler<T extends Operation> {
 
-    void handleOperation(SeqId seqId, T request);
+    void handleOperation(OpLogId opLogId, T request);
 }

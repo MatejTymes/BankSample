@@ -5,7 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.WithdrawFrom;
 
 import java.util.Optional;
@@ -20,34 +20,28 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, WithdrawFrom request) {
+    public void handleOperation(OpLogId opLogId, WithdrawFrom request) {
         AccountId accountId = request.accountId;
 
         Optional<Account> optionalAccount = loadAccount(accountId);
         if (!optionalAccount.isPresent()) {
-            markAsFailure(seqId, String.format("Account '%s' does not exist", accountId));
+            markAsFailure(opLogId, String.format("Account '%s' does not exist", accountId));
         } else {
-            withdrawMoney(seqId, optionalAccount.get(), request);
+            withdrawMoney(opLogId, optionalAccount.get(), request);
         }
     }
 
-    private void withdrawMoney(SeqId seqId, Account account, WithdrawFrom request) {
-        SeqId lastAppliedId = account.lastAppliedOpSeqId;
-
-        if (lastAppliedId.isBefore(seqId)) {
-            Decimal newBalance = calculateNewBalance(account, request.amount);
+    private void withdrawMoney(OpLogId opLogId, Account account, WithdrawFrom request) {
+        if (account.version.isBefore(opLogId.version)) {
+            Decimal newBalance = account.balance.minus(request.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markAsFailure(seqId, format("Insufficient funds on account '%s'", account.accountId));
+                markAsFailure(opLogId, format("Insufficient funds on account '%s'", account.accountId));
             } else {
-                accountDao.updateBalance(account.accountId, newBalance, lastAppliedId, seqId);
-                markAsSuccess(seqId);
+                accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.version);
+                markAsSuccess(opLogId);
             }
-        } else if (lastAppliedId.equals(seqId)) {
-            markAsSuccess(seqId);
+        } else if (account.version.equals(opLogId.version)) {
+            markAsSuccess(opLogId);
         }
-    }
-
-    private Decimal calculateNewBalance(Account account, Decimal amountToSubtract) {
-        return account.balance.minus(amountToSubtract);
     }
 }

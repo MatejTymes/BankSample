@@ -4,7 +4,8 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.Version;
 import mtymes.account.domain.operation.WithdrawFrom;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
@@ -25,9 +26,9 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private WithdrawFromHandler handler;
 
-    private SeqId seqId = randomSeqId();
     private AccountId accountId = randomAccountId();
     private Decimal withdrawAmount = randomPositiveDecimal();
+    private OpLogId opLogId = randomOpLogId(accountId);
     private WithdrawFrom operation = new WithdrawFrom(accountId, withdrawAmount);
 
     @Before
@@ -39,35 +40,36 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldWithdrawFrom() {
-        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
+        Version accountVersion = randomVersion(before(opLogId.version));
         Decimal lastBalance = withdrawAmount.plus(randomPositiveDecimal());
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOpSeqId(lastAppliedSeqId)
+                .version(accountVersion)
                 .build()));
-        when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), lastAppliedSeqId, seqId)).thenReturn(true);
-        when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
+        when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), accountVersion, opLogId.version)).thenReturn(true);
+        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 
     @Test
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
+        Version accountVersion = opLogId.version;
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
-                .lastAppliedOpSeqId(seqId)
+                .version(accountVersion)
                 .build()));
-        when(operationDao.markAsSuccessful(seqId)).thenReturn(true);
+        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 
     @Test
     public void shouldFailIfAccountHasInsufficientFunds() {
-        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
+        Version accountVersion = randomVersion(before(opLogId.version));
         Decimal lastBalance = randomPositiveDecimal();
         withdrawAmount = lastBalance.plus(randomPositiveDecimal());
         operation = new WithdrawFrom(accountId, withdrawAmount);
@@ -75,61 +77,62 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOpSeqId(lastAppliedSeqId)
+                .version(accountVersion)
                 .build()));
-        when(operationDao.markAsFailed(seqId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
+        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 
     @Test
     public void shouldFailIfAccountHasZeroBalance() {
-        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
+        Version accountVersion = randomVersion(before(opLogId.version));
         Decimal lastBalance = Decimal.ZERO;
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOpSeqId(lastAppliedSeqId)
+                .version(accountVersion)
                 .build()));
-        when(operationDao.markAsFailed(seqId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
+        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 
     @Test
     public void shouldFailIfAccountHasNegativeBalance() {
-        SeqId lastAppliedSeqId = randomSeqId(before(seqId));
+        Version accountVersion = randomVersion(before(opLogId.version));
         Decimal lastBalance = randomNegativeDecimal();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
-                .lastAppliedOpSeqId(lastAppliedSeqId)
+                .version(accountVersion)
                 .build()));
-        when(operationDao.markAsFailed(seqId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
+        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 
     @Test
     public void shouldFailIfAccountDoesNotExist() {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(seqId, "Account '" + accountId + "' does not exist")).thenReturn(true);
+        when(operationDao.markAsFailed(opLogId, "Account '" + accountId + "' does not exist")).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
+        Version accountVersion = randomVersion(after(opLogId.version));
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
-                .lastAppliedOpSeqId(randomSeqId(after(seqId)))
+                .version(accountVersion)
                 .build()));
 
         // When & Then
-        handler.handleOperation(seqId, operation);
+        handler.handleOperation(opLogId, operation);
     }
 }

@@ -4,8 +4,9 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.Version;
 
 import java.util.Optional;
 
@@ -23,11 +24,15 @@ public abstract class BaseOperationHandler<T extends Operation> implements Opera
         return accountDao.findAccount(accountId);
     }
 
-    protected void markAsSuccess(SeqId seqId) {
-        operationDao.markAsSuccessful(seqId);
+    protected Optional<Version> loadAccountVersion(AccountId accountId) {
+        return accountDao.findVersion(accountId);
     }
 
-    protected void markAsFailure(SeqId seqId, String description) {
-        operationDao.markAsFailed(seqId, description);
+    protected void markAsSuccess(OpLogId opLogId) {
+        operationDao.markAsSuccessful(opLogId);
+    }
+
+    protected void markAsFailure(OpLogId opLogId, String description) {
+        operationDao.markAsFailed(opLogId, description);
     }
 }

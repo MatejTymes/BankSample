@@ -21,8 +21,8 @@ public class OperationDbMapper implements OperationVisitor<Document> {
     private static final String ACCOUNT_ID = "accountId";
     private static final String AMOUNT = "amount";
     private static final String FROM_ACCOUNT_ID = "fromAccountId";
-    private static final String TO_ACCOUNT_ID = "getAccountId";
-    private static final String TRANSFER_ID = "transferId";
+    private static final String TO_ACCOUNT_ID = "toAccountId";
+    public static final String TRANSFER_ID = "transferId";
 
     @Override
     public Document visit(CreateAccount request) {
@@ -101,19 +101,19 @@ public class OperationDbMapper implements OperationVisitor<Document> {
         );
     }
 
-    private AccountId getAccountId(Document body, String fieldName) {
+    public AccountId getAccountId(Document body, String fieldName) {
         return accountId(getUUID(body, fieldName));
     }
 
-    private TransferId getTransferId(Document body, String fieldName) {
+    public TransferId getTransferId(Document body, String fieldName) {
         return transferId(getUUID(body, fieldName));
     }
 
-    private Decimal getDecimal(Document body, String fieldName) {
+    public Decimal getDecimal(Document body, String fieldName) {
         return d(((Decimal128) body.get(fieldName)).bigDecimalValue());
     }
 
-    private UUID getUUID(Document body, String fieldName) {
+    public UUID getUUID(Document body, String fieldName) {
         return UUID.fromString(body.getString(fieldName));
     }
 }

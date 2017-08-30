@@ -42,7 +42,7 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
         TransferTo transferTo = new TransferTo(new TransferDetail(
                 transferId, randomAccountId(), accountId, amount
         ));
-        SeqId seqId = operationDao.storeOperation(transferTo);
+        OpLogId opLogId = operationDao.storeOperation(transferTo);
 
         // When
         Runner runner = runner(threadCount);
@@ -52,16 +52,16 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, transferTo);
+                handler.handleOperation(opLogId, transferTo);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), seqId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), opLogId.version)));
     }
 }

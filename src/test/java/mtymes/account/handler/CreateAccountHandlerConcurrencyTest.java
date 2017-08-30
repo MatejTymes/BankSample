@@ -5,8 +5,8 @@ import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.PersistedOperation;
-import mtymes.account.domain.operation.SeqId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
 
         AccountId accountId = newAccountId();
         CreateAccount createAccount = new CreateAccount(accountId);
-        SeqId seqId = operationDao.storeOperation(createAccount);
+        OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
         Runner runner = runner(threadCount);
@@ -47,17 +47,17 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, createAccount);
+                handler.handleOperation(opLogId, createAccount);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, seqId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, opLogId.version)));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
         AccountId accountId = newAccountId();
         Account initialAccount = createAccount(accountId);
         CreateAccount createAccount = new CreateAccount(accountId);
-        SeqId seqId = operationDao.storeOperation(createAccount);
+        OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
         Runner runner = runner(threadCount);
@@ -77,13 +77,13 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, createAccount);
+                handler.handleOperation(opLogId, createAccount);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Account '" + accountId + "' already exists"));
         Optional<Account> account = accountDao.findAccount(accountId);

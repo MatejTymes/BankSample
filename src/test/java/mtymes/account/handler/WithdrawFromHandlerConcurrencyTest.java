@@ -4,8 +4,8 @@ import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.PersistedOperation;
-import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.WithdrawFrom;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
         WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
-        SeqId seqId = operationDao.storeOperation(withdrawFrom);
+        OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -51,17 +51,17 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, withdrawFrom);
+                handler.handleOperation(opLogId, withdrawFrom);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.minus(amount), seqId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance.minus(amount), opLogId.version)));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
 
         Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
         WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
-        SeqId seqId = operationDao.storeOperation(withdrawFrom);
+        OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -84,16 +84,16 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, withdrawFrom);
+                handler.handleOperation(opLogId, withdrawFrom);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + accountId + "'"));
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance, initialAccount.lastAppliedOpSeqId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance, initialAccount.version)));
     }
 }

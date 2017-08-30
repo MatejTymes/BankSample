@@ -8,7 +8,6 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
-import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -29,7 +28,7 @@ public class WithdrawFromTest extends StrictMockTest {
         // Then
         assertThat(WithdrawFrom.accountId, equalTo(accountId));
         assertThat(WithdrawFrom.amount, equalTo(amount));
-        assertThat(WithdrawFrom.affectedAccountId(), equalTo(newSet(accountId)));
+        assertThat(WithdrawFrom.affectedAccountId(), equalTo(accountId));
     }
 
     @Test

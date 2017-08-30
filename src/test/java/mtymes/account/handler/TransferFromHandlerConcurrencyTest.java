@@ -4,8 +4,8 @@ import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.PersistedOperation;
-import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferFrom;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccount.accountId, amount);
 
         TransferFrom transferFrom = new TransferFrom(detail);
-        SeqId seqId = operationDao.storeOperation(transferFrom);
+        OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -57,18 +57,18 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, transferFrom);
+                handler.handleOperation(opLogId, transferFrom);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
 
         Account fromAccount = loadAccount(fromAccountId);
-        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), seqId)));
+        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), opLogId.version)));
         assertThat(loadAccount(toAccount.accountId), equalTo(toAccount));
 
         assertThat(toProcessQueue.takeNextAvailable(), isPresentAndEqualTo(toAccount.accountId));
@@ -92,7 +92,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
 
         TransferFrom transferFrom = new TransferFrom(detail);
-        SeqId seqId = operationDao.storeOperation(transferFrom);
+        OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When
         Runner runner = runner(threadCount);
@@ -102,20 +102,20 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
                 startSynchronizer.countDown();
                 startSynchronizer.await();
 
-                handler.handleOperation(seqId, transferFrom);
+                handler.handleOperation(opLogId, transferFrom);
             });
         }
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(seqId);
+        PersistedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + fromAccountId + "'"));
 
         Account fromAccount = loadAccount(fromAccountId);
-        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance, initialFromAccount.lastAppliedOpSeqId)));
+        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance, initialFromAccount.version)));
         Account toAccount = loadAccount(toAccountId);
-        assertThat(toAccount, equalTo(new Account(toAccountId, toBalance, initialToAccount.lastAppliedOpSeqId)));
+        assertThat(toAccount, equalTo(new Account(toAccountId, toBalance, initialToAccount.version)));
 
         assertThat(toProcessQueue.takeNextAvailable(), isNotPresent());
 

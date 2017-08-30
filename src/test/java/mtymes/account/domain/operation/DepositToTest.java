@@ -8,7 +8,6 @@ import org.junit.Test;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
-import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -29,7 +28,7 @@ public class DepositToTest extends StrictMockTest {
         // Then
         assertThat(depositTo.accountId, equalTo(accountId));
         assertThat(depositTo.amount, equalTo(amount));
-        assertThat(depositTo.affectedAccountId(), equalTo(newSet(accountId)));
+        assertThat(depositTo.affectedAccountId(), equalTo(accountId));
     }
 
     @Test

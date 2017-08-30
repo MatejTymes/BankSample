@@ -4,7 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
-import mtymes.account.domain.operation.SeqId;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferTo;
 
@@ -18,25 +18,24 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
 
     // todo: test that any dao interaction can fail
     @Override
-    public void handleOperation(SeqId seqId, TransferTo request) {
+    public void handleOperation(OpLogId opLogId, TransferTo request) {
         TransferDetail detail = request.detail;
+
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (!optionalToAccount.isPresent()) {
-            markAsFailure(seqId, String.format("To Account '%s' does not exist", detail.toAccountId));
-            return;
+            markAsFailure(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
+        } else {
+            depositTo(opLogId, optionalToAccount.get(), detail);
         }
-        depositTo(seqId, optionalToAccount.get(), detail);
     }
 
-    private void depositTo(SeqId seqId, Account account, TransferDetail detail) {
-        SeqId lastAppliedId = account.lastAppliedOpSeqId;
-
-        if (lastAppliedId.isBefore(seqId)) {
+    private void depositTo(OpLogId opLogId, Account account, TransferDetail detail) {
+        if (account.version.isBefore(opLogId.version)) {
             Decimal newBalance = account.balance.plus(detail.amount);
-            accountDao.updateBalance(detail.toAccountId, newBalance, lastAppliedId, seqId);
-            markAsSuccess(seqId);
-        } else if (lastAppliedId.equals(seqId)) {
-            markAsSuccess(seqId);
+            accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.version);
+            markAsSuccess(opLogId);
+        } else if (account.version.equals(opLogId.version)) {
+            markAsSuccess(opLogId);
         }
     }
 }
