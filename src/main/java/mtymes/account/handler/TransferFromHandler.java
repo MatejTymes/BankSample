@@ -40,7 +40,7 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
 
         boolean success = withdrawMoney(opLogId, optionalFromAccount.get(), detail);
         if (success) {
-            submitTransferToOperation(opLogId, detail);
+            submitOperationTransferTo(opLogId, detail);
         }
     }
 
@@ -60,11 +60,11 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
         }
     }
 
-    private void submitTransferToOperation(OpLogId opLogId, TransferDetail detail) {
+    private void submitOperationTransferTo(OpLogId opLogId, TransferDetail detail) {
         try {
             operationDao.storeOperation(new TransferTo(detail));
         } catch (DuplicateOperationException e) {
-            // do nothing
+            // do nothing - another concurrent thread already submitted it
         }
         toProcessQueue.add(detail.toAccountId);
         markAsSuccess(opLogId);

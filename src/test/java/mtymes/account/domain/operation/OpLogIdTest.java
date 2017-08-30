@@ -1,6 +1,7 @@
 package mtymes.account.domain.operation;
 
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 import org.junit.Test;
 
 import static mtymes.test.Random.randomAccountId;

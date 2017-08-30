@@ -4,8 +4,8 @@ import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferFrom;
 import org.junit.Before;
@@ -63,7 +63,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
 
@@ -108,7 +108,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + fromAccountId + "'"));
 

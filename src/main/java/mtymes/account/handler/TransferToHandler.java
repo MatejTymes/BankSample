@@ -22,14 +22,14 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
         TransferDetail detail = request.detail;
 
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
-        if (!optionalToAccount.isPresent()) {
-            markAsFailure(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
+        if (optionalToAccount.isPresent()) {
+            depositMoney(opLogId, optionalToAccount.get(), detail);
         } else {
-            depositTo(opLogId, optionalToAccount.get(), detail);
+            markAsFailure(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
         }
     }
 
-    private void depositTo(OpLogId opLogId, Account account, TransferDetail detail) {
+    private void depositMoney(OpLogId opLogId, Account account, TransferDetail detail) {
         if (account.version.isBefore(opLogId.version)) {
             Decimal newBalance = account.balance.plus(detail.amount);
             accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.version);

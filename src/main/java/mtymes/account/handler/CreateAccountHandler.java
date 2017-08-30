@@ -2,10 +2,9 @@ package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
-import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.Version;
 
 import java.util.Optional;
 
@@ -20,22 +19,25 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
     // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, CreateAccount request) {
-        AccountId accountId = request.accountId;
 
-        boolean success = accountDao.createAccount(accountId, opLogId.version);
+        boolean success = accountDao.createAccount(request.accountId, opLogId.version);
         if (success) {
             markAsSuccess(opLogId);
         } else {
-            Optional<Version> optionalVersion = loadAccountVersion(accountId);
-            if (!optionalVersion.isPresent()) {
-                markAsFailure(opLogId, format("Failed to create Account '%s' and load its version", accountId));
-            } else {
-                Version accountVersion = optionalVersion.get();
-                if (accountVersion.isBefore(opLogId.version)) {
-                    markAsFailure(opLogId, format("Account '%s' already exists", accountId));
-                } else if (accountVersion.equals(opLogId.version)) {
-                    markAsSuccess(opLogId);
-                }
+            onAccountNotCreated(opLogId, request);
+        }
+    }
+
+    private void onAccountNotCreated(OpLogId opLogId, CreateAccount request) {
+        Optional<Version> optionalVersion = loadAccountVersion(request.accountId);
+        if (!optionalVersion.isPresent()) {
+            markAsFailure(opLogId, format("Failed to create Account '%s'", request.accountId));
+        } else {
+            Version accountVersion = optionalVersion.get();
+            if (accountVersion.isBefore(opLogId.version)) {
+                markAsFailure(opLogId, format("Account '%s' already exists", request.accountId));
+            } else if (accountVersion.equals(opLogId.version)) {
+                markAsSuccess(opLogId);
             }
         }
     }

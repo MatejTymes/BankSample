@@ -6,17 +6,15 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static mtymes.account.domain.operation.FinalState.Failure;
-import static mtymes.account.domain.operation.FinalState.Success;
 
-public class PersistedOperation extends DataObject {
+public class LoggedOperation extends DataObject {
 
     public final OpLogId opLogId;
     public final Operation operation;
     public final Optional<FinalState> finalState;
     public final Optional<String> description;
 
-    public PersistedOperation(OpLogId opLogId, Operation operation, Optional<FinalState> finalState, Optional<String> description) {
+    public LoggedOperation(OpLogId opLogId, Operation operation, Optional<FinalState> finalState, Optional<String> description) {
         checkNotNull(opLogId, "opLogId can't be null");
         checkNotNull(operation, "operation can't be null");
         checkNotNull(finalState, "finalState can't be null");
@@ -33,17 +31,5 @@ public class PersistedOperation extends DataObject {
         this.operation = operation;
         this.finalState = finalState;
         this.description = description;
-    }
-
-    public static PersistedOperation newOperation(OpLogId opLogId, Operation operation) {
-        return new PersistedOperation(opLogId, operation, Optional.empty(), Optional.empty());
-    }
-
-    public static PersistedOperation successfulOperation(OpLogId opLogId, Operation operation) {
-        return new PersistedOperation(opLogId, operation, Optional.of(Success), Optional.empty());
-    }
-
-    public static PersistedOperation failedOperation(OpLogId opLogId, Operation operation, String description) {
-        return new PersistedOperation(opLogId, operation, Optional.of(Failure), Optional.of(description));
     }
 }

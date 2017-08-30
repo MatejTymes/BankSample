@@ -4,9 +4,9 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.Version;
 
 import java.util.Optional;
 

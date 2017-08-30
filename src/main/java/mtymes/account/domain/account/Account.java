@@ -2,7 +2,6 @@ package mtymes.account.domain.account;
 
 import javafixes.math.Decimal;
 import javafixes.object.DataObject;
-import mtymes.account.domain.operation.Version;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

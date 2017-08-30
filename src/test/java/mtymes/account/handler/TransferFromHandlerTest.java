@@ -4,6 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.*;
 import mtymes.account.exception.DuplicateOperationException;
 import mtymes.test.StrictMockTest;

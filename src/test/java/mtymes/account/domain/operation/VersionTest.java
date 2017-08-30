@@ -2,7 +2,7 @@ package mtymes.account.domain.operation;
 
 import org.junit.Test;
 
-import static mtymes.account.domain.operation.Version.version;
+import static mtymes.account.domain.account.Version.version;
 import static mtymes.test.Random.randomLong;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;

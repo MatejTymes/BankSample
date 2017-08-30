@@ -24,9 +24,10 @@ import static java.util.stream.LongStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
 import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.dao.mongo.Collections.operationsCollection;
+import static mtymes.account.domain.account.Version.version;
+import static mtymes.account.domain.operation.FinalState.Failure;
+import static mtymes.account.domain.operation.FinalState.Success;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
-import static mtymes.account.domain.operation.PersistedOperation.*;
-import static mtymes.account.domain.operation.Version.version;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
@@ -69,7 +70,7 @@ public class MongoOperationDaoIntegrationTest {
             OpLogId opLogId = operationDao.storeOperation(operation);
 
             // Then
-            Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+            Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
             assertThat(actualOperation, isPresentAndEqualTo(newOperation(opLogId, operation)));
         }
     }
@@ -99,7 +100,7 @@ public class MongoOperationDaoIntegrationTest {
 
         // Then
         assertThat(success, is(true));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
     }
 
@@ -113,7 +114,7 @@ public class MongoOperationDaoIntegrationTest {
 
         // Then
         assertThat(success, is(true));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "failure description")));
     }
 
@@ -128,7 +129,7 @@ public class MongoOperationDaoIntegrationTest {
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
     }
 
@@ -143,7 +144,7 @@ public class MongoOperationDaoIntegrationTest {
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "first commentary")));
     }
 
@@ -158,7 +159,7 @@ public class MongoOperationDaoIntegrationTest {
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "first commentary")));
     }
 
@@ -173,7 +174,7 @@ public class MongoOperationDaoIntegrationTest {
 
         // Then
         assertThat(success, is(false));
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
     }
 
@@ -279,11 +280,23 @@ public class MongoOperationDaoIntegrationTest {
         // Then
         assertThat(appliedStates.size(), is(1));
 
-        Optional<PersistedOperation> actualOperation = operationDao.findOperation(opLogId);
+        Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
         if (appliedStates.get(0) == FinalState.Success) {
             assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
         } else {
             assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "some description")));
         }
+    }
+
+    private LoggedOperation newOperation(OpLogId opLogId, Operation operation) {
+        return new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty());
+    }
+
+    private LoggedOperation successfulOperation(OpLogId opLogId, Operation operation) {
+        return new LoggedOperation(opLogId, operation, Optional.of(Success), Optional.empty());
+    }
+
+    private LoggedOperation failedOperation(OpLogId opLogId, Operation operation, String description) {
+        return new LoggedOperation(opLogId, operation, Optional.of(Failure), Optional.of(description));
     }
 }

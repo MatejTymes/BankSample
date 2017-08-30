@@ -1,9 +1,9 @@
 package mtymes.account.dao;
 
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.exception.DuplicateOperationException;
 
 import java.util.List;
@@ -17,7 +17,7 @@ public interface OperationDao {
 
     boolean markAsFailed(OpLogId opLogId, String description);
 
-    Optional<PersistedOperation> findOperation(OpLogId opLogId);
+    Optional<LoggedOperation> findLoggedOperation(OpLogId opLogId);
 
     List<OpLogId> findUnfinishedOperationLogIds(AccountId accountId);
 }

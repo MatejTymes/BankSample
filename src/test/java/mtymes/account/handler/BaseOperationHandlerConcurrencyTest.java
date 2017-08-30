@@ -10,8 +10,8 @@ import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.DepositTo;
+import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -90,8 +90,8 @@ public abstract class BaseOperationHandlerConcurrencyTest {
                 .orElseThrow(() -> new IllegalStateException(format("Account '%s' should be present", accountId)));
     }
 
-    protected PersistedOperation loadOperation(OpLogId opLogId) {
-        return operationDao.findOperation(opLogId)
+    protected LoggedOperation loadOperation(OpLogId opLogId) {
+        return operationDao.findLoggedOperation(opLogId)
                 .orElseThrow(() -> new IllegalStateException(format("Operation '%s' should be present", opLogId)));
     }
 }

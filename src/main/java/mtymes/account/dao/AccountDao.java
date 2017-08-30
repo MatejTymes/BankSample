@@ -3,7 +3,7 @@ package mtymes.account.dao;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.Version;
+import mtymes.account.domain.account.Version;
 
 import java.util.Optional;
 

@@ -8,9 +8,9 @@ import com.mongodb.client.result.UpdateResult;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.FinalState;
+import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.exception.DuplicateOperationException;
 import org.bson.Document;
 
@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static javafixes.common.CollectionUtil.newList;
+import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.FinalState.Failure;
 import static mtymes.account.domain.operation.FinalState.Success;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
-import static mtymes.account.domain.operation.Version.version;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
@@ -68,7 +68,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     @Override
-    public Optional<PersistedOperation> findOperation(OpLogId opLogId) {
+    public Optional<LoggedOperation> findLoggedOperation(OpLogId opLogId) {
         return findOne(
                 operations,
                 docBuilder()
@@ -158,8 +158,8 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
         return result.getModifiedCount() == 1;
     }
 
-    private PersistedOperation toPersistedOperation(Document doc) {
-        return new PersistedOperation(
+    private LoggedOperation toPersistedOperation(Document doc) {
+        return new LoggedOperation(
                 opLogId(
                         mapper.getAccountId(doc, ACCOUNT_ID),
                         mapper.getVersion(doc, VERSION)

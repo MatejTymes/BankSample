@@ -58,7 +58,7 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);

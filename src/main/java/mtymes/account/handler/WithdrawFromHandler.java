@@ -24,10 +24,10 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
         AccountId accountId = request.accountId;
 
         Optional<Account> optionalAccount = loadAccount(accountId);
-        if (!optionalAccount.isPresent()) {
-            markAsFailure(opLogId, String.format("Account '%s' does not exist", accountId));
-        } else {
+        if (optionalAccount.isPresent()) {
             withdrawMoney(opLogId, optionalAccount.get(), request);
+        } else {
+            markAsFailure(opLogId, String.format("Account '%s' does not exist", accountId));
         }
     }
 

@@ -1,7 +1,6 @@
 package mtymes.account.domain.account;
 
 import javafixes.math.Decimal;
-import mtymes.account.domain.operation.Version;
 
 import static mtymes.test.Random.*;
 

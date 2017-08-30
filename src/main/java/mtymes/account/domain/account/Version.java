@@ -1,4 +1,4 @@
-package mtymes.account.domain.operation;
+package mtymes.account.domain.account;
 
 import javafixes.object.Microtype;
 

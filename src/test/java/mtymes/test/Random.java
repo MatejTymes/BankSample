@@ -2,6 +2,7 @@ package mtymes.test;
 
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.*;
 
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.function.Supplier;
 import static java.util.UUID.randomUUID;
 import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.AccountId.accountId;
+import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.account.domain.operation.TransferId.transferId;
-import static mtymes.account.domain.operation.Version.version;
 
 // todo: move into test-infrastructure
 public class Random {

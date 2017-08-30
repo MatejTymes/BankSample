@@ -77,7 +77,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
                 .thenReturn(false);
         when(accountDao.findVersion(accountId))
                 .thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(opLogId, "Failed to create Account '" + accountId + "' and load its version"))
+        when(operationDao.markAsFailed(opLogId, "Failed to create Account '" + accountId + "'"))
                 .thenReturn(true);
 
         // When & Then

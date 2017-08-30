@@ -7,7 +7,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.Version;
+import mtymes.account.domain.account.Version;
 import org.bson.Document;
 
 import java.util.Optional;

@@ -2,6 +2,7 @@ package mtymes.account.dao.mongo;
 
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.*;
 import org.bson.Document;
 import org.bson.types.Decimal128;
@@ -12,8 +13,8 @@ import java.util.UUID;
 import static java.lang.String.format;
 import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
+import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.TransferId.transferId;
-import static mtymes.account.domain.operation.Version.version;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 

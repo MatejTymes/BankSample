@@ -5,8 +5,8 @@ import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositTo;
+import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.PersistedOperation;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +56,7 @@ public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurr
         runner.waitTillDone().shutdown();
 
         // Then
-        PersistedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);

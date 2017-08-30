@@ -2,7 +2,7 @@ package mtymes.test;
 
 
 import javafixes.math.Decimal;
-import mtymes.account.domain.operation.Version;
+import mtymes.account.domain.account.Version;
 
 import java.util.Set;
 import java.util.function.Function;

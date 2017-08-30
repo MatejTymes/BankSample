@@ -2,6 +2,7 @@ package mtymes.account.domain.operation;
 
 import javafixes.object.DataObject;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

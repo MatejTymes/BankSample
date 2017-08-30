@@ -4,7 +4,6 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
-import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.DepositTo;
 import mtymes.account.domain.operation.OpLogId;
 
@@ -21,13 +20,11 @@ public class DepositToHandler extends BaseOperationHandler<DepositTo> {
     // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, DepositTo request) {
-        AccountId accountId = request.accountId;
-
-        Optional<Account> optionalAccount = loadAccount(accountId);
-        if (!optionalAccount.isPresent()) {
-            markAsFailure(opLogId, format("Account '%s' does not exist", accountId));
-        } else {
+        Optional<Account> optionalAccount = loadAccount(request.accountId);
+        if (optionalAccount.isPresent()) {
             depositMoney(opLogId, optionalAccount.get(), request);
+        } else {
+            markAsFailure(opLogId, format("Account '%s' does not exist", request.accountId));
         }
     }
 
