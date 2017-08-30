@@ -13,7 +13,6 @@ public class Account extends DataObject {
     public final Version version;
 
     public Account(AccountId accountId, Decimal balance, Version version) {
-        // todo: test this
         checkNotNull(accountId, "accountId can't be null");
         checkNotNull(balance, "balance can't be null");
         checkNotNull(version, "version can't be null");

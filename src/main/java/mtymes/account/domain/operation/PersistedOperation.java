@@ -17,7 +17,6 @@ public class PersistedOperation extends DataObject {
     public final Optional<String> description;
 
     public PersistedOperation(OpLogId opLogId, Operation operation, Optional<FinalState> finalState, Optional<String> description) {
-        // todo: test this
         checkNotNull(opLogId, "opLogId can't be null");
         checkNotNull(operation, "operation can't be null");
         checkNotNull(finalState, "finalState can't be null");

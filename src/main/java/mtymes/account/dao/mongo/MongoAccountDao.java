@@ -14,6 +14,7 @@ import org.bson.types.Decimal128;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.operation.Version.version;
@@ -47,16 +48,18 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     }
 
     @Override
-    public boolean updateBalance(AccountId accountId, Decimal newBalance, Version fromVersion, Version toVersion) {
+    public boolean updateBalance(AccountId accountId, Decimal newBalance, Version oldVersion, Version newVersion) {
+        checkArgument(oldVersion.isBefore(newVersion), "oldVersion must be before newVersion");
+
         try {
             UpdateResult result = accounts.updateOne(
                     docBuilder()
                             .put(ACCOUNT_ID, accountId)
-                            .put(VERSION, fromVersion)
+                            .put(VERSION, oldVersion)
                             .build(),
                     doc("$set", docBuilder()
                             .put(BALANCE, newBalance)
-                            .put(VERSION, toVersion)
+                            .put(VERSION, newVersion)
                             .build())
             );
             return result.getModifiedCount() == 1;
@@ -78,7 +81,6 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
         );
     }
 
-    // todo: test
     @Override
     public Optional<Version> findVersion(AccountId accountId) {
         return findOne(

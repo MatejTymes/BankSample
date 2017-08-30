@@ -9,7 +9,6 @@ import java.util.concurrent.locks.StampedLock;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
-// todo: test
 public class ToProcessQueue {
 
     private final StampedLock lock = new StampedLock();
@@ -30,7 +29,6 @@ public class ToProcessQueue {
             Iterator<AccountId> iterator = accountIds.iterator();
             if (iterator.hasNext()) {
                 AccountId accountId = iterator.next();
-//                accountIds.remove(accountId);
                 iterator.remove();
                 return Optional.of(accountId);
             } else {

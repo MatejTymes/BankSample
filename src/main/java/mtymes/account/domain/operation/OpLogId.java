@@ -11,7 +11,6 @@ public class OpLogId extends DataObject {
     public final Version version;
 
     public OpLogId(AccountId accountId, Version version) {
-        // todo: test this
         checkNotNull(accountId, "accountId can't be null");
         checkNotNull(version, "version can't be null");
 

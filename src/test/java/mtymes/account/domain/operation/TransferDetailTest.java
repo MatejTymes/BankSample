@@ -74,5 +74,4 @@ public class TransferDetailTest extends StrictMockTest {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
     }
-
 }

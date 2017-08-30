@@ -11,11 +11,9 @@ public interface AccountDao {
 
     boolean createAccount(AccountId accountId, Version version);
 
-    // todo: check that the fromVersion < toVersion
-    boolean updateBalance(AccountId accountId, Decimal newBalance, Version fromVersion, Version toVersion);
+    boolean updateBalance(AccountId accountId, Decimal newBalance, Version oldVersion, Version newVersion);
 
     Optional<Account> findAccount(AccountId accountId);
 
-    // todo: test
     Optional<Version> findVersion(AccountId accountId);
 }
