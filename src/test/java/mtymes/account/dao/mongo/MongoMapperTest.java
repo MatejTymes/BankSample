@@ -11,9 +11,9 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class OperationDbMapperTest {
+public class MongoMapperTest {
 
-    private OperationDbMapper dbMapper = new OperationDbMapper();
+    private MongoMapper dbMapper = new MongoMapper();
 
     @Test
     public void shouldBeAbleToConvertOperationToDocumentAndBackAgain() {

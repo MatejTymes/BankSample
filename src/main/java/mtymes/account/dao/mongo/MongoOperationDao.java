@@ -37,7 +37,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     private static final String DESCRIPTION = "description";
 
     private final MongoCollection<Document> operations;
-    private final OperationDbMapper mapper = new OperationDbMapper();
+    private final MongoMapper mapper = new MongoMapper();
 
     public MongoOperationDao(MongoCollection<Document> operations) {
         this.operations = operations;
@@ -48,7 +48,6 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
         AccountId accountId = operation.affectedAccountId();
         long sequenceId = storeWithSequenceId(
                 accountId,
-                // todo: move this into OperationDbMapper
                 docBuilder()
                         .put(TYPE, operation.type())
                         .put(ACCOUNT_ID, accountId)
@@ -160,19 +159,17 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     private PersistedOperation toPersistedOperation(Document doc) {
-        Operation operation = mapper.toOperation(
-                doc.getString(TYPE),
-                (Document) doc.get(BODY)
-        );
-        Optional<FinalState> finalState = Optional.ofNullable(doc.getString(FINAL_STATE)).map(FinalState::valueOf);
         return new PersistedOperation(
                 opLogId(
                         mapper.getAccountId(doc, ACCOUNT_ID),
-                        version(doc.getLong(VERSION))
+                        mapper.getVersion(doc, VERSION)
                 ),
-                operation,
-                finalState,
-                Optional.ofNullable(doc.getString(DESCRIPTION))
+                mapper.toOperation(
+                        doc.getString(TYPE),
+                        (Document) doc.get(BODY)
+                ),
+                mapper.getOptionalFinalState(doc, FINAL_STATE),
+                mapper.getOptionalString(doc, DESCRIPTION)
         );
     }
 }

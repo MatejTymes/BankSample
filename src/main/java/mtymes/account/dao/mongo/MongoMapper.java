@@ -6,6 +6,7 @@ import mtymes.account.domain.operation.*;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.lang.String.format;
@@ -17,12 +18,12 @@ import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 
-public class OperationDbMapper implements OperationVisitor<Document> {
+public class MongoMapper implements OperationVisitor<Document> {
 
-    private static final String ACCOUNT_ID = "accountId";
-    private static final String AMOUNT = "amount";
-    private static final String FROM_ACCOUNT_ID = "fromAccountId";
-    private static final String TO_ACCOUNT_ID = "toAccountId";
+    public static final String ACCOUNT_ID = "accountId";
+    public static final String AMOUNT = "amount";
+    public static final String FROM_ACCOUNT_ID = "fromAccountId";
+    public static final String TO_ACCOUNT_ID = "toAccountId";
     public static final String TRANSFER_ID = "transferId";
 
     @Override
@@ -114,11 +115,19 @@ public class OperationDbMapper implements OperationVisitor<Document> {
         return version(doc.getLong(fieldName));
     }
 
+    public Optional<FinalState> getOptionalFinalState(Document doc, String fieldName) {
+        return Optional.ofNullable(doc.getString(fieldName)).map(FinalState::valueOf);
+    }
+
     public Decimal getDecimal(Document doc, String fieldName) {
         return d(((Decimal128) doc.get(fieldName)).bigDecimalValue());
     }
 
     public UUID getUUID(Document doc, String fieldName) {
         return UUID.fromString(doc.getString(fieldName));
+    }
+
+    public Optional<String> getOptionalString(Document doc, String fieldName) {
+        return Optional.ofNullable(doc.getString(fieldName));
     }
 }

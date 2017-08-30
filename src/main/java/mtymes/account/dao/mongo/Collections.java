@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 import static com.mongodb.client.model.Indexes.ascending;
 import static com.mongodb.client.model.Indexes.descending;
 import static javafixes.common.CollectionUtil.newSet;
+import static mtymes.account.dao.mongo.MongoMapper.TRANSFER_ID;
 import static mtymes.account.dao.mongo.MongoOperationDao.*;
-import static mtymes.account.dao.mongo.OperationDbMapper.TRANSFER_ID;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 
 public class Collections {

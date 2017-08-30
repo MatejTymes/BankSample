@@ -9,15 +9,10 @@ import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.Version;
 import org.bson.Document;
-import org.bson.types.Decimal128;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static javafixes.math.Decimal.d;
-import static mtymes.account.domain.account.AccountId.accountId;
-import static mtymes.account.domain.operation.Version.version;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
@@ -28,6 +23,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     public static final String VERSION = "version";
 
     private final MongoCollection<Document> accounts;
+    private final MongoMapper mapper = new MongoMapper();
 
     public MongoAccountDao(MongoCollection<Document> accounts) {
         this.accounts = accounts;
@@ -74,9 +70,9 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
                 accounts,
                 doc(ACCOUNT_ID, accountId),
                 doc -> new Account(
-                        accountId(UUID.fromString(doc.getString(ACCOUNT_ID))),
-                        d(((Decimal128) doc.get(BALANCE)).bigDecimalValue()),
-                        version(doc.getLong(VERSION))
+                        mapper.getAccountId(doc, ACCOUNT_ID),
+                        mapper.getDecimal(doc, BALANCE),
+                        mapper.getVersion(doc, VERSION)
                 )
         );
     }
@@ -87,8 +83,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
                 accounts,
                 doc(ACCOUNT_ID, accountId),
                 doc(VERSION, 1),
-                doc -> version(doc.getLong(VERSION)
-                )
+                doc -> mapper.getVersion(doc, VERSION)
         );
     }
 }
