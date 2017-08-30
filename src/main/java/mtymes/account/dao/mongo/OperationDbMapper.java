@@ -12,6 +12,7 @@ import static java.lang.String.format;
 import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.operation.TransferId.transferId;
+import static mtymes.account.domain.operation.Version.version;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
@@ -92,28 +93,32 @@ public class OperationDbMapper implements OperationVisitor<Document> {
                 .build();
     }
 
-    private TransferDetail toTransferDetail(Document body) {
+    private TransferDetail toTransferDetail(Document doc) {
         return new TransferDetail(
-                getTransferId(body, TRANSFER_ID),
-                getAccountId(body, FROM_ACCOUNT_ID),
-                getAccountId(body, TO_ACCOUNT_ID),
-                getDecimal(body, AMOUNT)
+                getTransferId(doc, TRANSFER_ID),
+                getAccountId(doc, FROM_ACCOUNT_ID),
+                getAccountId(doc, TO_ACCOUNT_ID),
+                getDecimal(doc, AMOUNT)
         );
     }
 
-    public AccountId getAccountId(Document body, String fieldName) {
-        return accountId(getUUID(body, fieldName));
+    public AccountId getAccountId(Document doc, String fieldName) {
+        return accountId(getUUID(doc, fieldName));
     }
 
-    public TransferId getTransferId(Document body, String fieldName) {
-        return transferId(getUUID(body, fieldName));
+    public TransferId getTransferId(Document doc, String fieldName) {
+        return transferId(getUUID(doc, fieldName));
     }
 
-    public Decimal getDecimal(Document body, String fieldName) {
-        return d(((Decimal128) body.get(fieldName)).bigDecimalValue());
+    public Version getVersion(Document doc, String fieldName) {
+        return version(doc.getLong(fieldName));
     }
 
-    public UUID getUUID(Document body, String fieldName) {
-        return UUID.fromString(body.getString(fieldName));
+    public Decimal getDecimal(Document doc, String fieldName) {
+        return d(((Decimal128) doc.get(fieldName)).bigDecimalValue());
+    }
+
+    public UUID getUUID(Document doc, String fieldName) {
+        return UUID.fromString(doc.getString(fieldName));
     }
 }

@@ -178,6 +178,32 @@ public class MongoOperationDaoIntegrationTest {
     }
 
     @Test
+    public void shouldFindUnfinishedOperationLogIds() {
+        AccountId accountId = randomAccountId();
+        AccountId otherAccountId = randomAccountId();
+
+        OpLogId opLogId1 = operationDao.storeOperation(randomOperation(accountId));
+        OpLogId otherOpLogId1 = operationDao.storeOperation(randomOperation(otherAccountId));
+        OpLogId opLogId2 = operationDao.storeOperation(randomOperation(accountId));
+        OpLogId opLogId3 = operationDao.storeOperation(randomOperation(accountId));
+        OpLogId otherOpLogId2 = operationDao.storeOperation(randomOperation(otherAccountId));
+        OpLogId opLogId4 = operationDao.storeOperation(randomOperation(accountId));
+        OpLogId otherOpLogId3 = operationDao.storeOperation(randomOperation(otherAccountId));
+        OpLogId opLogId5 = operationDao.storeOperation(randomOperation(accountId));
+
+        operationDao.markAsSuccessful(opLogId3);
+        operationDao.markAsFailed(opLogId4, "Failed");
+        operationDao.markAsSuccessful(otherOpLogId2);
+        operationDao.markAsFailed(otherOpLogId3, "Failed");
+
+        // When
+        List<OpLogId> unFinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(accountId);
+
+        // Then
+        assertThat(unFinishedOpLogIds, equalTo(newList(opLogId1, opLogId2, opLogId5)));
+    }
+
+    @Test
     public void shouldCreateUniqueSequentialOpLogIdsOnConcurrentWrites() {
         int threadCount = 64;
 

@@ -3,6 +3,7 @@ package mtymes.account.dao.mongo;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.client.result.UpdateResult;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
@@ -13,8 +14,10 @@ import mtymes.account.domain.operation.PersistedOperation;
 import mtymes.account.exception.DuplicateOperationException;
 import org.bson.Document;
 
+import java.util.List;
 import java.util.Optional;
 
+import static javafixes.common.CollectionUtil.newList;
 import static mtymes.account.domain.operation.FinalState.Failure;
 import static mtymes.account.domain.operation.FinalState.Success;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
@@ -75,6 +78,27 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
                         .build(),
                 this::toPersistedOperation
         );
+    }
+
+    @Override
+    public List<OpLogId> findUnfinishedOperationLogIds(AccountId accountId) {
+        MongoIterable<OpLogId> opLogIds = operations.find(
+                docBuilder()
+                        .put(ACCOUNT_ID, accountId)
+                        .put(FINAL_STATE, null)
+                        .build()
+        ).projection(
+                docBuilder()
+                        .put(ACCOUNT_ID, 1)
+                        .put(VERSION, 1)
+                        .build()
+        ).sort(
+                doc(VERSION, 1)
+        ).map(doc -> opLogId(
+                mapper.getAccountId(doc, ACCOUNT_ID),
+                mapper.getVersion(doc, VERSION)
+        ));
+        return newList(opLogIds);
     }
 
     // using "Optimistic Loop" to guarantee the sequencing of Operations

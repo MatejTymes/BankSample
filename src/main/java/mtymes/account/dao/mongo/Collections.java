@@ -33,7 +33,7 @@ public class Collections {
                 "operations",
                 operations -> {
                     operations.createIndex(
-                            ascending(ACCOUNT_ID, FINAL_STATE)
+                            ascending(ACCOUNT_ID, FINAL_STATE, VERSION)
                     );
                     operations.createIndex(
                             descending(ACCOUNT_ID, VERSION),
