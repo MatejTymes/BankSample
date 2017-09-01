@@ -20,7 +20,7 @@ public class DepositToTest extends StrictMockTest {
     @Test
     public void shouldCreateOperation() {
         AccountId accountId = randomAccountId();
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
         // When
         DepositTo depositTo = new DepositTo(accountId, amount);
@@ -34,7 +34,7 @@ public class DepositToTest extends StrictMockTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new DepositTo(null, randomPositiveDecimal());
+            new DepositTo(null, randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -55,7 +55,7 @@ public class DepositToTest extends StrictMockTest {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
         try {
-            new DepositTo(randomAccountId(), randomNegativeDecimal());
+            new DepositTo(randomAccountId(), randomNegativeAmount());
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
@@ -66,7 +66,7 @@ public class DepositToTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        DepositTo depositTo = new DepositTo(randomAccountId(), randomPositiveDecimal());
+        DepositTo depositTo = new DepositTo(randomAccountId(), randomPositiveAmount());
 
         UUID expectedResponse = randomUUID();
         when(visitor.visit(depositTo)).thenReturn(expectedResponse);

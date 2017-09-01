@@ -31,9 +31,9 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
     public void shouldSucceedToDepositToOnConcurrentExecution() {
         int threadCount = 50;
 
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
-        Decimal initialBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
+        Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
         TransferId transferId = randomTransferId();

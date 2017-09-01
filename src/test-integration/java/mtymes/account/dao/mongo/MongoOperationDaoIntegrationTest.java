@@ -59,10 +59,10 @@ public class MongoOperationDaoIntegrationTest {
     public void shouldBeAbleToStoreAndLoadEachOperation() {
         List<Operation> allOperations = newList(
                 new CreateAccount(randomAccountId()),
-                new DepositTo(randomAccountId(), randomPositiveDecimal()),
-                new WithdrawFrom(randomAccountId(), randomPositiveDecimal()),
-                new TransferFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal())),
-                new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveDecimal()))
+                new DepositTo(randomAccountId(), randomPositiveAmount()),
+                new WithdrawFrom(randomAccountId(), randomPositiveAmount()),
+                new TransferFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveAmount())),
+                new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveAmount()))
         );
         for (Operation operation : allOperations) {
             // When

@@ -10,7 +10,7 @@ import static mtymes.test.Random.*;
 public class AccountBuilder {
 
     private AccountId accountId = randomAccountId();
-    private Decimal balance = randomDecimal();
+    private Decimal balance = randomAmount();
     private Version version = randomVersion();
 
     public static AccountBuilder accountBuilder() {

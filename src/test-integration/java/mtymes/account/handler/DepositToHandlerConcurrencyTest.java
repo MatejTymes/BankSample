@@ -33,9 +33,9 @@ public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurr
     public void shouldSucceedToDepositToOnConcurrentExecution() {
         int threadCount = 50;
 
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
-        Decimal initialBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
+        Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
         DepositTo depositTo = new DepositTo(accountId, amount);

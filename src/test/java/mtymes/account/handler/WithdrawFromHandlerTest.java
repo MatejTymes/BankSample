@@ -27,7 +27,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     private WithdrawFromHandler handler;
 
     private AccountId accountId = randomAccountId();
-    private Decimal withdrawAmount = randomPositiveDecimal();
+    private Decimal withdrawAmount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(accountId);
     private WithdrawFrom operation = new WithdrawFrom(accountId, withdrawAmount);
 
@@ -41,7 +41,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldWithdrawFrom() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal lastBalance = withdrawAmount.plus(randomPositiveDecimal());
+        Decimal lastBalance = withdrawAmount.plus(randomPositiveAmount());
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
@@ -70,8 +70,8 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfAccountHasInsufficientFunds() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal lastBalance = randomPositiveDecimal();
-        withdrawAmount = lastBalance.plus(randomPositiveDecimal());
+        Decimal lastBalance = randomPositiveAmount();
+        withdrawAmount = lastBalance.plus(randomPositiveAmount());
         operation = new WithdrawFrom(accountId, withdrawAmount);
 
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
@@ -103,7 +103,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfAccountHasNegativeBalance() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal lastBalance = randomNegativeDecimal();
+        Decimal lastBalance = randomNegativeAmount();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)

@@ -34,9 +34,9 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
     public void shouldSucceedToWithdrawFromOnConcurrentExecution() {
         int threadCount = 50;
 
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
-        Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveDecimal()));
+        Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
         WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
@@ -66,11 +66,11 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
     public void shouldFailToWithdrawFromOnConcurrentExecutionIfThereIsInsufficientBalance() {
         int threadCount = 50;
 
-        Decimal initialBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
+        Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         Account initialAccount = createAccountWithInitialBalance(initialBalance);
         AccountId accountId = initialAccount.accountId;
 
-        Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
+        Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
         WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 

@@ -30,7 +30,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
     private TransferId transferId = randomTransferId();
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
-    private Decimal amount = randomPositiveDecimal();
+    private Decimal amount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(fromAccountId);
     private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
     private TransferFrom operation = new TransferFrom(detail);
@@ -46,7 +46,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldWithdrawMoneyAndSubmitTransferToOperation() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal fromAccountBalance = amount.plus(randomPositiveDecimal());
+        Decimal fromAccountBalance = amount.plus(randomPositiveAmount());
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)
@@ -72,7 +72,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldSucceedIfMoneyHasBeenAlreadyTransferredByThisOperationAndTransferToOperationAlreadyExists() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal fromAccountBalance = amount.plus(randomPositiveDecimal());
+        Decimal fromAccountBalance = amount.plus(randomPositiveAmount());
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)
@@ -120,8 +120,8 @@ public class TransferFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfFromAccountHasInsufficientFunds() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal fromAccountBalance = randomPositiveDecimal();
-        amount = fromAccountBalance.plus(randomPositiveDecimal());
+        Decimal fromAccountBalance = randomPositiveAmount();
+        amount = fromAccountBalance.plus(randomPositiveAmount());
         detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
         operation = new TransferFrom(detail);
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
@@ -165,7 +165,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfFromAccountHasNegativeBalance() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal fromAccountBalance = randomNegativeDecimal();
+        Decimal fromAccountBalance = randomNegativeAmount();
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)

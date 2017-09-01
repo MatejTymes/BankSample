@@ -40,24 +40,24 @@ public class Random {
         );
     }
 
-    public static Decimal randomDecimal() {
+    public static Decimal randomAmount() {
         return decimal(
                 randomInt(Integer.MIN_VALUE, Integer.MAX_VALUE),
                 2
         );
     }
 
-    public static Decimal randomPositiveDecimal() {
+    public static Decimal randomPositiveAmount() {
         return decimal(
-                randomLong(1L, Long.MAX_VALUE),
-                randomInt(-2, 2)
+                randomInt(1, Integer.MAX_VALUE),
+                2
         );
     }
 
-    public static Decimal randomNegativeDecimal() {
+    public static Decimal randomNegativeAmount() {
         return decimal(
-                randomLong(Long.MIN_VALUE, -1),
-                randomInt(-2, 2)
+                randomInt(Integer.MIN_VALUE, -1),
+                2
         );
     }
 
@@ -86,13 +86,13 @@ public class Random {
             case 1:
                 return new CreateAccount(accountId);
             case 2:
-                return new DepositTo(accountId, randomPositiveDecimal());
+                return new DepositTo(accountId, randomPositiveAmount());
             case 3:
-                return new WithdrawFrom(accountId, randomPositiveDecimal());
+                return new WithdrawFrom(accountId, randomPositiveAmount());
             case 4:
-                return new TransferFrom(new TransferDetail(randomTransferId(), accountId, randomAccountId(), randomPositiveDecimal()));
+                return new TransferFrom(new TransferDetail(randomTransferId(), accountId, randomAccountId(), randomPositiveAmount()));
             default:
-                return new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), accountId, randomPositiveDecimal()));
+                return new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), accountId, randomPositiveAmount()));
         }
     }
 

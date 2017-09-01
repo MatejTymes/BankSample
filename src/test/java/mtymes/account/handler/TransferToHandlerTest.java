@@ -31,7 +31,7 @@ public class TransferToHandlerTest extends StrictMockTest {
     private TransferId transferId = randomTransferId();
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
-    private Decimal amount = randomPositiveDecimal();
+    private Decimal amount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(toAccountId);
     private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
     private TransferTo operation = new TransferTo(detail);
@@ -46,7 +46,7 @@ public class TransferToHandlerTest extends StrictMockTest {
     @Test
     public void shouldDepositTo() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal lastBalance = randomDecimal();
+        Decimal lastBalance = randomAmount();
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .balance(lastBalance)

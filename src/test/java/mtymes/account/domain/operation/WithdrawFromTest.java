@@ -20,7 +20,7 @@ public class WithdrawFromTest extends StrictMockTest {
     @Test
     public void shouldCreateOperation() {
         AccountId accountId = randomAccountId();
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
         // When
         WithdrawFrom WithdrawFrom = new WithdrawFrom(accountId, amount);
@@ -34,7 +34,7 @@ public class WithdrawFromTest extends StrictMockTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new WithdrawFrom(null, randomPositiveDecimal());
+            new WithdrawFrom(null, randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -55,7 +55,7 @@ public class WithdrawFromTest extends StrictMockTest {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
         try {
-            new WithdrawFrom(randomAccountId(), randomNegativeDecimal());
+            new WithdrawFrom(randomAccountId(), randomNegativeAmount());
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
@@ -66,7 +66,7 @@ public class WithdrawFromTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        WithdrawFrom WithdrawFrom = new WithdrawFrom(randomAccountId(), randomPositiveDecimal());
+        WithdrawFrom WithdrawFrom = new WithdrawFrom(randomAccountId(), randomPositiveAmount());
 
         UUID expectedResponse = randomUUID();
         when(visitor.visit(WithdrawFrom)).thenReturn(expectedResponse);

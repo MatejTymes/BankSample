@@ -13,7 +13,7 @@ public class AccountTest {
 
     @Test
     public void shouldCreateAccount() {
-        for (Decimal balance : newList(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal())) {
+        for (Decimal balance : newList(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount())) {
             AccountId accountId = randomAccountId();
             Version version = randomVersion();
 
@@ -30,7 +30,7 @@ public class AccountTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new Account(null, randomDecimal(), randomVersion());
+            new Account(null, randomAmount(), randomVersion());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -44,7 +44,7 @@ public class AccountTest {
             assertThat(expected.getMessage(), equalTo("balance can't be null"));
         }
         try {
-            new Account(randomAccountId(), randomDecimal(), null);
+            new Account(randomAccountId(), randomAmount(), null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {

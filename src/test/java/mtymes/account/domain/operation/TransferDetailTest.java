@@ -17,7 +17,7 @@ public class TransferDetailTest extends StrictMockTest {
         TransferId transferId = randomTransferId();
         AccountId fromAccountId = randomAccountId();
         AccountId toAccountId = randomAccountId();
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
         // When
         TransferDetail transferDetail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
@@ -32,21 +32,21 @@ public class TransferDetailTest extends StrictMockTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new TransferDetail(null, randomAccountId(), randomAccountId(), randomPositiveDecimal());
+            new TransferDetail(null, randomAccountId(), randomAccountId(), randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("transferId can't be null"));
         }
         try {
-            new TransferDetail(randomTransferId(), null, randomAccountId(), randomPositiveDecimal());
+            new TransferDetail(randomTransferId(), null, randomAccountId(), randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("fromAccountId can't be null"));
         }
         try {
-            new TransferDetail(randomTransferId(), randomAccountId(), null, randomPositiveDecimal());
+            new TransferDetail(randomTransferId(), randomAccountId(), null, randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -67,7 +67,7 @@ public class TransferDetailTest extends StrictMockTest {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
         try {
-            new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomNegativeDecimal());
+            new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomNegativeAmount());
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {

@@ -27,7 +27,7 @@ public class DepositToHandlerTest extends StrictMockTest {
     private DepositToHandler handler;
 
     private AccountId accountId = randomAccountId();
-    private Decimal depositAmount = randomPositiveDecimal();
+    private Decimal depositAmount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(accountId);
     private DepositTo operation = new DepositTo(accountId, depositAmount);
 
@@ -41,7 +41,7 @@ public class DepositToHandlerTest extends StrictMockTest {
     @Test
     public void shouldDepositTo() {
         Version accountVersion = randomVersion(before(opLogId.version));
-        Decimal lastBalance = randomDecimal();
+        Decimal lastBalance = randomAmount();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)

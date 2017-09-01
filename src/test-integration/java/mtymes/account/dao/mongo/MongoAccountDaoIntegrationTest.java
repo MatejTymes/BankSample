@@ -95,7 +95,7 @@ public class MongoAccountDaoIntegrationTest {
         accountDao.createAccount(accountId, currentVersion);
 
         Version newVersion = version(currentVersion.value() + randomLong(1, 100));
-        Decimal newBalance = randomDecimal();
+        Decimal newBalance = randomAmount();
 
         // When
         boolean success = accountDao.updateBalance(accountId, newBalance, currentVersion, newVersion);
@@ -115,7 +115,7 @@ public class MongoAccountDaoIntegrationTest {
 
         Version differentVersion = version(currentVersion.value() + randomLong(1, 100));
         Version newVersion = version(differentVersion.value() + randomLong(1, 100));
-        Decimal newBalance = randomDecimal();
+        Decimal newBalance = randomAmount();
 
         // When
         boolean success = accountDao.updateBalance(accountId, newBalance, differentVersion, newVersion);
@@ -134,7 +134,7 @@ public class MongoAccountDaoIntegrationTest {
         accountDao.createAccount(accountId, currentVersion);
 
         Version newVersion = version(currentVersion.value() - randomLong(1, 100));
-        Decimal newBalance = randomDecimal();
+        Decimal newBalance = randomAmount();
 
         try {
             // When
@@ -153,7 +153,7 @@ public class MongoAccountDaoIntegrationTest {
         accountDao.createAccount(accountId, currentVersion);
 
         Version newVersion = currentVersion;
-        Decimal newBalance = randomDecimal();
+        Decimal newBalance = randomAmount();
 
         try {
             // When
@@ -169,6 +169,6 @@ public class MongoAccountDaoIntegrationTest {
     public void shouldNotUpdateBalanceForNonExistingAccount() {
         Version oldVersion = randomVersion();
         Version newVersion = randomVersion(after(oldVersion));
-        assertThat(accountDao.updateBalance(randomAccountId(), randomDecimal(), oldVersion, newVersion), is(false));
+        assertThat(accountDao.updateBalance(randomAccountId(), randomAmount(), oldVersion, newVersion), is(false));
     }
 }

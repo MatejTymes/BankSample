@@ -37,10 +37,10 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
     public void shouldSucceedToWithdrawMoneyAndTriggerTransferToOperationConcurrentExecution() {
         int threadCount = 50;
 
-        Decimal amount = randomPositiveDecimal();
+        Decimal amount = randomPositiveAmount();
 
-        Decimal fromBalance = pickRandomValue(amount, amount.plus(randomPositiveDecimal()));
-        Decimal toBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
+        Decimal fromBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
+        Decimal toBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId fromAccountId = createAccountWithInitialBalance(fromBalance).accountId;
         Account toAccount = createAccountWithInitialBalance(toBalance);
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccount.accountId, amount);
@@ -79,14 +79,14 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
     public void shouldFailToTransferFromOnConcurrentExecutionIfThereIsInsufficientBalance() {
         int threadCount = 50;
 
-        Decimal fromBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
-        Decimal toBalance = pickRandomValue(randomNegativeDecimal(), Decimal.ZERO, randomPositiveDecimal());
+        Decimal fromBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
+        Decimal toBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         Account initialFromAccount = createAccountWithInitialBalance(fromBalance);
         Account initialToAccount = createAccountWithInitialBalance(toBalance);
         AccountId fromAccountId = initialFromAccount.accountId;
         AccountId toAccountId = initialToAccount.accountId;
 
-        Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveDecimal()) : randomPositiveDecimal();
+        Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
 
         TransferFrom transferFrom = new TransferFrom(detail);
