@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static mtymes.account.domain.account.AccountBuilder.accountBuilder;
+import static mtymes.domain.account.AccountBuilder.accountBuilder;
 import static mtymes.test.Condition.after;
 import static mtymes.test.Condition.before;
 import static mtymes.test.Random.*;

@@ -23,7 +23,6 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-// todo: move into test-stability
 public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
 
     private ToProcessQueue toProcessQueue = new ToProcessQueue();

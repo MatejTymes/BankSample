@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 
-// todo: move into test-infrastructure
 public class OptionalMatcher<T> extends TypeSafeMatcher<Optional<T>> {
 
     private final boolean shouldBePresent;

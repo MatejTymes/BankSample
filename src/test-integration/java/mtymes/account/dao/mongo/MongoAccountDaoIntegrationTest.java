@@ -28,7 +28,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-// todo: move into test-integration
 public class MongoAccountDaoIntegrationTest {
 
     private static EmbeddedDB db;

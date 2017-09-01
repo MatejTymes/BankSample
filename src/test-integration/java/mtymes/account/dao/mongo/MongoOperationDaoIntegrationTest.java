@@ -34,7 +34,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-// todo: move into test-integration
 public class MongoOperationDaoIntegrationTest {
 
     private static EmbeddedDB db;

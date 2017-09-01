@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import static javafixes.common.CollectionUtil.newSet;
 
-// todo: move into test-infrastructure
 public interface Condition<T> extends Function<T, Boolean> {
 
     @SafeVarargs

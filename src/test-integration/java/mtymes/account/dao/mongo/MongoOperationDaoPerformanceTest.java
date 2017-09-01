@@ -18,7 +18,6 @@ import static mtymes.test.Random.randomOperation;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
-// todo: move into test-performance
 public class MongoOperationDaoPerformanceTest {
 
     private static EmbeddedDB db;

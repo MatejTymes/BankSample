@@ -1,44 +1,45 @@
-//buildscript {
-//    repositories {
-//        jcenter()
-//    }
-//    dependencies {
-//        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.2'
-//    }
-//}
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.2'
+    }
+}
 
+apply plugin: 'org.unbroken-dome.test-sets'
 apply plugin: 'java'
-//apply plugin: 'org.unbroken-dome.test-sets'
 apply plugin: 'idea'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-version = '1.0'
+idea {
+    project {
+        jdkName = '1.8'
+        languageLevel = '1.8'
+    }
+}
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
 repositories {
     mavenCentral()
 }
 
-//testSets {
-//    testInfrastructure {
-//        dirName = 'test-infrastructure'
-//    }
-//
-//    testIntegration {
-//        dirName = 'test-integration'
-//        extendsFrom testInfrastructure
-//    }
-//}
-//check.dependsOn testIntegration
-//testIntegration.mustRunAfter test
-//idea {
-//    module {
-//        testSourceDirs += file('src/test-integration/java')
-//        scopes.TEST.plus += [configurations.testIntegrationRuntimeClasspath, configurations.testIntegrationCompileClasspath]
-//    }
-//}
+testSets {
+    testInfrastructure {
+        dirName = 'test-infrastructure'
+    }
 
+    integrationTest {
+        dirName = 'test-integration'
+        extendsFrom testInfrastructure
+    }
+}
+integrationTest.outputs.upToDateWhen { false }
+
+check.dependsOn integrationTest
+integrationTest.mustRunAfter test
 
 dependencies {
     compile 'commons-io:commons-io:2.5'
@@ -54,12 +55,18 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-all:1.3'
     testCompile 'org.mockito:mockito-core:2.8.47'
 //    testCompile 'com.h2database:h2:1.4.196'
-    testCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
 
-//    testCompile sourceSets.testInfrastructure.output
-//    testIntegrationCompile sourceSets.testInfrastructure.output
+    testInfrastructureCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
+    integrationTestCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
+
+    testCompile sourceSets.testInfrastructure.output
+    integrationTestCompile sourceSets.testInfrastructure.output
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.1'
+}
+
+tasks.withType(Test) {
+    reports.html.setDestination(file("${reporting.baseDir}/${name}"))
 }

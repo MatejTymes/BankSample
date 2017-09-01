@@ -8,7 +8,6 @@ import static mtymes.test.db.EmbeddedDB.embeddedDB;
 /**
  * This class allows us to cache Embedded MongoDB between tests so we don't have to start new instance each time
  */
-// todo: move into test-infrastructure
 public class MongoManager {
 
     private static InstanceManager<EmbeddedDB> manager = createNewInstanceManager();

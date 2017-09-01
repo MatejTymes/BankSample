@@ -1,10 +1,12 @@
-package mtymes.account.domain.account;
+package mtymes.domain.account;
 
 import javafixes.math.Decimal;
+import mtymes.account.domain.account.Account;
+import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.account.Version;
 
 import static mtymes.test.Random.*;
 
-// todo: move into test-infrastructure
 public class AccountBuilder {
 
     private AccountId accountId = randomAccountId();

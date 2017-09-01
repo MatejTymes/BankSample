@@ -17,7 +17,6 @@ import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.account.domain.operation.TransferId.transferId;
 
-// todo: move into test-infrastructure
 public class Random {
 
     public static boolean randomBoolean() {
