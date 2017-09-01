@@ -16,8 +16,6 @@ import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-// todo: turn this into a rule somehow
-// todo: move into test-infrastructure
 public abstract class StrictMockTest {
 
     @Rule
