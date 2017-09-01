@@ -7,11 +7,11 @@ import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
+import mtymes.test.ThreadSynchronizer;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
 import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.domain.account.AccountId.newAccountId;
@@ -41,11 +41,10 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
 
         // When
         Runner runner = runner(threadCount);
-        CountDownLatch startSynchronizer = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startSynchronizer.countDown();
-                startSynchronizer.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 handler.handleOperation(opLogId, createAccount);
             });
@@ -71,11 +70,10 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
 
         // When
         Runner runner = runner(threadCount);
-        CountDownLatch startSynchronizer = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startSynchronizer.countDown();
-                startSynchronizer.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 handler.handleOperation(opLogId, createAccount);
             });

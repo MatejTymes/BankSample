@@ -49,7 +49,7 @@ public class MongoOperationDaoPerformanceTest {
         ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount + 1);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                synchronizer.synchronizeThreadsAtThisPoint();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 while (insertCounter.getAndDecrement() > 0) {
                     operationDao.storeOperation(randomOperation());
@@ -57,7 +57,7 @@ public class MongoOperationDaoPerformanceTest {
             });
         }
 
-        synchronizer.synchronizeThreadsAtThisPoint();
+        synchronizer.blockUntilAllThreadsCallThisMethod();
 
         long startTime = System.currentTimeMillis();
         runner.waitTillDone();

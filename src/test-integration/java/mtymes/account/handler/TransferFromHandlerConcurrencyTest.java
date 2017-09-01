@@ -9,10 +9,9 @@ import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferFrom;
+import mtymes.test.ThreadSynchronizer;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.concurrent.CountDownLatch;
 
 import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.domain.operation.FinalState.Failure;
@@ -51,11 +50,10 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
 
         // When
         Runner runner = runner(threadCount);
-        CountDownLatch startSynchronizer = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startSynchronizer.countDown();
-                startSynchronizer.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 handler.handleOperation(opLogId, transferFrom);
             });
@@ -96,11 +94,10 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
 
         // When
         Runner runner = runner(threadCount);
-        CountDownLatch startSynchronizer = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startSynchronizer.countDown();
-                startSynchronizer.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 handler.handleOperation(opLogId, transferFrom);
             });

@@ -7,6 +7,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import javafixes.concurrency.Runner;
 import mtymes.account.domain.account.AccountId;
+import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.bson.Document;
@@ -17,7 +18,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -62,11 +62,10 @@ public class OpStoragePerformanceTest {
         List<AccountId> accountIds = range(0, accountCount).mapToObj(value -> randomAccountId()).collect(toList());
 
         Runner runner = runner(threadCount);
-        CountDownLatch startAtTheSameTime = new CountDownLatch(threadCount + 1);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount + 1);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startAtTheSameTime.countDown();
-                startAtTheSameTime.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 while (insertCount.getAndDecrement() > 0) {
                     AccountId accountId = pickRandomValue(accountIds);
@@ -78,8 +77,7 @@ public class OpStoragePerformanceTest {
             });
         }
 
-        startAtTheSameTime.countDown();
-        startAtTheSameTime.await();
+        synchronizer.blockUntilAllThreadsCallThisMethod();
 
         long startTime = System.currentTimeMillis();
         runner.waitTillDone();

@@ -222,7 +222,7 @@ public class MongoOperationDaoIntegrationTest {
                 AccountId accountId = pickRandomValue(accountIds);
                 Operation operation = randomOperation(accountId);
 
-                synchronizer.synchronizeThreadsAtThisPoint();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 // When
                 opLogIds.add(
@@ -259,7 +259,7 @@ public class MongoOperationDaoIntegrationTest {
             runner.runTask(() -> {
                 FinalState stateToApply = pickRandomValue(FinalState.values());
 
-                synchronizer.synchronizeThreadsAtThisPoint();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 // When
                 boolean success;

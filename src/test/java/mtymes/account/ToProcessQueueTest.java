@@ -2,10 +2,10 @@ package mtymes.account;
 
 import javafixes.concurrency.Runner;
 import mtymes.account.domain.account.AccountId;
+import mtymes.test.ThreadSynchronizer;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static javafixes.common.CollectionUtil.newList;
@@ -77,12 +77,11 @@ public class ToProcessQueueTest {
 
         // When
         Runner runner = runner(threadCount);
-        CountDownLatch startAtTheSameTime = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             final AccountId accountId = accountIds.get(i % accountIds.size());
             runner.runTask(() -> {
-                startAtTheSameTime.countDown();
-                startAtTheSameTime.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 queue.add(accountId);
             });
@@ -90,11 +89,10 @@ public class ToProcessQueueTest {
         runner.waitTillDone();
 
         List<AccountId> retrievedAccountIds = newCopyOnWriteArrayList();
-        CountDownLatch startAtTheSameTime2 = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer2 = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startAtTheSameTime2.countDown();
-                startAtTheSameTime2.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 queue.takeNextAvailable().ifPresent(retrievedAccountIds::add);
             });

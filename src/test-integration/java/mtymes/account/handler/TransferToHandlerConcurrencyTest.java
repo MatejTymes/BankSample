@@ -5,10 +5,9 @@ import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
+import mtymes.test.ThreadSynchronizer;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.concurrent.CountDownLatch;
 
 import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.domain.operation.FinalState.Success;
@@ -45,11 +44,10 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
 
         // When
         Runner runner = runner(threadCount);
-        CountDownLatch startSynchronizer = new CountDownLatch(threadCount);
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
             runner.runTask(() -> {
-                startSynchronizer.countDown();
-                startSynchronizer.await();
+                synchronizer.blockUntilAllThreadsCallThisMethod();
 
                 handler.handleOperation(opLogId, transferTo);
             });
