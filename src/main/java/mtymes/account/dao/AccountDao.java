@@ -15,5 +15,5 @@ public interface AccountDao {
 
     Optional<Account> findAccount(AccountId accountId);
 
-    Optional<Version> findVersion(AccountId accountId);
+    Optional<Version> findCurrentVersion(AccountId accountId);
 }

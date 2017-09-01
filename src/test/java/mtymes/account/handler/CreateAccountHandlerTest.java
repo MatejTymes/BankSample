@@ -49,7 +49,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldSucceedIfAccountHasBeenAlreadyCreatedByThisOperation() {
         when(accountDao.createAccount(accountId, opLogId.version))
                 .thenReturn(false);
-        when(accountDao.findVersion(accountId))
+        when(accountDao.findCurrentVersion(accountId))
                 .thenReturn(Optional.of(opLogId.version));
         when(operationDao.markAsSuccessful(opLogId))
                 .thenReturn(true);
@@ -62,7 +62,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldFailIfAccountAlreadyExistedBeforeThisOperation() {
         when(accountDao.createAccount(accountId, opLogId.version))
                 .thenReturn(false);
-        when(accountDao.findVersion(accountId))
+        when(accountDao.findCurrentVersion(accountId))
                 .thenReturn(Optional.of(randomVersion(before(opLogId.version))));
         when(operationDao.markAsFailed(opLogId, "Account '" + accountId + "' already exists"))
                 .thenReturn(true);
@@ -75,7 +75,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldFailIfUnableToCreateAccountAndRetrieveAccountVersion() {
         when(accountDao.createAccount(accountId, opLogId.version))
                 .thenReturn(false);
-        when(accountDao.findVersion(accountId))
+        when(accountDao.findCurrentVersion(accountId))
                 .thenReturn(Optional.empty());
         when(operationDao.markAsFailed(opLogId, "Failed to create Account '" + accountId + "'"))
                 .thenReturn(true);
@@ -88,7 +88,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
         when(accountDao.createAccount(accountId, opLogId.version))
                 .thenReturn(false);
-        when(accountDao.findVersion(accountId))
+        when(accountDao.findCurrentVersion(accountId))
                 .thenReturn(Optional.of(randomVersion(after(opLogId.version))));
 
         // When & Then

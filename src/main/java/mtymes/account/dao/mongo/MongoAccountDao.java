@@ -78,7 +78,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     }
 
     @Override
-    public Optional<Version> findVersion(AccountId accountId) {
+    public Optional<Version> findCurrentVersion(AccountId accountId) {
         return findOne(
                 accounts,
                 doc(ACCOUNT_ID, accountId),

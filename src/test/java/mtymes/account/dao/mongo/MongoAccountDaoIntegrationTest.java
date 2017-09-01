@@ -62,7 +62,7 @@ public class MongoAccountDaoIntegrationTest {
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
         assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, version)));
-        assertThat(accountDao.findVersion(accountId), isPresentAndEqualTo(version));
+        assertThat(accountDao.findCurrentVersion(accountId), isPresentAndEqualTo(version));
     }
 
     @Test
@@ -80,13 +80,13 @@ public class MongoAccountDaoIntegrationTest {
         assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
         assertThat(account, isPresentAndEqualTo(new Account(accountId, ZERO, version)));
-        assertThat(accountDao.findVersion(accountId), isPresentAndEqualTo(version));
+        assertThat(accountDao.findCurrentVersion(accountId), isPresentAndEqualTo(version));
     }
 
     @Test
     public void shouldNotFindNonExistingAccount() {
         assertThat(accountDao.findAccount(randomAccountId()), isNotPresent());
-        assertThat(accountDao.findVersion(randomAccountId()), isNotPresent());
+        assertThat(accountDao.findCurrentVersion(randomAccountId()), isNotPresent());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class MongoAccountDaoIntegrationTest {
         assertThat(success, is(true));
         Optional<Account> account = accountDao.findAccount(accountId);
         assertThat(account, isPresentAndEqualTo(new Account(accountId, newBalance, newVersion)));
-        assertThat(accountDao.findVersion(accountId), isPresentAndEqualTo(newVersion));
+        assertThat(accountDao.findCurrentVersion(accountId), isPresentAndEqualTo(newVersion));
     }
 
     @Test
@@ -125,7 +125,7 @@ public class MongoAccountDaoIntegrationTest {
         assertThat(success, is(false));
         Optional<Account> account = accountDao.findAccount(accountId);
         assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, currentVersion)));
-        assertThat(accountDao.findVersion(accountId), isPresentAndEqualTo(currentVersion));
+        assertThat(accountDao.findCurrentVersion(accountId), isPresentAndEqualTo(currentVersion));
     }
 
     @Test

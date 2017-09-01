@@ -25,7 +25,7 @@ public abstract class BaseOperationHandler<T extends Operation> implements Opera
     }
 
     protected Optional<Version> loadAccountVersion(AccountId accountId) {
-        return accountDao.findVersion(accountId);
+        return accountDao.findCurrentVersion(accountId);
     }
 
     protected void markAsSuccess(OpLogId opLogId) {

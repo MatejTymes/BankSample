@@ -1,4 +1,4 @@
-package mtymes.account.handler;
+package mtymes.account;
 
 import javafixes.concurrency.Runner;
 import mtymes.account.domain.account.AccountId;

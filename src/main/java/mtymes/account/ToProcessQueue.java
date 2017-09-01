@@ -1,4 +1,4 @@
-package mtymes.account.handler;
+package mtymes.account;
 
 import mtymes.account.domain.account.AccountId;
 
@@ -9,6 +9,7 @@ import java.util.concurrent.locks.StampedLock;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
+// todo: rename to SetQueue<T> and move into common
 public class ToProcessQueue {
 
     private final StampedLock lock = new StampedLock();
@@ -34,6 +35,16 @@ public class ToProcessQueue {
             } else {
                 return Optional.empty();
             }
+        } finally {
+            lock.unlock(stamp);
+        }
+    }
+
+    // todo: test this
+    public int size() {
+        long stamp = lock.writeLock();
+        try {
+            return accountIds.size();
         } finally {
             lock.unlock(stamp);
         }
