@@ -1,7 +1,7 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
-import mtymes.account.ToProcessQueue;
+import mtymes.account.WorkQueue;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
@@ -24,7 +24,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     private AccountDao accountDao;
     private OperationDao operationDao;
-    private ToProcessQueue queue;
+    private WorkQueue queue;
     private TransferFromHandler handler;
 
     private TransferId transferId = randomTransferId();
@@ -39,7 +39,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
     public void setUp() throws Exception {
         accountDao = mock(AccountDao.class);
         operationDao = mock(OperationDao.class);
-        queue = mock(ToProcessQueue.class);
+        queue = mock(WorkQueue.class);
         handler = new TransferFromHandler(accountDao, operationDao, queue);
     }
 

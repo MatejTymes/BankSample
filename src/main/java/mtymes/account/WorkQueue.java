@@ -10,7 +10,7 @@ import java.util.concurrent.locks.StampedLock;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
 // todo: rename to SetQueue<T> and move into common
-public class ToProcessQueue {
+public class WorkQueue {
 
     private final StampedLock lock = new StampedLock();
     private final Set<AccountId> accountIds = newLinkedHashSet();

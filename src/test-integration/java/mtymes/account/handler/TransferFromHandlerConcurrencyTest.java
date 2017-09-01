@@ -2,7 +2,7 @@ package mtymes.account.handler;
 
 import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
-import mtymes.account.ToProcessQueue;
+import mtymes.account.WorkQueue;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.LoggedOperation;
@@ -24,13 +24,13 @@ import static org.junit.Assert.assertThat;
 
 public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
 
-    private ToProcessQueue toProcessQueue = new ToProcessQueue();
+    private WorkQueue workQueue = new WorkQueue();
     private TransferFromHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new TransferFromHandler(accountDao, operationDao, toProcessQueue);
+        handler = new TransferFromHandler(accountDao, operationDao, workQueue);
     }
 
     @Test
@@ -69,8 +69,8 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), opLogId.version)));
         assertThat(loadAccount(toAccount.accountId), equalTo(toAccount));
 
-        assertThat(toProcessQueue.takeNextAvailable(), isPresentAndEqualTo(toAccount.accountId));
-        assertThat(toProcessQueue.takeNextAvailable(), isNotPresent());
+        assertThat(workQueue.takeNextAvailable(), isPresentAndEqualTo(toAccount.accountId));
+        assertThat(workQueue.takeNextAvailable(), isNotPresent());
 
         // todo: verify TransferTo has been created
     }
@@ -114,7 +114,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         Account toAccount = loadAccount(toAccountId);
         assertThat(toAccount, equalTo(new Account(toAccountId, toBalance, initialToAccount.version)));
 
-        assertThat(toProcessQueue.takeNextAvailable(), isNotPresent());
+        assertThat(workQueue.takeNextAvailable(), isNotPresent());
 
         // todo: verify TransferTo has NOT been created
     }

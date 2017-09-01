@@ -17,9 +17,9 @@ import static mtymes.test.Random.randomAccountId;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class ToProcessQueueTest {
+public class WorkQueueTest {
 
-    private ToProcessQueue queue = new ToProcessQueue();
+    private WorkQueue queue = new WorkQueue();
 
     @Test
     public void shouldBeAbleToRetrieveAccountIdsInOrder() {

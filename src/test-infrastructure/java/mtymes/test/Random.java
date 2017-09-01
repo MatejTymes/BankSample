@@ -42,8 +42,8 @@ public class Random {
 
     public static Decimal randomDecimal() {
         return decimal(
-                randomLong(Long.MIN_VALUE, Long.MAX_VALUE),
-                randomInt(-2, 2)
+                randomInt(Integer.MIN_VALUE, Integer.MAX_VALUE),
+                2
         );
     }
 

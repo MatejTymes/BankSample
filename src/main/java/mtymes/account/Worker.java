@@ -16,16 +16,16 @@ import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
 // todo: test
-public class ToProcessWorker {
+public class Worker {
 
-    private Logger logger = getLogger(ToProcessWorker.class);
+    private Logger logger = getLogger(Worker.class);
 
-    private final ToProcessQueue queue;
+    private final WorkQueue queue;
     private final OperationDao operationDao;
     private final HandlerDispatcher dispatcher;
     private final Duration timeoutIfNoWork;
 
-    public ToProcessWorker(ToProcessQueue queue, OperationDao operationDao, HandlerDispatcher dispatcher, Duration timeoutIfNoWork) {
+    public Worker(WorkQueue queue, OperationDao operationDao, HandlerDispatcher dispatcher, Duration timeoutIfNoWork) {
         this.queue = queue;
         this.operationDao = operationDao;
         this.dispatcher = dispatcher;

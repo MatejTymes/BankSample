@@ -1,7 +1,7 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
-import mtymes.account.ToProcessQueue;
+import mtymes.account.WorkQueue;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
@@ -17,11 +17,11 @@ import static java.lang.String.format;
 
 public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
 
-    private final ToProcessQueue toProcessQueue;
+    private final WorkQueue workQueue;
 
-    public TransferFromHandler(AccountDao accountDao, OperationDao operationDao, ToProcessQueue toProcessQueue) {
+    public TransferFromHandler(AccountDao accountDao, OperationDao operationDao, WorkQueue workQueue) {
         super(accountDao, operationDao);
-        this.toProcessQueue = toProcessQueue;
+        this.workQueue = workQueue;
     }
 
     // todo: test that any dao interaction can fail
@@ -67,7 +67,7 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
         } catch (DuplicateOperationException e) {
             // do nothing - another concurrent thread already submitted it
         }
-        toProcessQueue.add(detail.toAccountId);
+        workQueue.add(detail.toAccountId);
         markAsSuccess(opLogId);
     }
 }
