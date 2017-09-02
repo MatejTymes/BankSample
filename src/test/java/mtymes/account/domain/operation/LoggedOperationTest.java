@@ -13,6 +13,7 @@ import static mtymes.test.Random.randomOperation;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class LoggedOperationTest {
 
@@ -81,5 +82,106 @@ public class LoggedOperationTest {
         assertThat(loggedOperation.description, isPresentAndEqualTo(description));
 
         assertThat(loggedOperation.isFinished(), is(true));
+    }
+
+    @Test
+    public void shouldFailConstructionOnInvalidParameters() {
+        OpLogId opLogId = randomOpLogId();
+        Operation operation = randomOperation();
+        String description = "Some failure description";
+
+        try {
+            new LoggedOperation(null, operation, Optional.empty(), Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("opLogId can't be null"));
+        }
+        try {
+            new LoggedOperation(opLogId, null, Optional.empty(), Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("operation can't be null"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, null, Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("finalState can't be null - use Optional.empty() instead"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, Optional.empty(), null);
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("description can't be null - use Optional.empty() instead"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, Optional.empty(), Optional.of(description));
+
+            fail("should fail with IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage(), equalTo("only Failed Operation can have description"));
+        }
+
+        try {
+            new LoggedOperation(null, operation, Optional.of(Success), Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("opLogId can't be null"));
+        }
+        try {
+            new LoggedOperation(opLogId, null, Optional.of(Success), Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("operation can't be null"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, Optional.of(Success), null);
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("description can't be null - use Optional.empty() instead"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, Optional.of(Success), Optional.of(description));
+
+            fail("should fail with IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage(), equalTo("only Failed Operation can have description"));
+        }
+
+        try {
+            new LoggedOperation(null, operation, Optional.of(Failure), Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("opLogId can't be null"));
+        }
+        try {
+            new LoggedOperation(opLogId, null, Optional.of(Failure), Optional.empty());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("operation can't be null"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, Optional.of(Failure), null);
+
+            fail("should fail with IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage(), equalTo("Failed Operation must have description"));
+        }
+        try {
+            new LoggedOperation(opLogId, operation, Optional.of(Failure), Optional.empty());
+
+            fail("should fail with IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            assertThat(expected.getMessage(), equalTo("Failed Operation must have description"));
+        }
     }
 }
