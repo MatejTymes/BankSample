@@ -14,8 +14,8 @@ public class LoggedOperation extends DataObject {
     public final Optional<FinalState> finalState;
     public final Optional<String> description;
 
-    // todo: test this
     public LoggedOperation(OpLogId opLogId, Operation operation, Optional<FinalState> finalState, Optional<String> description) {
+        // todo: test this
         checkNotNull(opLogId, "opLogId can't be null");
         checkNotNull(operation, "operation can't be null");
         checkNotNull(finalState, "finalState can't be null - use Optional.empty() instead");
@@ -36,7 +36,6 @@ public class LoggedOperation extends DataObject {
         this.description = description;
     }
 
-    // todo: test this
     public boolean isFinished() {
         return finalState.isPresent();
     }

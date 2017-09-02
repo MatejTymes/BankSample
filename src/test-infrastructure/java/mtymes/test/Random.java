@@ -81,6 +81,10 @@ public class Random {
         return opLogId(accountId, randomVersion());
     }
 
+    public static OpLogId randomOpLogId() {
+        return randomOpLogId(randomAccountId());
+    }
+
     public static Operation randomOperation(AccountId accountId) {
         switch (randomInt(1, 5)) {
             case 1:
