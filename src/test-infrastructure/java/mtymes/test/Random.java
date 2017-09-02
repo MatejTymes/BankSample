@@ -72,7 +72,7 @@ public class Random {
     @SafeVarargs
     public static Version randomVersion(Condition<Version>... validityConditions) {
         return generateValidValue(
-                () -> version(randomLong(0, Long.MAX_VALUE)),
+                () -> version(randomInt(0, Integer.MAX_VALUE)),
                 validityConditions
         );
     }
