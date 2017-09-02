@@ -48,9 +48,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
                 .build());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = nextOperationIdFor(fromAccount);
+        OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = amountBetween(d("0.01"), fromAccount.balance);
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_balanceUpdateOf(fromAccount, fromAccount.balance.minus(amount), opLogId);
@@ -68,9 +68,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(randomAccount());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = currentlyAppliedOperationIdFor(fromAccount);
+        OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_storageOfDuplicate(new TransferTo(transferDetail));
@@ -87,9 +87,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(randomAccount());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = currentlyAppliedOperationIdFor(fromAccount);
+        OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_storageOf(new TransferTo(transferDetail));
@@ -108,9 +108,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
                 .build());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = nextOperationIdFor(fromAccount);
+        OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = fromAccount.balance.plus(amountBetween(d("0.01"), d("1_000.00")));
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_failureOfOperation(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
@@ -127,9 +127,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
                 .build());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = nextOperationIdFor(fromAccount);
+        OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_failureOfOperation(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
@@ -146,9 +146,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
                 .build());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = nextOperationIdFor(fromAccount);
+        OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_failureOfOperation(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
@@ -165,9 +165,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
                 .build());
         AccountId toAccountId = given_anMissingAccount();
 
-        OpLogId opLogId = nextOperationIdFor(fromAccount);
+        OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = amountBetween(d("0.01"), fromAccount.balance);
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccountId, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccountId, amount);
 
         // Then
         expect_failureOfOperation(opLogId, "To Account '" + toAccountId + "' does not exist");
@@ -183,7 +183,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
 
         OpLogId opLogId = randomOpLogId(fromAccountId);
         Decimal amount = randomPositiveAmount();
-        TransferDetail transferDetail = transferDetailFor(fromAccountId, toAccountId, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccountId, toAccountId, amount);
 
         // Then
         expect_failureOfOperation(opLogId, "From Account '" + fromAccountId + "' does not exist");
@@ -200,9 +200,9 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
                 .build());
         Account toAccount = given_anAccountExists(randomAccount());
 
-        OpLogId opLogId = previouslyAppliedOperationIdFor(fromAccount);
+        OpLogId opLogId = generatePreviouslyAppliedOperationIdFor(fromAccount);
         Decimal amount = amountBetween(d("0.01"), fromAccount.balance);
-        TransferDetail transferDetail = transferDetailFor(fromAccount, toAccount, amount);
+        TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         // do nothing
@@ -223,26 +223,22 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         return accountId;
     }
 
-    private OpLogId nextOperationIdFor(Account account) {
+    private OpLogId generateNextOperationIdFor(Account account) {
         return opLogId(
                 account.accountId,
                 version(account.version.value() + randomLong(1L, 10L))
         );
     }
 
-    private OpLogId currentlyAppliedOperationIdFor(Account account) {
+    private OpLogId generateCurrentlyAppliedOperationIdFor(Account account) {
         return opLogId(account.accountId, account.version);
     }
 
-    private OpLogId previouslyAppliedOperationIdFor(Account account) {
+    private OpLogId generatePreviouslyAppliedOperationIdFor(Account account) {
         return opLogId(
                 account.accountId,
                 version(account.version.value() + randomLong(-10L, -1L))
         );
-    }
-
-    private void expect_balanceUpdateOf(Account account, Decimal newBalance, OpLogId opLogId) {
-        when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.version)).thenReturn(true);
     }
 
     private Account randomAccount() {
@@ -256,16 +252,20 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         return decimal(randomLong(fromLong, toLong), scaleToUse);
     }
 
-    private TransferDetail transferDetailFor(Account fromAccount, Account toAccount, Decimal amount) {
+    private TransferDetail generateTransferDetailFor(Account fromAccount, Account toAccount, Decimal amount) {
         return new TransferDetail(randomTransferId(), fromAccount.accountId, toAccount.accountId, amount);
     }
 
-    private TransferDetail transferDetailFor(Account fromAccount, AccountId toAccountId, Decimal amount) {
+    private TransferDetail generateTransferDetailFor(Account fromAccount, AccountId toAccountId, Decimal amount) {
         return new TransferDetail(randomTransferId(), fromAccount.accountId, toAccountId, amount);
     }
 
-    private TransferDetail transferDetailFor(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
+    private TransferDetail generateTransferDetailFor(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
         return new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
+    }
+
+    private void expect_balanceUpdateOf(Account account, Decimal newBalance, OpLogId opLogId) {
+        when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.version)).thenReturn(true);
     }
 
     private void expect_storageOf(Operation operation) {
