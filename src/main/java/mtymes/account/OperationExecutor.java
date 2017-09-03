@@ -5,7 +5,6 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
 import mtymes.account.handler.HandlerDispatcher;
-import mtymes.account.handler.OperationHandler;
 
 import java.util.List;
 
@@ -44,11 +43,8 @@ public class OperationExecutor {
         List<OpLogId> unfinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(opLogId.accountId);
         for (OpLogId unfinishedOpLogId : unfinishedOpLogIds) {
             LoggedOperation loggedOperation = operationDao.findLoggedOperation(unfinishedOpLogId).get();
-            if (!loggedOperation.isFinished()) {
-                OperationHandler handler = loggedOperation.operation.apply(dispatcher);
-                handler.handleOperation(loggedOperation.opLogId, loggedOperation.operation);
-            }
-            if (opLogId.equals(loggedOperation.opLogId)) {
+            dispatcher.dispatchOperation(loggedOperation);
+            if (opLogId.equals(unfinishedOpLogId)) {
                 break;
             }
         }

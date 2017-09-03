@@ -42,4 +42,14 @@ public class HandlerDispatcher implements OperationVisitor<OperationHandler<?>> 
     public OperationHandler<TransferTo> visit(TransferTo request) {
         return transferToHandler;
     }
+
+    // todo: test this
+    @SuppressWarnings("unchecked")
+    public void dispatchOperation(LoggedOperation loggedOperation) {
+        if (!loggedOperation.isFinished()) {
+            Operation operation = loggedOperation.operation;
+            OperationHandler handler = operation.apply(this);
+            handler.handleOperation(loggedOperation.opLogId, operation);
+        }
+    }
 }

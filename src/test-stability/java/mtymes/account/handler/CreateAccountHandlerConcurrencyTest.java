@@ -4,43 +4,40 @@ import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.WithdrawFrom;
 import mtymes.test.ThreadSynchronizer;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static javafixes.concurrency.Runner.runner;
+import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.FinalState.Failure;
 import static mtymes.account.domain.operation.FinalState.Success;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
-import static mtymes.test.Random.*;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
-    private WithdrawFromHandler handler;
+    private CreateAccountHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new WithdrawFromHandler(accountDao, operationDao);
+        handler = new CreateAccountHandler(accountDao, operationDao);
     }
 
     @Test
-    public void shouldSucceedToWithdrawFromOnConcurrentExecution() {
+    public void shouldSucceedToCreateAccountOnConcurrentExecution() {
         int threadCount = 50;
 
-        Decimal amount = randomPositiveAmount();
-
-        Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
-        AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
-
-        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
-        OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
+        AccountId accountId = newAccountId();
+        CreateAccount createAccount = new CreateAccount(accountId);
+        OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
         Runner runner = runner(threadCount);
@@ -49,7 +46,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
             runner.runTask(() -> {
                 synchronizer.blockUntilAllThreadsCallThisMethod();
 
-                handler.handleOperation(opLogId, withdrawFrom);
+                handler.handleOperation(opLogId, createAccount);
             });
         }
         runner.waitTillDone().shutdown();
@@ -58,21 +55,18 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         LoggedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Success));
         assertThat(operation.description, isNotPresent());
-        Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.minus(amount), opLogId.version)));
+        Optional<Account> account = accountDao.findAccount(accountId);
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, opLogId.version)));
     }
 
     @Test
-    public void shouldFailToWithdrawFromOnConcurrentExecutionIfThereIsInsufficientBalance() {
+    public void shouldFailToCreateAccountOnConcurrentExecutionIfItIsAlreadyPresent() {
         int threadCount = 50;
 
-        Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
-        Account initialAccount = createAccountWithInitialBalance(initialBalance);
-        AccountId accountId = initialAccount.accountId;
-
-        Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
-        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
-        OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
+        AccountId accountId = newAccountId();
+        Account initialAccount = createAccount(accountId);
+        CreateAccount createAccount = new CreateAccount(accountId);
+        OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
         Runner runner = runner(threadCount);
@@ -81,7 +75,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
             runner.runTask(() -> {
                 synchronizer.blockUntilAllThreadsCallThisMethod();
 
-                handler.handleOperation(opLogId, withdrawFrom);
+                handler.handleOperation(opLogId, createAccount);
             });
         }
         runner.waitTillDone().shutdown();
@@ -89,8 +83,8 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         // Then
         LoggedOperation operation = loadOperation(opLogId);
         assertThat(operation.finalState, isPresentAndEqualTo(Failure));
-        assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + accountId + "'"));
-        Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance, initialAccount.version)));
+        assertThat(operation.description, isPresentAndEqualTo("Account '" + accountId + "' already exists"));
+        Optional<Account> account = accountDao.findAccount(accountId);
+        assertThat(account, isPresentAndEqualTo(initialAccount));
     }
 }

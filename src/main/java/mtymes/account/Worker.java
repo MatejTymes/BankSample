@@ -1,11 +1,11 @@
 package mtymes.account;
 
+import javafixes.concurrency.Task;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.handler.HandlerDispatcher;
-import mtymes.account.handler.OperationHandler;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -15,8 +15,9 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
+// todo: add ability to shut them down
 // todo: test
-public class Worker {
+public class Worker implements Task {
 
     private Logger logger = getLogger(Worker.class);
 
@@ -38,9 +39,8 @@ public class Worker {
 
             if (!optionalAccountId.isPresent()) {
                 processAccountOperations(optionalAccountId.get());
-                Thread.sleep(0); // allow interruption
             } else {
-                Thread.sleep(timeoutIfNoWork.toMillis());
+                Thread.sleep(timeoutIfNoWork.toMillis()); // allow interruption
             }
         }
     }
@@ -50,10 +50,8 @@ public class Worker {
             List<OpLogId> unfinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(accountId);
             for (OpLogId unfinishedOpLogId : unfinishedOpLogIds) {
                 LoggedOperation loggedOperation = operationDao.findLoggedOperation(unfinishedOpLogId).get();
-                if (!loggedOperation.isFinished()) {
-                    OperationHandler handler = loggedOperation.operation.apply(dispatcher);
-                    handler.handleOperation(loggedOperation.opLogId, loggedOperation.operation);
-                }
+                dispatcher.dispatchOperation(loggedOperation);
+                Thread.sleep(0); // allow interruption
             }
         } catch (Exception e) {
             logger.error(format("Failed to evaluate operation for Account '%s'", accountId), e);

@@ -22,7 +22,7 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
     private WorkQueue workQueue = new WorkQueue();
     private TransferFromHandler handler;

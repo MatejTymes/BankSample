@@ -24,7 +24,7 @@ import static mtymes.account.domain.account.AccountId.newAccountId;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
-public abstract class BaseOperationHandlerConcurrencyTest {
+public abstract class BaseOperationHandlerStabilityTest {
 
     protected static EmbeddedDB db;
     protected static AccountDao accountDao;

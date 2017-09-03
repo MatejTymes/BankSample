@@ -1,11 +1,13 @@
 package mtymes.account.domain.operation;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import mtymes.account.domain.account.AccountId;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class TransferTo extends Operation {
 
+    @JsonUnwrapped
     public final TransferDetail detail;
 
     public TransferTo(TransferDetail detail) {

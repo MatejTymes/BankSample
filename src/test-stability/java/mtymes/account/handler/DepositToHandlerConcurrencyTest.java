@@ -4,7 +4,9 @@ import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.*;
+import mtymes.account.domain.operation.DepositTo;
+import mtymes.account.domain.operation.LoggedOperation;
+import mtymes.account.domain.operation.OpLogId;
 import mtymes.test.ThreadSynchronizer;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,14 +19,14 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
-    private TransferToHandler handler;
+    private DepositToHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new TransferToHandler(accountDao, operationDao);
+        handler = new DepositToHandler(accountDao, operationDao);
     }
 
     @Test
@@ -36,11 +38,8 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
         Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        TransferId transferId = randomTransferId();
-        TransferTo transferTo = new TransferTo(new TransferDetail(
-                transferId, randomAccountId(), accountId, amount
-        ));
-        OpLogId opLogId = operationDao.storeOperation(transferTo);
+        DepositTo depositTo = new DepositTo(accountId, amount);
+        OpLogId opLogId = operationDao.storeOperation(depositTo);
 
         // When
         Runner runner = runner(threadCount);
@@ -49,7 +48,7 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerConcur
             runner.runTask(() -> {
                 synchronizer.blockUntilAllThreadsCallThisMethod();
 
-                handler.handleOperation(opLogId, transferTo);
+                handler.handleOperation(opLogId, depositTo);
             });
         }
         runner.waitTillDone().shutdown();
