@@ -42,7 +42,7 @@ public class BaseOperationHandlerDisasterRecoveryTest extends BaseOperationHandl
         assertThat(failureCount.get(), greaterThan(0));
     }
 
-    protected void repeatWhileSystemIsBroken(Runnable task) {
+    protected void retryWhileSystemIsBroken(Runnable task) {
         boolean systemBroken;
         do {
             systemBroken = false;

@@ -16,7 +16,6 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
         super(accountDao, operationDao);
     }
 
-    // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, CreateAccount request) {
 

@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static mtymes.account.domain.account.AccountId.newAccountId;
+import static mtymes.account.domain.operation.FinalState.Failure;
 import static mtymes.account.domain.operation.FinalState.Success;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
@@ -28,13 +29,13 @@ public class CreateAccountHandlerDisasterRecoveryTest extends BaseOperationHandl
     }
 
     @Test
-    public void shouldSucceedToCreateAccountEvenIfDbAccessFailedOnEachStep() {
+    public void shouldSucceedToCreateAccountEvenIfAnyDbCallFails() {
         AccountId accountId = newAccountId();
         CreateAccount createAccount = new CreateAccount(accountId);
         OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
-        repeatWhileSystemIsBroken(
+        retryWhileSystemIsBroken(
                 () -> handler.handleOperation(opLogId, createAccount)
         );
 
@@ -46,4 +47,23 @@ public class CreateAccountHandlerDisasterRecoveryTest extends BaseOperationHandl
         assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, opLogId.version)));
     }
 
+    @Test
+    public void shouldFailToCreateAccountIfItIsAlreadyPresentEvenIfAnyDbCallFails() {
+        AccountId accountId = newAccountId();
+        Account initialAccount = createAccount(accountId);
+        CreateAccount createAccount = new CreateAccount(accountId);
+        OpLogId opLogId = operationDao.storeOperation(createAccount);
+
+        // When
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, createAccount)
+        );
+
+        // Then
+        LoggedOperation operation = loadOperation(opLogId);
+        assertThat(operation.finalState, isPresentAndEqualTo(Failure));
+        assertThat(operation.description, isPresentAndEqualTo("Account '" + accountId + "' already exists"));
+        Optional<Account> account = accountDao.findAccount(accountId);
+        assertThat(account, isPresentAndEqualTo(initialAccount));
+    }
 }
