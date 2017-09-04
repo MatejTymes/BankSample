@@ -16,7 +16,6 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
         super(accountDao, operationDao);
     }
 
-    // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, TransferTo request) {
         TransferDetail detail = request.detail;

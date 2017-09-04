@@ -14,11 +14,12 @@ import java.util.Optional;
 import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
+import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static org.junit.Assert.assertThat;
 
-public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
     private CreateAccountHandler handler;
 

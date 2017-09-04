@@ -18,7 +18,6 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
         super(accountDao, operationDao);
     }
 
-    // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, WithdrawFrom request) {
         AccountId accountId = request.accountId;

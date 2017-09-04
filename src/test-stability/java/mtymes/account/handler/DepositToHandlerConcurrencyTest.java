@@ -10,13 +10,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static mtymes.account.domain.operation.FinalState.Applied;
+import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
     private DepositToHandler handler;
 

@@ -1,8 +1,6 @@
 package mtymes.account;
 
-import javafixes.concurrency.Runner;
 import mtymes.account.domain.account.AccountId;
-import mtymes.test.ThreadSynchronizer;
 import org.junit.Test;
 
 import java.util.List;
@@ -10,7 +8,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static javafixes.common.CollectionUtil.newList;
 import static javafixes.common.CollectionUtil.newSet;
-import static javafixes.concurrency.Runner.runner;
+import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.randomAccountId;
@@ -76,28 +74,16 @@ public class WorkQueueTest {
         );
 
         // When
-        Runner runner = runner(threadCount);
-        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            final AccountId accountId = accountIds.get(i % accountIds.size());
-            runner.runTask(() -> {
-                synchronizer.blockUntilAllThreadsCallThisMethod();
-
-                queue.add(accountId);
-            });
-        }
-        runner.waitTillDone();
+        runConcurrentlyOnNThreads(
+                index -> queue.add(accountIds.get(index % accountIds.size())),
+                threadCount
+        );
 
         List<AccountId> retrievedAccountIds = newCopyOnWriteArrayList();
-        ThreadSynchronizer synchronizer2 = new ThreadSynchronizer(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            runner.runTask(() -> {
-                synchronizer.blockUntilAllThreadsCallThisMethod();
-
-                queue.takeNextAvailable().ifPresent(retrievedAccountIds::add);
-            });
-        }
-        runner.waitTillDone().shutdown();
+        runConcurrentlyOnNThreads(
+                () -> queue.takeNextAvailable().ifPresent(retrievedAccountIds::add),
+                threadCount
+        );
 
         // Then
         assertThat(retrievedAccountIds.size(), equalTo(accountIds.size()));

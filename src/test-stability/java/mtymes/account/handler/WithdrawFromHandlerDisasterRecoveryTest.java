@@ -11,25 +11,24 @@ import org.junit.Test;
 
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
-import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
+public class WithdrawFromHandlerDisasterRecoveryTest extends BaseOperationHandlerDisasterRecoveryTest {
 
     private WithdrawFromHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new WithdrawFromHandler(accountDao, operationDao);
+        handler = new WithdrawFromHandler(brokenAccountDao, brokenOperationDao);
     }
 
     @Test
-    public void shouldSucceedToWithdrawFromOnConcurrentExecution() {
+    public void shouldSucceedToWithdrawFromEvenIfAnyDbCallFails() {
         Decimal amount = randomPositiveAmount();
 
         Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
@@ -39,9 +38,8 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, withdrawFrom),
-                50
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, withdrawFrom)
         );
 
         // Then
@@ -53,7 +51,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
     }
 
     @Test
-    public void shouldFailToWithdrawFromIfThereIsInsufficientBalanceOnConcurrentExecution() {
+    public void shouldFailToWithdrawFromIfThereIsInsufficientBalanceEvenIfAnyDbCallFails() {
         Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         Account initialAccount = createAccountWithInitialBalance(initialBalance);
         AccountId accountId = initialAccount.accountId;
@@ -63,9 +61,8 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, withdrawFrom),
-                50
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, withdrawFrom)
         );
 
         // Then

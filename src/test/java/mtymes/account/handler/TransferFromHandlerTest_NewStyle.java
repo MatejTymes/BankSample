@@ -46,14 +46,14 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(accountBuilder()
                 .balance(amountBetween(d("0.01"), d("10_000.00")))
                 .build());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = amountBetween(d("0.01"), fromAccount.balance);
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_balanceUpdateOf(fromAccount, fromAccount.balance.minus(amount), opLogId);
+        expect_balanceUpdateOn(fromAccount, fromAccount.balance.minus(amount), opLogId);
         expect_storageOf(new TransferTo(transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
         expect_operationMarkedAsApplied(opLogId);
@@ -65,8 +65,8 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
     @Test
     public void shouldSucceedIfMoneyHasBeenAlreadyTransferredByThisOperationAndTransferToOperationAlreadyExists() {
         // Given
-        Account fromAccount = given_anAccountExists(randomAccount());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account fromAccount = given_anAccountExists();
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
@@ -84,8 +84,8 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
     @Test
     public void shouldSucceedIfMoneyHasBeenAlreadyTransferredByThisOperation() {
         // Given
-        Account fromAccount = given_anAccountExists(randomAccount());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account fromAccount = given_anAccountExists();
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
@@ -106,7 +106,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(accountBuilder()
                 .balance(amountBetween(d("0.01"), d("10_000.00")))
                 .build());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = fromAccount.balance.plus(amountBetween(d("0.01"), d("1_000.00")));
@@ -125,7 +125,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(accountBuilder()
                 .balance(ZERO)
                 .build());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
@@ -144,7 +144,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(accountBuilder()
                 .balance(amountBetween(d("-10_000.00"), d("-0.01")))
                 .build());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
@@ -198,7 +198,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         Account fromAccount = given_anAccountExists(accountBuilder()
                 .balance(amountBetween(d("0.01"), d("10_000.00")))
                 .build());
-        Account toAccount = given_anAccountExists(randomAccount());
+        Account toAccount = given_anAccountExists();
 
         OpLogId opLogId = generatePreviouslyAppliedOperationIdFor(fromAccount);
         Decimal amount = amountBetween(d("0.01"), fromAccount.balance);
@@ -215,6 +215,10 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
     private Account given_anAccountExists(Account account) {
         doReturn(Optional.of(account)).when(accountDao).findAccount(account.accountId);
         return account;
+    }
+
+    private Account given_anAccountExists() {
+        return given_anAccountExists(randomAccount());
     }
 
     private AccountId given_anMissingAccount() {
@@ -264,7 +268,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         return new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
     }
 
-    private void expect_balanceUpdateOf(Account account, Decimal newBalance, OpLogId opLogId) {
+    private void expect_balanceUpdateOn(Account account, Decimal newBalance, OpLogId opLogId) {
         when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId)).thenReturn(true);
     }
 

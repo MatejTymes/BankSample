@@ -13,13 +13,14 @@ import java.util.Optional;
 
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
+import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.*;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
     private WorkQueue workQueue = new WorkQueue();
     private TransferFromHandler handler;
@@ -84,10 +85,8 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, transferFrom),
-                50
-        );
+        Runnable task = () -> handler.handleOperation(opLogId, transferFrom);
+        runConcurrentlyOnNThreads(task, 50);
 
         // Then
         LoggedOperation operation = loadOperation(opLogId);

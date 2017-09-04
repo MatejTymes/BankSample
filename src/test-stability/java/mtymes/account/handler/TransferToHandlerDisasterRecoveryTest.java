@@ -8,25 +8,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static mtymes.account.domain.operation.FinalState.Applied;
-import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
+public class TransferToHandlerDisasterRecoveryTest extends BaseOperationHandlerDisasterRecoveryTest {
 
     private TransferToHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new TransferToHandler(accountDao, operationDao);
+        handler = new TransferToHandler(brokenAccountDao, brokenOperationDao);
     }
 
     @Test
-    public void shouldSucceedToDepositToOnConcurrentExecution() {
+    public void shouldSucceedToDepositToEvenIfAnyDbCallFails() {
         Decimal amount = randomPositiveAmount();
 
         Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
@@ -39,9 +38,8 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerStabil
         OpLogId opLogId = operationDao.storeOperation(transferTo);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, transferTo),
-                50
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, transferTo)
         );
 
         // Then

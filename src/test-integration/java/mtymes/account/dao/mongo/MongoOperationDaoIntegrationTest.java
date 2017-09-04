@@ -1,10 +1,8 @@
 package mtymes.account.dao.mongo;
 
-import javafixes.concurrency.Runner;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
-import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -22,12 +20,12 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.LongStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
-import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.dao.mongo.Collections.operationsCollection;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
+import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
@@ -215,24 +213,20 @@ public class MongoOperationDaoIntegrationTest {
                 accountId -> new AtomicInteger(0)
         ));
 
-        Runner runner = runner(threadCount);
-        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            runner.runTask(() -> {
-                AccountId accountId = pickRandomValue(accountIds);
-                Operation operation = randomOperation(accountId);
+        runConcurrentlyOnNThreads(
+                () -> {
+                    AccountId accountId = pickRandomValue(accountIds);
+                    Operation operation = randomOperation(accountId);
 
-                synchronizer.blockUntilAllThreadsCallThisMethod();
+                    // When
+                    opLogIds.add(
+                            operationDao.storeOperation(operation)
+                    );
 
-                // When
-                opLogIds.add(
-                        operationDao.storeOperation(operation)
-                );
-
-                highestId.get(accountId).incrementAndGet();
-            });
-        }
-        runner.waitTillDone().shutdown();
+                    highestId.get(accountId).incrementAndGet();
+                },
+                threadCount
+        );
 
         // Then
         assertThat(opLogIds.size(), is(threadCount));
@@ -253,28 +247,24 @@ public class MongoOperationDaoIntegrationTest {
 
         List<FinalState> appliedStates = newCopyOnWriteArrayList();
 
-        Runner runner = runner(threadCount);
-        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            runner.runTask(() -> {
-                FinalState stateToApply = pickRandomValue(FinalState.values());
+        runConcurrentlyOnNThreads(
+                () -> {
+                    FinalState stateToApply = pickRandomValue(FinalState.values());
 
-                synchronizer.blockUntilAllThreadsCallThisMethod();
+                    // When
+                    boolean success;
+                    if (stateToApply == FinalState.Applied) {
+                        success = operationDao.markAsApplied(opLogId);
+                    } else {
+                        success = operationDao.markAsRejected(opLogId, "some description");
+                    }
 
-                // When
-                boolean success;
-                if (stateToApply == FinalState.Applied) {
-                    success = operationDao.markAsApplied(opLogId);
-                } else {
-                    success = operationDao.markAsRejected(opLogId, "some description");
-                }
-
-                if (success) {
-                    appliedStates.add(stateToApply);
-                }
-            });
-        }
-        runner.waitTillDone().shutdown();
+                    if (success) {
+                        appliedStates.add(stateToApply);
+                    }
+                },
+                threadCount
+        );
 
         // Then
         assertThat(appliedStates.size(), is(1));
