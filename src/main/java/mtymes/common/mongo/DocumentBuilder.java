@@ -13,7 +13,6 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.util.stream.Collectors.toList;
 import static javafixes.common.StreamUtil.toStream;
 
-// todo: test this
 public class DocumentBuilder {
 
     private final Map<String, Object> values = newLinkedHashMap();

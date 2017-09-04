@@ -33,7 +33,6 @@ import static mtymes.test.Random.randomAccountId;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-// todo: move into test-playground
 @Ignore
 public class OpStoragePerformanceTest {
 
