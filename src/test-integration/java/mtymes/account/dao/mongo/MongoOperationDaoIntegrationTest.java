@@ -13,13 +13,14 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 import static java.util.stream.LongStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
+import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.account.dao.mongo.Collections.operationsCollection;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.FinalState.Applied;
@@ -231,11 +232,11 @@ public class MongoOperationDaoIntegrationTest {
         // Then
         assertThat(opLogIds.size(), is(threadCount));
 
-        // todo: implement with opLogIds
-//        Set<SeqId> expectedSeqIds = rangeClosed(1, threadCount)
-//                .mapToObj(SeqId::seqId)
-//                .collect(toSet());
-//        assertThat(newSet(opLogIds), equalTo(expectedSeqIds));
+        Set<OpLogId> expectedOpLogIds = highestId.entrySet().stream()
+                .filter(entry -> entry.getValue().get() > 0)
+                .flatMap(entry -> rangeClosed(1, entry.getValue().get()).mapToObj(seqId -> opLogId(entry.getKey(), version(seqId))))
+                .collect(toSet());
+        assertThat(newSet(opLogIds), equalTo(expectedOpLogIds));
     }
 
     @Test
