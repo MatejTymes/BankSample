@@ -25,16 +25,16 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, TransferFrom request) {
-        TransferDetail detail = request.detail;
+    public void handleOperation(OpLogId opLogId, TransferFrom operation) {
+        TransferDetail detail = operation.detail;
         Optional<Account> optionalFromAccount = loadAccount(detail.fromAccountId);
         if (!optionalFromAccount.isPresent()) {
-            markAsRejected(opLogId, String.format("From Account '%s' does not exist", detail.fromAccountId));
+            markOperationAsRejected(opLogId, format("From Account '%s' does not exist", detail.fromAccountId));
             return;
         }
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (!optionalToAccount.isPresent()) {
-            markAsRejected(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
+            markOperationAsRejected(opLogId, format("To Account '%s' does not exist", detail.toAccountId));
             return;
         }
 
@@ -48,7 +48,7 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
         if (opLogId.canApplyOperationTo(account)) {
             Decimal newBalance = account.balance.minus(detail.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markAsRejected(opLogId, format("Insufficient funds on account '%s'", detail.fromAccountId));
+                markOperationAsRejected(opLogId, format("Insufficient funds on account '%s'", detail.fromAccountId));
                 return false;
             } else {
                 accountDao.updateBalance(detail.fromAccountId, newBalance, account.version, opLogId.seqId);
@@ -66,6 +66,6 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
             // do nothing - another concurrent thread already submitted it
         }
         workQueue.add(detail.toAccountId);
-        markAsApplied(opLogId);
+        markOperationAsApplied(opLogId);
     }
 }

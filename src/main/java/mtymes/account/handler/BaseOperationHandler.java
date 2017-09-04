@@ -28,11 +28,11 @@ public abstract class BaseOperationHandler<T extends Operation> implements Opera
         return accountDao.findCurrentVersion(accountId);
     }
 
-    protected void markAsApplied(OpLogId opLogId) {
+    protected void markOperationAsApplied(OpLogId opLogId) {
         operationDao.markAsApplied(opLogId);
     }
 
-    protected void markAsRejected(OpLogId opLogId, String description) {
+    protected void markOperationAsRejected(OpLogId opLogId, String description) {
         operationDao.markAsRejected(opLogId, description);
     }
 }

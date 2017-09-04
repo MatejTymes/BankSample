@@ -17,26 +17,26 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, CreateAccount request) {
+    public void handleOperation(OpLogId opLogId, CreateAccount operation) {
 
-        boolean success = accountDao.createAccount(request.accountId, opLogId.seqId);
+        boolean success = accountDao.createAccount(operation.accountId, opLogId.seqId);
         if (success) {
-            markAsApplied(opLogId);
+            markOperationAsApplied(opLogId);
         } else {
-            onAccountNotCreated(opLogId, request);
+            onAccountNotCreated(opLogId, operation);
         }
     }
 
-    private void onAccountNotCreated(OpLogId opLogId, CreateAccount request) {
-        Optional<Version> optionalVersion = loadAccountVersion(request.accountId);
+    private void onAccountNotCreated(OpLogId opLogId, CreateAccount operation) {
+        Optional<Version> optionalVersion = loadAccountVersion(operation.accountId);
         if (!optionalVersion.isPresent()) {
-            markAsRejected(opLogId, format("Failed to create Account '%s'", request.accountId));
+            markOperationAsRejected(opLogId, format("Failed to create Account '%s'", operation.accountId));
         } else {
             Version accountVersion = optionalVersion.get();
             if (opLogId.canApplyOperationTo(accountVersion)) {
-                markAsRejected(opLogId, format("Account '%s' already exists", request.accountId));
+                markOperationAsRejected(opLogId, format("Account '%s' already exists", operation.accountId));
             } else if (opLogId.isOperationCurrentlyAppliedTo(accountVersion)) {
-                markAsApplied(opLogId);
+                markOperationAsApplied(opLogId);
             }
         }
     }

@@ -19,27 +19,27 @@ public class HandlerDispatcher implements OperationVisitor<OperationHandler<?>> 
     }
 
     @Override
-    public OperationHandler<CreateAccount> visit(CreateAccount request) {
+    public OperationHandler<CreateAccount> visit(CreateAccount operation) {
         return createAccountHandler;
     }
 
     @Override
-    public OperationHandler<DepositTo> visit(DepositTo request) {
+    public OperationHandler<DepositTo> visit(DepositTo operation) {
         return depositToHandler;
     }
 
     @Override
-    public OperationHandler<WithdrawFrom> visit(WithdrawFrom request) {
+    public OperationHandler<WithdrawFrom> visit(WithdrawFrom operation) {
         return withdrawFromHandler;
     }
 
     @Override
-    public OperationHandler<TransferFrom> visit(TransferFrom request) {
+    public OperationHandler<TransferFrom> visit(TransferFrom operation) {
         return transferFromHandler;
     }
 
     @Override
-    public OperationHandler<TransferTo> visit(TransferTo request) {
+    public OperationHandler<TransferTo> visit(TransferTo operation) {
         return transferToHandler;
     }
 

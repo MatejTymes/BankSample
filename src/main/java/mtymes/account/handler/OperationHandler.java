@@ -5,5 +5,5 @@ import mtymes.account.domain.operation.Operation;
 
 public interface OperationHandler<T extends Operation> {
 
-    void handleOperation(OpLogId opLogId, T request);
+    void handleOperation(OpLogId opLogId, T operation);
 }

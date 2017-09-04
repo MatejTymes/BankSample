@@ -18,22 +18,22 @@ public class DepositToHandler extends BaseOperationHandler<DepositTo> {
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, DepositTo request) {
-        Optional<Account> optionalAccount = loadAccount(request.accountId);
+    public void handleOperation(OpLogId opLogId, DepositTo operation) {
+        Optional<Account> optionalAccount = loadAccount(operation.accountId);
         if (optionalAccount.isPresent()) {
-            depositMoney(opLogId, optionalAccount.get(), request);
+            depositMoney(opLogId, optionalAccount.get(), operation);
         } else {
-            markAsRejected(opLogId, format("Account '%s' does not exist", request.accountId));
+            markOperationAsRejected(opLogId, format("Account '%s' does not exist", operation.accountId));
         }
     }
 
-    private void depositMoney(OpLogId opLogId, Account account, DepositTo request) {
+    private void depositMoney(OpLogId opLogId, Account account, DepositTo operation) {
         if (opLogId.canApplyOperationTo(account)) {
-            Decimal newBalance = account.balance.plus(request.amount);
+            Decimal newBalance = account.balance.plus(operation.amount);
             accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId);
-            markAsApplied(opLogId);
+            markOperationAsApplied(opLogId);
         } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
-            markAsApplied(opLogId);
+            markOperationAsApplied(opLogId);
         }
     }
 }

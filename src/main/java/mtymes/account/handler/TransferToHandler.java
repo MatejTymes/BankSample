@@ -10,6 +10,8 @@ import mtymes.account.domain.operation.TransferTo;
 
 import java.util.Optional;
 
+import static java.lang.String.format;
+
 public class TransferToHandler extends BaseOperationHandler<TransferTo>{
 
     public TransferToHandler(AccountDao accountDao, OperationDao operationDao) {
@@ -17,14 +19,14 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, TransferTo request) {
-        TransferDetail detail = request.detail;
+    public void handleOperation(OpLogId opLogId, TransferTo operation) {
+        TransferDetail detail = operation.detail;
 
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (optionalToAccount.isPresent()) {
             depositMoney(opLogId, optionalToAccount.get(), detail);
         } else {
-            markAsRejected(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
+            markOperationAsRejected(opLogId, format("To Account '%s' does not exist", detail.toAccountId));
         }
     }
 
@@ -32,9 +34,9 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
         if (opLogId.canApplyOperationTo(account)) {
             Decimal newBalance = account.balance.plus(detail.amount);
             accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.seqId);
-            markAsApplied(opLogId);
+            markOperationAsApplied(opLogId);
         } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
-            markAsApplied(opLogId);
+            markOperationAsApplied(opLogId);
         }
     }
 }
