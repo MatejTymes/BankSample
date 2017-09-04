@@ -40,8 +40,8 @@ public class Collections {
                             new IndexOptions().unique(true)
                     );
                     operations.createIndex(
-                            ascending(TRANSFER_ID, TYPE),
-                            new IndexOptions().unique(true).partialFilterExpression(doc(TRANSFER_ID, doc("$exists", true)))
+                            ascending(BODY + "." + TRANSFER_ID, TYPE),
+                            new IndexOptions().unique(true).partialFilterExpression(doc(BODY + "." + TRANSFER_ID, doc("$exists", true)))
                     );
                 }
         );

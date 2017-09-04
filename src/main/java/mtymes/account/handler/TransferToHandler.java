@@ -30,11 +30,11 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
     }
 
     private void depositMoney(OpLogId opLogId, Account account, TransferDetail detail) {
-        if (canApplyOperationTo(opLogId, account)) {
+        if (opLogId.canApplyOperationTo(account)) {
             Decimal newBalance = account.balance.plus(detail.amount);
             accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.seqId);
             markAsApplied(opLogId);
-        } else if (isOperationCurrentlyAppliedTo(opLogId, account)) {
+        } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
             markAsApplied(opLogId);
         }
     }

@@ -17,7 +17,6 @@ public class DepositToHandler extends BaseOperationHandler<DepositTo> {
         super(accountDao, operationDao);
     }
 
-    // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, DepositTo request) {
         Optional<Account> optionalAccount = loadAccount(request.accountId);
@@ -29,11 +28,11 @@ public class DepositToHandler extends BaseOperationHandler<DepositTo> {
     }
 
     private void depositMoney(OpLogId opLogId, Account account, DepositTo request) {
-        if (canApplyOperationTo(opLogId, account)) {
+        if (opLogId.canApplyOperationTo(account)) {
             Decimal newBalance = account.balance.plus(request.amount);
             accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId);
             markAsApplied(opLogId);
-        } else if (isOperationCurrentlyAppliedTo(opLogId, account)) {
+        } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
             markAsApplied(opLogId);
         }
     }

@@ -1,6 +1,7 @@
 package mtymes.account.domain.operation;
 
 import javafixes.object.DataObject;
+import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.account.Version;
 
@@ -21,5 +22,25 @@ public class OpLogId extends DataObject {
 
     public static OpLogId opLogId(AccountId accountId, Version seqId) {
         return new OpLogId(accountId, seqId);
+    }
+
+    // todo: test this
+    public boolean canApplyOperationTo(Account account) {
+        return account.version.isBefore(seqId);
+    }
+
+    // todo: test this
+    public boolean canApplyOperationTo(Version accountVersion) {
+        return accountVersion.isBefore(seqId);
+    }
+
+    // todo: test this
+    public boolean isOperationCurrentlyAppliedTo(Account account) {
+        return account.version.equals(seqId);
+    }
+
+    // todo: test this
+    public boolean isOperationCurrentlyAppliedTo(Version accountVersion) {
+        return accountVersion.equals(seqId);
     }
 }

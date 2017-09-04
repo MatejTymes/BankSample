@@ -35,7 +35,7 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
         OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
-        runConcurrentlyNTimes(
+        runConcurrentlyOnNThreads(
                 () -> handler.handleOperation(opLogId, createAccount),
                 50
         );
@@ -56,7 +56,7 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
         OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
-        runConcurrentlyNTimes(
+        runConcurrentlyOnNThreads(
                 () -> handler.handleOperation(opLogId, createAccount),
                 50
         );

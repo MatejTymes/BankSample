@@ -33,9 +33,9 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
             markAsRejected(opLogId, format("Failed to create Account '%s'", request.accountId));
         } else {
             Version accountVersion = optionalVersion.get();
-            if (canApplyOperationTo(opLogId, accountVersion)) {
+            if (opLogId.canApplyOperationTo(accountVersion)) {
                 markAsRejected(opLogId, format("Account '%s' already exists", request.accountId));
-            } else if (accountVersion.equals(opLogId.seqId)) {
+            } else if (opLogId.isOperationCurrentlyAppliedTo(accountVersion)) {
                 markAsApplied(opLogId);
             }
         }

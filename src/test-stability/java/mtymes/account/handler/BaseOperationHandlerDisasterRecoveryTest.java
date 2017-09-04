@@ -39,7 +39,7 @@ public class BaseOperationHandlerDisasterRecoveryTest extends BaseOperationHandl
 
     @After
     public void checkFailureOccurred() {
-        assertThat(failureCount.get(), greaterThan(0));
+        assertThat("have you used brokenAccountDao and brokenOperationDao ?", failureCount.get(), greaterThan(0));
     }
 
     protected void retryWhileSystemIsBroken(Runnable task) {

@@ -16,18 +16,18 @@ import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class DepositToHandlerDisasterRecoveryTest extends BaseOperationHandlerDisasterRecoveryTest {
 
     private DepositToHandler handler;
 
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new DepositToHandler(accountDao, operationDao);
+        handler = new DepositToHandler(brokenAccountDao, brokenOperationDao);
     }
 
     @Test
-    public void shouldSucceedToDepositToOnConcurrentExecution() {
+    public void shouldSucceedToDepositToEvenIfAnyDbCallFails() {
         Decimal amount = randomPositiveAmount();
 
         Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
@@ -37,9 +37,8 @@ public class DepositToHandlerConcurrencyTest extends BaseOperationHandlerConcurr
         OpLogId opLogId = operationDao.storeOperation(depositTo);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, depositTo),
-                50
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, depositTo)
         );
 
         // Then

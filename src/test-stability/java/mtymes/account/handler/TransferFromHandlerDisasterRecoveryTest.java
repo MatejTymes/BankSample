@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConcurrencyTest {
+public class TransferFromHandlerDisasterRecoveryTest extends BaseOperationHandlerDisasterRecoveryTest {
 
     private WorkQueue workQueue = new WorkQueue();
     private TransferFromHandler handler;
@@ -27,11 +27,11 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new TransferFromHandler(accountDao, operationDao, workQueue);
+        handler = new TransferFromHandler(brokenAccountDao, brokenOperationDao, workQueue);
     }
 
     @Test
-    public void shouldSucceedToWithdrawMoneyAndTriggerTransferToOperationOnConcurrentExecution() {
+    public void shouldSucceedToWithdrawMoneyAndTriggerTransferToOperationEvenIfAnyDbCallFails() {
         Decimal amount = randomPositiveAmount();
 
         Decimal fromBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
@@ -44,9 +44,8 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, transferFrom),
-                50
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, transferFrom)
         );
 
         // Then
@@ -69,7 +68,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
     }
 
     @Test
-    public void shouldFailToTransferFromIfThereIsInsufficientBalanceOnConcurrentExecution() {
+    public void shouldFailToTransferFromIfThereIsInsufficientBalanceEvenIfAnyDbCallFails() {
         Decimal fromBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         Decimal toBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         Account initialFromAccount = createAccountWithInitialBalance(fromBalance);
@@ -84,9 +83,8 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerConc
         OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When
-        runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, transferFrom),
-                50
+        retryWhileSystemIsBroken(
+                () -> handler.handleOperation(opLogId, transferFrom)
         );
 
         // Then

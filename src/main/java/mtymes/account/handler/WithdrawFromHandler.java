@@ -32,7 +32,7 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
     }
 
     private void withdrawMoney(OpLogId opLogId, Account account, WithdrawFrom request) {
-        if (canApplyOperationTo(opLogId, account)) {
+        if (opLogId.canApplyOperationTo(account)) {
             Decimal newBalance = account.balance.minus(request.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
                 markAsRejected(opLogId, format("Insufficient funds on account '%s'", account.accountId));
@@ -40,7 +40,7 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
                 accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId);
                 markAsApplied(opLogId);
             }
-        } else if (isOperationCurrentlyAppliedTo(opLogId, account)) {
+        } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
             markAsApplied(opLogId);
         }
     }

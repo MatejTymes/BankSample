@@ -32,7 +32,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     public static final String VERSION = "version";
     public static final String TYPE = "type";
     public static final String ACCOUNT_ID = "accountId";
-    private static final String BODY = "body";
+    public static final String BODY = "body";
     public static final String FINAL_STATE = "finalState";
     private static final String DESCRIPTION = "description";
 

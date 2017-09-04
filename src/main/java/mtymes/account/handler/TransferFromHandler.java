@@ -24,7 +24,6 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
         this.workQueue = workQueue;
     }
 
-    // todo: test that any dao interaction can fail
     @Override
     public void handleOperation(OpLogId opLogId, TransferFrom request) {
         TransferDetail detail = request.detail;
@@ -46,7 +45,7 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
     }
 
     private boolean withdrawMoney(OpLogId opLogId, Account account, TransferDetail detail) {
-        if (canApplyOperationTo(opLogId, account)) {
+        if (opLogId.canApplyOperationTo(account)) {
             Decimal newBalance = account.balance.minus(detail.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
                 markAsRejected(opLogId, format("Insufficient funds on account '%s'", detail.fromAccountId));
@@ -56,7 +55,7 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
                 return true;
             }
         } else {
-            return isOperationCurrentlyAppliedTo(opLogId, account);
+            return opLogId.isOperationCurrentlyAppliedTo(account);
         }
     }
 

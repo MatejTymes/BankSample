@@ -8,7 +8,7 @@ import static javafixes.concurrency.Runner.runner;
 public class BaseOperationHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
     // todo: start using this
-    public void runConcurrentlyNTimes(Runnable task, int threadCount) {
+    public void runConcurrentlyOnNThreads(Runnable task, int threadCount) {
         Runner runner = runner(threadCount);
         ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount);
         for (int i = 0; i < threadCount; i++) {
