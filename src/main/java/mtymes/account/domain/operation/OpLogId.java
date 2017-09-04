@@ -24,23 +24,19 @@ public class OpLogId extends DataObject {
         return new OpLogId(accountId, seqId);
     }
 
-    // todo: test this
-    public boolean canApplyOperationTo(Account account) {
-        return account.version.isBefore(seqId);
-    }
-
-    // todo: test this
     public boolean canApplyOperationTo(Version accountVersion) {
         return accountVersion.isBefore(seqId);
     }
 
-    // todo: test this
-    public boolean isOperationCurrentlyAppliedTo(Account account) {
-        return account.version.equals(seqId);
+    public boolean canApplyOperationTo(Account account) {
+        return account.version.isBefore(seqId);
     }
 
-    // todo: test this
     public boolean isOperationCurrentlyAppliedTo(Version accountVersion) {
         return accountVersion.equals(seqId);
+    }
+
+    public boolean isOperationCurrentlyAppliedTo(Account account) {
+        return account.version.equals(seqId);
     }
 }
