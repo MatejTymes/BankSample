@@ -30,12 +30,12 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
         TransferDetail detail = request.detail;
         Optional<Account> optionalFromAccount = loadAccount(detail.fromAccountId);
         if (!optionalFromAccount.isPresent()) {
-            markAsFailure(opLogId, String.format("From Account '%s' does not exist", detail.fromAccountId));
+            markAsRejected(opLogId, String.format("From Account '%s' does not exist", detail.fromAccountId));
             return;
         }
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (!optionalToAccount.isPresent()) {
-            markAsFailure(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
+            markAsRejected(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
             return;
         }
 
@@ -46,18 +46,17 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
     }
 
     private boolean withdrawMoney(OpLogId opLogId, Account account, TransferDetail detail) {
-
-        if (account.version.isBefore(opLogId.version)) {
+        if (canApplyOperationTo(opLogId, account)) {
             Decimal newBalance = account.balance.minus(detail.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markAsFailure(opLogId, format("Insufficient funds on account '%s'", detail.fromAccountId));
+                markAsRejected(opLogId, format("Insufficient funds on account '%s'", detail.fromAccountId));
                 return false;
             } else {
-                accountDao.updateBalance(detail.fromAccountId, newBalance, account.version, opLogId.version);
+                accountDao.updateBalance(detail.fromAccountId, newBalance, account.version, opLogId.seqId);
                 return true;
             }
         } else {
-            return account.version.equals(opLogId.version);
+            return isOperationCurrentlyAppliedTo(opLogId, account);
         }
     }
 
@@ -68,6 +67,6 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
             // do nothing - another concurrent thread already submitted it
         }
         workQueue.add(detail.toAccountId);
-        markAsSuccess(opLogId);
+        markAsApplied(opLogId);
     }
 }

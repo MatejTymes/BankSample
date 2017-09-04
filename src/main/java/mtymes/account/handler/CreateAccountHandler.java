@@ -19,9 +19,9 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
     @Override
     public void handleOperation(OpLogId opLogId, CreateAccount request) {
 
-        boolean success = accountDao.createAccount(request.accountId, opLogId.version);
+        boolean success = accountDao.createAccount(request.accountId, opLogId.seqId);
         if (success) {
-            markAsSuccess(opLogId);
+            markAsApplied(opLogId);
         } else {
             onAccountNotCreated(opLogId, request);
         }
@@ -30,13 +30,13 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
     private void onAccountNotCreated(OpLogId opLogId, CreateAccount request) {
         Optional<Version> optionalVersion = loadAccountVersion(request.accountId);
         if (!optionalVersion.isPresent()) {
-            markAsFailure(opLogId, format("Failed to create Account '%s'", request.accountId));
+            markAsRejected(opLogId, format("Failed to create Account '%s'", request.accountId));
         } else {
             Version accountVersion = optionalVersion.get();
-            if (accountVersion.isBefore(opLogId.version)) {
-                markAsFailure(opLogId, format("Account '%s' already exists", request.accountId));
-            } else if (accountVersion.equals(opLogId.version)) {
-                markAsSuccess(opLogId);
+            if (canApplyOperationTo(opLogId, accountVersion)) {
+                markAsRejected(opLogId, format("Account '%s' already exists", request.accountId));
+            } else if (accountVersion.equals(opLogId.seqId)) {
+                markAsApplied(opLogId);
             }
         }
     }

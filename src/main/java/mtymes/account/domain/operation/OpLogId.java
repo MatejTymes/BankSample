@@ -9,17 +9,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class OpLogId extends DataObject {
 
     public final AccountId accountId;
-    public final Version version;
+    public final Version seqId;
 
-    public OpLogId(AccountId accountId, Version version) {
+    public OpLogId(AccountId accountId, Version seqId) {
         checkNotNull(accountId, "accountId can't be null");
-        checkNotNull(version, "version can't be null");
+        checkNotNull(seqId, "seqId can't be null");
 
         this.accountId = accountId;
-        this.version = version;
+        this.seqId = seqId;
     }
 
-    public static OpLogId opLogId(AccountId accountId, Version version) {
-        return new OpLogId(accountId, version);
+    public static OpLogId opLogId(AccountId accountId, Version seqId) {
+        return new OpLogId(accountId, seqId);
     }
 }

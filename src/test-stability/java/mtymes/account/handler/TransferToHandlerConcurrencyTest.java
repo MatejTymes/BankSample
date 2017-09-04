@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static javafixes.concurrency.Runner.runner;
-import static mtymes.account.domain.operation.FinalState.Success;
+import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
@@ -56,9 +56,9 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerStabil
 
         // Then
         LoggedOperation operation = loadOperation(opLogId);
-        assertThat(operation.finalState, isPresentAndEqualTo(Success));
+        assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), opLogId.version)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), opLogId.seqId)));
     }
 }

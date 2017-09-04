@@ -25,7 +25,7 @@ public class JsonUtilTest {
                         randomAccountId(),
                         randomPositiveAmount()
                 )),
-                Optional.of(FinalState.Success),
+                Optional.of(FinalState.Applied),
                 Optional.empty()
         );
 

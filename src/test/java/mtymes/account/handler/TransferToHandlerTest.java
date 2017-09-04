@@ -45,15 +45,15 @@ public class TransferToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDepositTo() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal lastBalance = randomAmount();
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .balance(lastBalance)
                 .version(accountVersion)
                 .build()));
-        when(accountDao.updateBalance(toAccountId, lastBalance.plus(amount), accountVersion, opLogId.version)).thenReturn(true);
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(accountDao.updateBalance(toAccountId, lastBalance.plus(amount), accountVersion, opLogId.seqId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -61,12 +61,12 @@ public class TransferToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
-        Version accountVersion = opLogId.version;
+        Version accountVersion = opLogId.seqId;
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .version(accountVersion)
                 .build()));
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -75,7 +75,7 @@ public class TransferToHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfAccountDoesNotExist() {
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(opLogId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -83,7 +83,7 @@ public class TransferToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        Version accountVersion = randomVersion(after(opLogId.version));
+        Version accountVersion = randomVersion(after(opLogId.seqId));
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .version(accountVersion)

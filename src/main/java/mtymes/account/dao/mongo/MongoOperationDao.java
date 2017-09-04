@@ -19,8 +19,8 @@ import java.util.Optional;
 
 import static javafixes.common.CollectionUtil.newList;
 import static mtymes.account.domain.account.Version.version;
-import static mtymes.account.domain.operation.FinalState.Failure;
-import static mtymes.account.domain.operation.FinalState.Success;
+import static mtymes.account.domain.operation.FinalState.Applied;
+import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
@@ -58,13 +58,13 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
     }
 
     @Override
-    public boolean markAsSuccessful(OpLogId opLogId) {
-        return markAsFinished(opLogId, Success, Optional.empty());
+    public boolean markAsApplied(OpLogId opLogId) {
+        return markAsFinished(opLogId, Applied, Optional.empty());
     }
 
     @Override
-    public boolean markAsFailed(OpLogId opLogId, String description) {
-        return markAsFinished(opLogId, Failure, Optional.of(description));
+    public boolean markAsRejected(OpLogId opLogId, String description) {
+        return markAsFinished(opLogId, Rejected, Optional.of(description));
     }
 
     @Override
@@ -73,7 +73,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
                 operations,
                 docBuilder()
                         .put(ACCOUNT_ID, opLogId.accountId)
-                        .put(VERSION, opLogId.version)
+                        .put(VERSION, opLogId.seqId)
                         .build(),
                 this::toPersistedOperation
         );
@@ -147,7 +147,7 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
         UpdateResult result = operations.updateOne(
                 docBuilder()
                         .put(ACCOUNT_ID, opLogId.accountId)
-                        .put(VERSION, opLogId.version)
+                        .put(VERSION, opLogId.seqId)
                         .put(FINAL_STATE, null)
                         .build(),
                 doc("$set", docBuilder()

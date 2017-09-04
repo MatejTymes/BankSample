@@ -40,15 +40,15 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldWithdrawFrom() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal lastBalance = withdrawAmount.plus(randomPositiveAmount());
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
                 .version(accountVersion)
                 .build()));
-        when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), accountVersion, opLogId.version)).thenReturn(true);
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(accountDao.updateBalance(accountId, lastBalance.minus(withdrawAmount), accountVersion, opLogId.seqId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -56,12 +56,12 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
-        Version accountVersion = opLogId.version;
+        Version accountVersion = opLogId.seqId;
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .version(accountVersion)
                 .build()));
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -69,7 +69,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasInsufficientFunds() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal lastBalance = randomPositiveAmount();
         withdrawAmount = lastBalance.plus(randomPositiveAmount());
         operation = new WithdrawFrom(accountId, withdrawAmount);
@@ -79,7 +79,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
                 .balance(lastBalance)
                 .version(accountVersion)
                 .build()));
-        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -87,14 +87,14 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasZeroBalance() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal lastBalance = Decimal.ZERO;
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
                 .version(accountVersion)
                 .build()));
-        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -102,14 +102,14 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountHasNegativeBalance() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal lastBalance = randomNegativeAmount();
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .balance(lastBalance)
                 .version(accountVersion)
                 .build()));
-        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Insufficient funds on account '" + accountId + "'")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -118,7 +118,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfAccountDoesNotExist() {
         when(accountDao.findAccount(accountId)).thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(opLogId, "Account '" + accountId + "' does not exist")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Account '" + accountId + "' does not exist")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -126,7 +126,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        Version accountVersion = randomVersion(after(opLogId.version));
+        Version accountVersion = randomVersion(after(opLogId.seqId));
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)
                 .version(accountVersion)

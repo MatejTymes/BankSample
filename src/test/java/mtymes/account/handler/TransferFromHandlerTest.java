@@ -45,14 +45,14 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldWithdrawMoneyAndSubmitTransferToOperation() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal fromAccountBalance = amount.plus(randomPositiveAmount());
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)
                 .version(accountVersion)
                 .build()));
-        when(accountDao.updateBalance(fromAccountId, fromAccountBalance.minus(amount), accountVersion, opLogId.version)).thenReturn(true);
+        when(accountDao.updateBalance(fromAccountId, fromAccountBalance.minus(amount), accountVersion, opLogId.seqId)).thenReturn(true);
 
         doReturn(
                 Optional.of(accountBuilder()
@@ -63,7 +63,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
         when(operationDao.storeOperation(new TransferTo(detail))).thenReturn(randomOpLogId(toAccountId));
         doNothing().when(queue).add(toAccountId);
 
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -71,14 +71,14 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedIfMoneyHasBeenAlreadyTransferredByThisOperationAndTransferToOperationAlreadyExists() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal fromAccountBalance = amount.plus(randomPositiveAmount());
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)
                 .version(accountVersion)
                 .build()));
-        when(accountDao.updateBalance(fromAccountId, fromAccountBalance.minus(amount), accountVersion, opLogId.version)).thenReturn(true);
+        when(accountDao.updateBalance(fromAccountId, fromAccountBalance.minus(amount), accountVersion, opLogId.seqId)).thenReturn(true);
 
         doReturn(
                 Optional.of(accountBuilder()
@@ -89,7 +89,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
         when(operationDao.storeOperation(new TransferTo(detail))).thenThrow(new DuplicateOperationException());
         doNothing().when(queue).add(toAccountId);
 
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -97,7 +97,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedIfMoneyHasBeenAlreadyTransferredByThisOperation() {
-        Version accountVersion = opLogId.version;
+        Version accountVersion = opLogId.seqId;
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .version(accountVersion)
@@ -111,7 +111,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
         when(operationDao.storeOperation(new TransferTo(detail))).thenReturn(randomOpLogId(toAccountId));
         doNothing().when(queue).add(toAccountId);
 
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -119,7 +119,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfFromAccountHasInsufficientFunds() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal fromAccountBalance = randomPositiveAmount();
         amount = fromAccountBalance.plus(randomPositiveAmount());
         detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
@@ -135,7 +135,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + fromAccountId + "'")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Insufficient funds on account '" + fromAccountId + "'")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -143,7 +143,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfFromAccountHasZeroBalance() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal fromAccountBalance = Decimal.ZERO;
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
@@ -156,7 +156,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + fromAccountId + "'")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Insufficient funds on account '" + fromAccountId + "'")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -164,7 +164,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfFromAccountHasNegativeBalance() {
-        Version accountVersion = randomVersion(before(opLogId.version));
+        Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal fromAccountBalance = randomNegativeAmount();
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
@@ -177,7 +177,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.markAsFailed(opLogId, "Insufficient funds on account '" + fromAccountId + "'")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "Insufficient funds on account '" + fromAccountId + "'")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -189,7 +189,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                 .accountId(fromAccountId)
                 .build()));
         doReturn(Optional.empty()).when(accountDao).findAccount(toAccountId);
-        when(operationDao.markAsFailed(opLogId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -198,7 +198,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
     @Test
     public void shouldFailIfFromAccountDoesNotExist() {
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(opLogId, "From Account '" + fromAccountId + "' does not exist")).thenReturn(true);
+        when(operationDao.markAsRejected(opLogId, "From Account '" + fromAccountId + "' does not exist")).thenReturn(true);
 
         // When & Then
         handler.handleOperation(opLogId, operation);
@@ -206,7 +206,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        Version accountVersion = randomVersion(after(opLogId.version));
+        Version accountVersion = randomVersion(after(opLogId.seqId));
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .version(accountVersion)

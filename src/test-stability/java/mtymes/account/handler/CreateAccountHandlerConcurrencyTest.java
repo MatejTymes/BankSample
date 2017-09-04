@@ -12,8 +12,8 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static mtymes.account.domain.account.AccountId.newAccountId;
-import static mtymes.account.domain.operation.FinalState.Failure;
-import static mtymes.account.domain.operation.FinalState.Success;
+import static mtymes.account.domain.operation.FinalState.Applied;
+import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static org.junit.Assert.assertThat;
@@ -42,10 +42,10 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
 
         // Then
         LoggedOperation operation = loadOperation(opLogId);
-        assertThat(operation.finalState, isPresentAndEqualTo(Success));
+        assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, opLogId.version)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, opLogId.seqId)));
     }
 
     @Test
@@ -63,7 +63,7 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerCon
 
         // Then
         LoggedOperation operation = loadOperation(opLogId);
-        assertThat(operation.finalState, isPresentAndEqualTo(Failure));
+        assertThat(operation.finalState, isPresentAndEqualTo(Rejected));
         assertThat(operation.description, isPresentAndEqualTo("Account '" + accountId + "' already exists"));
         Optional<Account> account = accountDao.findAccount(accountId);
         assertThat(account, isPresentAndEqualTo(initialAccount));

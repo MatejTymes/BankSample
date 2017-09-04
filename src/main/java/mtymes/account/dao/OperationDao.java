@@ -13,9 +13,9 @@ public interface OperationDao {
 
     OpLogId storeOperation(Operation operation) throws DuplicateOperationException;
 
-    boolean markAsSuccessful(OpLogId opLogId);
+    boolean markAsApplied(OpLogId opLogId);
 
-    boolean markAsFailed(OpLogId opLogId, String description);
+    boolean markAsRejected(OpLogId opLogId, String description);
 
     Optional<LoggedOperation> findLoggedOperation(OpLogId opLogId);
 

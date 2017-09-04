@@ -25,17 +25,17 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
         if (optionalToAccount.isPresent()) {
             depositMoney(opLogId, optionalToAccount.get(), detail);
         } else {
-            markAsFailure(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
+            markAsRejected(opLogId, String.format("To Account '%s' does not exist", detail.toAccountId));
         }
     }
 
     private void depositMoney(OpLogId opLogId, Account account, TransferDetail detail) {
-        if (account.version.isBefore(opLogId.version)) {
+        if (canApplyOperationTo(opLogId, account)) {
             Decimal newBalance = account.balance.plus(detail.amount);
-            accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.version);
-            markAsSuccess(opLogId);
-        } else if (account.version.equals(opLogId.version)) {
-            markAsSuccess(opLogId);
+            accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.seqId);
+            markAsApplied(opLogId);
+        } else if (isOperationCurrentlyAppliedTo(opLogId, account)) {
+            markAsApplied(opLogId);
         }
     }
 }

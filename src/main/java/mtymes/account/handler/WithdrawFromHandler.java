@@ -27,21 +27,21 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
         if (optionalAccount.isPresent()) {
             withdrawMoney(opLogId, optionalAccount.get(), request);
         } else {
-            markAsFailure(opLogId, String.format("Account '%s' does not exist", accountId));
+            markAsRejected(opLogId, String.format("Account '%s' does not exist", accountId));
         }
     }
 
     private void withdrawMoney(OpLogId opLogId, Account account, WithdrawFrom request) {
-        if (account.version.isBefore(opLogId.version)) {
+        if (canApplyOperationTo(opLogId, account)) {
             Decimal newBalance = account.balance.minus(request.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markAsFailure(opLogId, format("Insufficient funds on account '%s'", account.accountId));
+                markAsRejected(opLogId, format("Insufficient funds on account '%s'", account.accountId));
             } else {
-                accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.version);
-                markAsSuccess(opLogId);
+                accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId);
+                markAsApplied(opLogId);
             }
-        } else if (account.version.equals(opLogId.version)) {
-            markAsSuccess(opLogId);
+        } else if (isOperationCurrentlyAppliedTo(opLogId, account)) {
+            markAsApplied(opLogId);
         }
     }
 }

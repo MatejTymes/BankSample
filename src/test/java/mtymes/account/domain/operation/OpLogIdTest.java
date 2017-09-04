@@ -22,7 +22,7 @@ public class OpLogIdTest {
 
         // Then
         assertThat(opLogId.accountId, equalTo(accountId));
-        assertThat(opLogId.version, equalTo(version));
+        assertThat(opLogId.seqId, equalTo(version));
     }
 
     @Test
@@ -39,7 +39,7 @@ public class OpLogIdTest {
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
-            assertThat(expected.getMessage(), equalTo("version can't be null"));
+            assertThat(expected.getMessage(), equalTo("seqId can't be null"));
         }
     }
 }

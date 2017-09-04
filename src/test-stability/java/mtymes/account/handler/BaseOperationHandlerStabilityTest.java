@@ -58,8 +58,8 @@ public abstract class BaseOperationHandlerStabilityTest {
 
     protected Account createAccount(AccountId accountId) {
         OpLogId opLogId = operationDao.storeOperation(new CreateAccount(accountId));
-        accountDao.createAccount(accountId, opLogId.version);
-        operationDao.markAsSuccessful(opLogId);
+        accountDao.createAccount(accountId, opLogId.seqId);
+        operationDao.markAsApplied(opLogId);
         return loadAccount(accountId);
     }
 
@@ -69,9 +69,9 @@ public abstract class BaseOperationHandlerStabilityTest {
         Account account = loadAccount(accountId);
         OpLogId opLogId = operationDao.storeOperation(new DepositTo(accountId, amount));
 
-        accountDao.updateBalance(accountId, account.balance.plus(amount), account.version, opLogId.version);
+        accountDao.updateBalance(accountId, account.balance.plus(amount), account.version, opLogId.seqId);
 
-        operationDao.markAsSuccessful(opLogId);
+        operationDao.markAsApplied(opLogId);
     }
 
     protected void withdrawMoney(AccountId accountId, Decimal amount) {
@@ -80,9 +80,9 @@ public abstract class BaseOperationHandlerStabilityTest {
         Account account = loadAccount(accountId);
         OpLogId opLogId = operationDao.storeOperation(new DepositTo(accountId, amount));
 
-        accountDao.updateBalance(accountId, account.balance.minus(amount), account.version, opLogId.version);
+        accountDao.updateBalance(accountId, account.balance.minus(amount), account.version, opLogId.seqId);
 
-        operationDao.markAsSuccessful(opLogId);
+        operationDao.markAsApplied(opLogId);
     }
 
     protected Account loadAccount(AccountId accountId) {

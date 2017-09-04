@@ -14,8 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static javafixes.concurrency.Runner.runner;
-import static mtymes.account.domain.operation.FinalState.Failure;
-import static mtymes.account.domain.operation.FinalState.Success;
+import static mtymes.account.domain.operation.FinalState.Applied;
+import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
@@ -62,11 +62,11 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
 
         // Then
         LoggedOperation operation = loadOperation(opLogId);
-        assertThat(operation.finalState, isPresentAndEqualTo(Success));
+        assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
 
         Account fromAccount = loadAccount(fromAccountId);
-        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), opLogId.version)));
+        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), opLogId.seqId)));
         assertThat(loadAccount(toAccount.accountId), equalTo(toAccount));
 
         assertThat(workQueue.takeNextAvailable(), isPresentAndEqualTo(toAccount.accountId));
@@ -106,7 +106,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
 
         // Then
         LoggedOperation operation = loadOperation(opLogId);
-        assertThat(operation.finalState, isPresentAndEqualTo(Failure));
+        assertThat(operation.finalState, isPresentAndEqualTo(Rejected));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + fromAccountId + "'"));
 
         Account fromAccount = loadAccount(fromAccountId);

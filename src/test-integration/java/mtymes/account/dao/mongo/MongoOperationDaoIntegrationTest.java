@@ -25,8 +25,8 @@ import static javafixes.common.CollectionUtil.newList;
 import static javafixes.concurrency.Runner.runner;
 import static mtymes.account.dao.mongo.Collections.operationsCollection;
 import static mtymes.account.domain.account.Version.version;
-import static mtymes.account.domain.operation.FinalState.Failure;
-import static mtymes.account.domain.operation.FinalState.Success;
+import static mtymes.account.domain.operation.FinalState.Applied;
+import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
@@ -90,91 +90,91 @@ public class MongoOperationDaoIntegrationTest {
     }
 
     @Test
-    public void shouldMarkOperationAsSuccessful() {
+    public void shouldMarkOperationAsApplied() {
         Operation operation = randomOperation();
         OpLogId opLogId = operationDao.storeOperation(operation);
 
         // When
-        boolean success = operationDao.markAsSuccessful(opLogId);
+        boolean success = operationDao.markAsApplied(opLogId);
 
         // Then
         assertThat(success, is(true));
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
+        assertThat(actualOperation, isPresentAndEqualTo(appliedOperation(opLogId, operation)));
     }
 
     @Test
-    public void shouldMarkOperationAsFailed() {
+    public void shouldMarkOperationAsRejected() {
         Operation operation = randomOperation();
         OpLogId opLogId = operationDao.storeOperation(operation);
 
         // When
-        boolean success = operationDao.markAsFailed(opLogId, "failure description");
+        boolean success = operationDao.markAsRejected(opLogId, "failure description");
 
         // Then
         assertThat(success, is(true));
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "failure description")));
+        assertThat(actualOperation, isPresentAndEqualTo(rejectedOperation(opLogId, operation, "failure description")));
     }
 
     @Test
-    public void shouldNotMarkOperationAsSuccessfulTwice() {
+    public void shouldNotMarkOperationAsAppliedTwice() {
         Operation operation = randomOperation();
         OpLogId opLogId = operationDao.storeOperation(operation);
-        operationDao.markAsSuccessful(opLogId);
+        operationDao.markAsApplied(opLogId);
 
         // When
-        boolean success = operationDao.markAsSuccessful(opLogId);
+        boolean success = operationDao.markAsApplied(opLogId);
 
         // Then
         assertThat(success, is(false));
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
+        assertThat(actualOperation, isPresentAndEqualTo(appliedOperation(opLogId, operation)));
     }
 
     @Test
-    public void shouldNotMarkOperationAsFailedTwice() {
+    public void shouldNotMarkOperationAsRejectedTwice() {
         Operation operation = randomOperation();
         OpLogId opLogId = operationDao.storeOperation(operation);
-        operationDao.markAsFailed(opLogId, "first commentary");
+        operationDao.markAsRejected(opLogId, "first commentary");
 
         // When
-        boolean success = operationDao.markAsFailed(opLogId, "second commentary");
+        boolean success = operationDao.markAsRejected(opLogId, "second commentary");
 
         // Then
         assertThat(success, is(false));
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "first commentary")));
+        assertThat(actualOperation, isPresentAndEqualTo(rejectedOperation(opLogId, operation, "first commentary")));
     }
 
     @Test
-    public void shouldNotMarkOperationAsSuccessfulIfItIsAlreadyFailed() {
+    public void shouldNotMarkOperationAsAppliedIfItIsAlreadyRejected() {
         Operation operation = randomOperation();
         OpLogId opLogId = operationDao.storeOperation(operation);
-        operationDao.markAsFailed(opLogId, "first commentary");
+        operationDao.markAsRejected(opLogId, "first commentary");
 
         // When
-        boolean success = operationDao.markAsSuccessful(opLogId);
+        boolean success = operationDao.markAsApplied(opLogId);
 
         // Then
         assertThat(success, is(false));
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "first commentary")));
+        assertThat(actualOperation, isPresentAndEqualTo(rejectedOperation(opLogId, operation, "first commentary")));
     }
 
     @Test
-    public void shouldNotMarkOperationAsFailedIfItIsAlreadySuccessful() {
+    public void shouldNotMarkOperationAsRejectedIfItIsAlreadyApplied() {
         Operation operation = randomOperation();
         OpLogId opLogId = operationDao.storeOperation(operation);
-        operationDao.markAsSuccessful(opLogId);
+        operationDao.markAsApplied(opLogId);
 
         // When
-        boolean success = operationDao.markAsFailed(opLogId, "failure description");
+        boolean success = operationDao.markAsRejected(opLogId, "failure description");
 
         // Then
         assertThat(success, is(false));
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
+        assertThat(actualOperation, isPresentAndEqualTo(appliedOperation(opLogId, operation)));
     }
 
     @Test
@@ -191,10 +191,10 @@ public class MongoOperationDaoIntegrationTest {
         OpLogId otherOpLogId3 = operationDao.storeOperation(randomOperation(otherAccountId));
         OpLogId opLogId5 = operationDao.storeOperation(randomOperation(accountId));
 
-        operationDao.markAsSuccessful(opLogId3);
-        operationDao.markAsFailed(opLogId4, "Failed");
-        operationDao.markAsSuccessful(otherOpLogId2);
-        operationDao.markAsFailed(otherOpLogId3, "Failed");
+        operationDao.markAsApplied(opLogId3);
+        operationDao.markAsRejected(opLogId4, "Rejected");
+        operationDao.markAsApplied(otherOpLogId2);
+        operationDao.markAsRejected(otherOpLogId3, "Rejected");
 
         // When
         List<OpLogId> unFinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(accountId);
@@ -263,10 +263,10 @@ public class MongoOperationDaoIntegrationTest {
 
                 // When
                 boolean success;
-                if (stateToApply == FinalState.Success) {
-                    success = operationDao.markAsSuccessful(opLogId);
+                if (stateToApply == FinalState.Applied) {
+                    success = operationDao.markAsApplied(opLogId);
                 } else {
-                    success = operationDao.markAsFailed(opLogId, "some description");
+                    success = operationDao.markAsRejected(opLogId, "some description");
                 }
 
                 if (success) {
@@ -280,10 +280,10 @@ public class MongoOperationDaoIntegrationTest {
         assertThat(appliedStates.size(), is(1));
 
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(opLogId);
-        if (appliedStates.get(0) == FinalState.Success) {
-            assertThat(actualOperation, isPresentAndEqualTo(successfulOperation(opLogId, operation)));
+        if (appliedStates.get(0) == FinalState.Applied) {
+            assertThat(actualOperation, isPresentAndEqualTo(appliedOperation(opLogId, operation)));
         } else {
-            assertThat(actualOperation, isPresentAndEqualTo(failedOperation(opLogId, operation, "some description")));
+            assertThat(actualOperation, isPresentAndEqualTo(rejectedOperation(opLogId, operation, "some description")));
         }
     }
 
@@ -291,11 +291,11 @@ public class MongoOperationDaoIntegrationTest {
         return new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty());
     }
 
-    private LoggedOperation successfulOperation(OpLogId opLogId, Operation operation) {
-        return new LoggedOperation(opLogId, operation, Optional.of(Success), Optional.empty());
+    private LoggedOperation appliedOperation(OpLogId opLogId, Operation operation) {
+        return new LoggedOperation(opLogId, operation, Optional.of(Applied), Optional.empty());
     }
 
-    private LoggedOperation failedOperation(OpLogId opLogId, Operation operation, String description) {
-        return new LoggedOperation(opLogId, operation, Optional.of(Failure), Optional.of(description));
+    private LoggedOperation rejectedOperation(OpLogId opLogId, Operation operation, String description) {
+        return new LoggedOperation(opLogId, operation, Optional.of(Rejected), Optional.of(description));
     }
 }

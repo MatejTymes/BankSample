@@ -27,15 +27,15 @@ public class BrokenOperationDao extends BrokenClass implements OperationDao {
     }
 
     @Override
-    public boolean markAsSuccessful(OpLogId opLogId) {
-        failTheFirstTime("markAsSuccessful", opLogId);
-        return wrappedDao.markAsSuccessful(opLogId);
+    public boolean markAsApplied(OpLogId opLogId) {
+        failTheFirstTime("markAsApplied", opLogId);
+        return wrappedDao.markAsApplied(opLogId);
     }
 
     @Override
-    public boolean markAsFailed(OpLogId opLogId, String description) {
-        failTheFirstTime("markAsFailed", opLogId, description);
-        return wrappedDao.markAsFailed(opLogId, description);
+    public boolean markAsRejected(OpLogId opLogId, String description) {
+        failTheFirstTime("markAsRejected", opLogId, description);
+        return wrappedDao.markAsRejected(opLogId, description);
     }
 
     @Override

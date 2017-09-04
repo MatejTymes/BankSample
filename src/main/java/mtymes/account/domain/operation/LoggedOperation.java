@@ -23,12 +23,12 @@ public class LoggedOperation extends DataObject {
         checkNotNull(opLogId, "opLogId can't be null");
         checkNotNull(operation, "operation can't be null");
         checkNotNull(finalState, "finalState can't be null - use Optional.empty() instead");
-        if (finalState.isPresent() && finalState.get() == FinalState.Failure) {
-            checkArgument(description != null, "Failed Operation must have description");
-            checkArgument(description.isPresent(), "Failed Operation must have description");
+        if (finalState.isPresent() && finalState.get() == FinalState.Rejected) {
+            checkArgument(description != null, "Rejected Operation must have description");
+            checkArgument(description.isPresent(), "Rejected Operation must have description");
         } else {
             checkNotNull(description, "description can't be null - use Optional.empty() instead");
-            checkArgument(!description.isPresent(), "only Failed Operation can have description");
+            checkArgument(!description.isPresent(), "only Rejected Operation can have description");
         }
 
         this.opLogId = opLogId;

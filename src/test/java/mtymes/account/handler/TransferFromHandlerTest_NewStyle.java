@@ -56,7 +56,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         expect_balanceUpdateOf(fromAccount, fromAccount.balance.minus(amount), opLogId);
         expect_storageOf(new TransferTo(transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
-        expect_successOfOperation(opLogId);
+        expect_operationMarkedAsApplied(opLogId);
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -75,7 +75,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         // Then
         expect_storageOfDuplicate(new TransferTo(transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
-        expect_successOfOperation(opLogId);
+        expect_operationMarkedAsApplied(opLogId);
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -94,7 +94,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         // Then
         expect_storageOf(new TransferTo(transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
-        expect_successOfOperation(opLogId);
+        expect_operationMarkedAsApplied(opLogId);
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -113,7 +113,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_failureOfOperation(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
+        expect_operationMarkedAsRejected(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -132,7 +132,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_failureOfOperation(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
+        expect_operationMarkedAsRejected(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -151,7 +151,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_failureOfOperation(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
+        expect_operationMarkedAsRejected(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -170,7 +170,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccountId, amount);
 
         // Then
-        expect_failureOfOperation(opLogId, "To Account '" + toAccountId + "' does not exist");
+        expect_operationMarkedAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist");
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -186,7 +186,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         TransferDetail transferDetail = generateTransferDetailFor(fromAccountId, toAccountId, amount);
 
         // Then
-        expect_failureOfOperation(opLogId, "From Account '" + fromAccountId + "' does not exist");
+        expect_operationMarkedAsRejected(opLogId, "From Account '" + fromAccountId + "' does not exist");
 
         // When
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
@@ -265,7 +265,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
     }
 
     private void expect_balanceUpdateOf(Account account, Decimal newBalance, OpLogId opLogId) {
-        when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.version)).thenReturn(true);
+        when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId)).thenReturn(true);
     }
 
     private void expect_storageOf(Operation operation) {
@@ -280,11 +280,11 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         doNothing().when(queue).add(accountId);
     }
 
-    private void expect_successOfOperation(OpLogId opLogId) {
-        when(operationDao.markAsSuccessful(opLogId)).thenReturn(true);
+    private void expect_operationMarkedAsApplied(OpLogId opLogId) {
+        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
     }
 
-    private void expect_failureOfOperation(OpLogId opLogId, String description) {
-        when(operationDao.markAsFailed(opLogId, description)).thenReturn(true);
+    private void expect_operationMarkedAsRejected(OpLogId opLogId, String description) {
+        when(operationDao.markAsRejected(opLogId, description)).thenReturn(true);
     }
 }

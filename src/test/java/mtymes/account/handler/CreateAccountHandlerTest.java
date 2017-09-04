@@ -36,9 +36,9 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedToCreateNewAccount() {
-        when(accountDao.createAccount(accountId, opLogId.version))
+        when(accountDao.createAccount(accountId, opLogId.seqId))
                 .thenReturn(true);
-        when(operationDao.markAsSuccessful(opLogId))
+        when(operationDao.markAsApplied(opLogId))
                 .thenReturn(true);
 
         // When & Then
@@ -47,11 +47,11 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedIfAccountHasBeenAlreadyCreatedByThisOperation() {
-        when(accountDao.createAccount(accountId, opLogId.version))
+        when(accountDao.createAccount(accountId, opLogId.seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
-                .thenReturn(Optional.of(opLogId.version));
-        when(operationDao.markAsSuccessful(opLogId))
+                .thenReturn(Optional.of(opLogId.seqId));
+        when(operationDao.markAsApplied(opLogId))
                 .thenReturn(true);
 
         // When & Then
@@ -60,11 +60,11 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfAccountAlreadyExistedBeforeThisOperation() {
-        when(accountDao.createAccount(accountId, opLogId.version))
+        when(accountDao.createAccount(accountId, opLogId.seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
-                .thenReturn(Optional.of(randomVersion(before(opLogId.version))));
-        when(operationDao.markAsFailed(opLogId, "Account '" + accountId + "' already exists"))
+                .thenReturn(Optional.of(randomVersion(before(opLogId.seqId))));
+        when(operationDao.markAsRejected(opLogId, "Account '" + accountId + "' already exists"))
                 .thenReturn(true);
 
         // When & Then
@@ -73,11 +73,11 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldFailIfUnableToCreateAccountAndRetrieveAccountVersion() {
-        when(accountDao.createAccount(accountId, opLogId.version))
+        when(accountDao.createAccount(accountId, opLogId.seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
                 .thenReturn(Optional.empty());
-        when(operationDao.markAsFailed(opLogId, "Failed to create Account '" + accountId + "'"))
+        when(operationDao.markAsRejected(opLogId, "Failed to create Account '" + accountId + "'"))
                 .thenReturn(true);
 
         // When & Then
@@ -86,10 +86,10 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        when(accountDao.createAccount(accountId, opLogId.version))
+        when(accountDao.createAccount(accountId, opLogId.seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
-                .thenReturn(Optional.of(randomVersion(after(opLogId.version))));
+                .thenReturn(Optional.of(randomVersion(after(opLogId.seqId))));
 
         // When & Then
         handler.handleOperation(opLogId, operation);
