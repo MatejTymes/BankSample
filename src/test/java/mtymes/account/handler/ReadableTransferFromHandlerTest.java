@@ -1,41 +1,31 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
-import mtymes.account.dao.AccountDao;
-import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.*;
-import mtymes.account.exception.DuplicateOperationException;
+import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.TransferDetail;
+import mtymes.account.domain.operation.TransferFrom;
+import mtymes.account.domain.operation.TransferTo;
 import mtymes.common.util.SetQueue;
-import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Optional;
-
-import static java.math.BigDecimal.ROUND_DOWN;
-import static javafixes.math.Decimal.*;
-import static mtymes.account.domain.account.Version.version;
-import static mtymes.account.domain.operation.OpLogId.opLogId;
+import static javafixes.math.Decimal.ZERO;
+import static javafixes.math.Decimal.d;
 import static mtymes.domain.account.AccountBuilder.accountBuilder;
 import static mtymes.test.Random.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 
-// todo: decide if i would like to use this style
-// a) more readable
-// b) some people might not be used to it = might not like it
-public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
+public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTest {
 
-    private AccountDao accountDao;
-    private OperationDao operationDao;
     private SetQueue<AccountId> queue;
     private TransferFromHandler handler;
 
     @Before
     public void setUp() throws Exception {
-        accountDao = mock(AccountDao.class);
-        operationDao = mock(OperationDao.class);
+        super.setUp();
         queue = mock(SetQueue.class);
         handler = new TransferFromHandler(accountDao, operationDao, queue);
     }
@@ -53,7 +43,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_balanceUpdateOn(fromAccount, fromAccount.balance.minus(amount), opLogId);
+        expect_balanceUpdateOf(fromAccount, fromAccount.balance.minus(amount), opLogId);
         expect_storageOf(new TransferTo(transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
         expect_operationMarkedAsApplied(opLogId);
@@ -211,84 +201,7 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
         handler.handleOperation(opLogId, new TransferFrom(transferDetail));
     }
 
-
-    private Account given_anAccountExists(Account account) {
-        doReturn(Optional.of(account)).when(accountDao).findAccount(account.accountId);
-        return account;
-    }
-
-    private Account given_anAccountExists() {
-        return given_anAccountExists(randomAccount());
-    }
-
-    private AccountId given_anMissingAccount() {
-        AccountId accountId = randomAccountId();
-        doReturn(Optional.empty()).when(accountDao).findAccount(accountId);
-        return accountId;
-    }
-
-    private OpLogId generateNextOperationIdFor(Account account) {
-        return opLogId(
-                account.accountId,
-                version(account.version.value() + randomLong(1L, 10L))
-        );
-    }
-
-    private OpLogId generateCurrentlyAppliedOperationIdFor(Account account) {
-        return opLogId(account.accountId, account.version);
-    }
-
-    private OpLogId generatePreviouslyAppliedOperationIdFor(Account account) {
-        return opLogId(
-                account.accountId,
-                version(account.version.value() + randomLong(-10L, -1L))
-        );
-    }
-
-    private Account randomAccount() {
-        return accountBuilder().build();
-    }
-
-    private Decimal amountBetween(Decimal fromAmount, Decimal toAmount) {
-        int scaleToUse = 2;
-        long fromLong = fromAmount.bigDecimalValue().setScale(scaleToUse, ROUND_DOWN).unscaledValue().longValue();
-        long toLong = toAmount.bigDecimalValue().setScale(scaleToUse, ROUND_DOWN).unscaledValue().longValue();
-        return decimal(randomLong(fromLong, toLong), scaleToUse);
-    }
-
-    private TransferDetail generateTransferDetailFor(Account fromAccount, Account toAccount, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccount.accountId, toAccount.accountId, amount);
-    }
-
-    private TransferDetail generateTransferDetailFor(Account fromAccount, AccountId toAccountId, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccount.accountId, toAccountId, amount);
-    }
-
-    private TransferDetail generateTransferDetailFor(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
-    }
-
-    private void expect_balanceUpdateOn(Account account, Decimal newBalance, OpLogId opLogId) {
-        when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId)).thenReturn(true);
-    }
-
-    private void expect_storageOf(Operation operation) {
-        when(operationDao.storeOperation(operation)).thenReturn(randomOpLogId(operation.affectedAccountId()));
-    }
-
-    private void expect_storageOfDuplicate(Operation operation) {
-        when(operationDao.storeOperation(operation)).thenThrow(new DuplicateOperationException());
-    }
-
     private void expect_additionToWorkQueue(AccountId accountId) {
         doNothing().when(queue).add(accountId);
-    }
-
-    private void expect_operationMarkedAsApplied(OpLogId opLogId) {
-        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
-    }
-
-    private void expect_operationMarkedAsRejected(OpLogId opLogId, String description) {
-        when(operationDao.markAsRejected(opLogId, description)).thenReturn(true);
     }
 }
