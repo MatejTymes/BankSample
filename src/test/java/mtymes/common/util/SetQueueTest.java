@@ -1,4 +1,4 @@
-package mtymes.account;
+package mtymes.common.util;
 
 import mtymes.account.domain.account.AccountId;
 import org.junit.Test;
@@ -15,12 +15,12 @@ import static mtymes.test.Random.randomAccountId;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class WorkQueueTest {
+public class SetQueueTest {
 
-    private WorkQueue queue = new WorkQueue();
+    private SetQueue<AccountId> queue = new SetQueue<>();
 
     @Test
-    public void shouldBeAbleToRetrieveAccountIdsInOrder() {
+    public void shouldBeAbleToRetrieveItemsInOrder() {
         AccountId accountId1 = randomAccountId();
         AccountId accountId2 = randomAccountId();
         AccountId accountId3 = randomAccountId();
@@ -41,7 +41,7 @@ public class WorkQueueTest {
     }
 
     @Test
-    public void shouldIgnoreDuplicateAccountIds() {
+    public void shouldIgnoreDuplicateItems() {
         AccountId accountId1 = randomAccountId();
         AccountId accountId2 = randomAccountId();
         AccountId accountId3 = randomAccountId();
@@ -62,7 +62,7 @@ public class WorkQueueTest {
     }
 
     @Test
-    public void shouldBeAbleToInsertAndRetrieveAccountIdsConcurrently() {
+    public void shouldBeAbleToInsertAndRetrieveItemsConcurrently() {
         int threadCount = 50;
 
         List<AccountId> accountIds = newList(

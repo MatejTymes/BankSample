@@ -1,13 +1,13 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
-import mtymes.account.WorkQueue;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
 import mtymes.account.exception.DuplicateOperationException;
+import mtymes.common.util.SetQueue;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,14 +29,14 @@ public class TransferFromHandlerTest_NewStyle extends StrictMockTest {
 
     private AccountDao accountDao;
     private OperationDao operationDao;
-    private WorkQueue queue;
+    private SetQueue<AccountId> queue;
     private TransferFromHandler handler;
 
     @Before
     public void setUp() throws Exception {
         accountDao = mock(AccountDao.class);
         operationDao = mock(OperationDao.class);
-        queue = mock(WorkQueue.class);
+        queue = mock(SetQueue.class);
         handler = new TransferFromHandler(accountDao, operationDao, queue);
     }
 

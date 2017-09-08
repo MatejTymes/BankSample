@@ -1,10 +1,10 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
-import mtymes.account.WorkQueue;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
+import mtymes.common.util.SetQueue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 
 public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
 
-    private WorkQueue workQueue = new WorkQueue();
+    private SetQueue<AccountId> workQueue = new SetQueue<>();
     private TransferFromHandler handler;
 
     @Before

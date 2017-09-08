@@ -40,14 +40,21 @@ testSets {
         dirName = 'test-stability'
         extendsFrom testInfrastructure
     }
+
+    systemTest {
+        dirName = 'test-system'
+        extendsFrom testInfrastructure
+    }
 }
 integrationTest.outputs.upToDateWhen { false }
 stabilityTest.outputs.upToDateWhen { false }
+systemTest.outputs.upToDateWhen { false }
 
 check.dependsOn integrationTest
 check.dependsOn stabilityTest
 integrationTest.mustRunAfter test
 stabilityTest.mustRunAfter test
+systemTest.mustRunAfter test
 
 dependencies {
     compile 'commons-io:commons-io:2.5'
@@ -68,14 +75,20 @@ dependencies {
     testCompile 'org.mockito:mockito-core:2.8.47'
     testCompile 'org.skyscreamer:jsonassert:1.5.0'
 
-
     testInfrastructureCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
     integrationTestCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
     stabilityTestCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
+    systemTestCompile 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.0'
+
+    systemTestCompile 'org.asynchttpclient:async-http-client:2.0.35'
+//    systemTestCompile 'javax.ws.rs:javax.ws.rs-api:2.1'
+    systemTestCompile 'org.jboss.resteasy:resteasy-jaxrs:3.1.4.Final'
+
 
     testCompile sourceSets.testInfrastructure.output
     integrationTestCompile sourceSets.testInfrastructure.output
     stabilityTestCompile sourceSets.testInfrastructure.output
+    systemTestCompile sourceSets.testInfrastructure.output
 }
 
 task wrapper(type: Wrapper) {

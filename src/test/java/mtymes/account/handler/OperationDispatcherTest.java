@@ -15,7 +15,7 @@ import static mtymes.test.Random.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
-public class HandlerDispatcherTest extends StrictMockTest {
+public class OperationDispatcherTest extends StrictMockTest {
 
     private CreateAccountHandler createAccountHandler;
     private DepositToHandler depositToHandler;
@@ -23,7 +23,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
     private TransferFromHandler transferFromHandler;
     private TransferToHandler transferToHandler;
 
-    private HandlerDispatcher handlerDispatcher;
+    private OperationDispatcher operationDispatcher;
 
     @Before
     public void setUp() throws Exception {
@@ -32,7 +32,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
         withdrawFromHandler = mock(WithdrawFromHandler.class);
         transferFromHandler = mock(TransferFromHandler.class);
         transferToHandler = mock(TransferToHandler.class);
-        handlerDispatcher = new HandlerDispatcher(createAccountHandler, depositToHandler, withdrawFromHandler, transferFromHandler, transferToHandler);
+        operationDispatcher = new OperationDispatcher(createAccountHandler, depositToHandler, withdrawFromHandler, transferFromHandler, transferToHandler);
     }
 
     @Test
@@ -42,7 +42,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
 
         doNothing().when(createAccountHandler).handleOperation(opLogId, operation);
 
-        handlerDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
+        operationDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
 
         doNothing().when(depositToHandler).handleOperation(opLogId, operation);
 
-        handlerDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
+        operationDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
 
         doNothing().when(withdrawFromHandler).handleOperation(opLogId, operation);
 
-        handlerDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
+        operationDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
 
         doNothing().when(transferFromHandler).handleOperation(opLogId, operation);
 
-        handlerDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
+        operationDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
     }
 
     @Test
@@ -82,7 +82,7 @@ public class HandlerDispatcherTest extends StrictMockTest {
 
         doNothing().when(transferToHandler).handleOperation(opLogId, operation);
 
-        handlerDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
+        operationDispatcher.dispatchOperation(new LoggedOperation(opLogId, operation, Optional.empty(), Optional.empty()));
     }
 
     @Test
@@ -97,14 +97,14 @@ public class HandlerDispatcherTest extends StrictMockTest {
         );
 
         for (Operation operation : operations) {
-            handlerDispatcher.dispatchOperation(
+            operationDispatcher.dispatchOperation(
                     new LoggedOperation(
                             opLogId,
                             operation,
                             Optional.of(Applied),
                             Optional.empty()
                     ));
-            handlerDispatcher.dispatchOperation(
+            operationDispatcher.dispatchOperation(
                     new LoggedOperation(
                             opLogId,
                             operation,

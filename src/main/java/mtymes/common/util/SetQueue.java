@@ -1,6 +1,4 @@
-package mtymes.account;
-
-import mtymes.account.domain.account.AccountId;
+package mtymes.common.util;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -9,29 +7,28 @@ import java.util.concurrent.locks.StampedLock;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
-// todo: rename to SetQueue<T> and move into common
-public class WorkQueue {
+public class SetQueue<T> {
 
     private final StampedLock lock = new StampedLock();
-    private final Set<AccountId> accountIds = newLinkedHashSet();
+    private final Set<T> items = newLinkedHashSet();
 
-    public void add(AccountId accountId) {
+    public void add(T item) {
         long stamp = lock.writeLock();
         try {
-            accountIds.add(accountId);
+            items.add(item);
         } finally {
             lock.unlock(stamp);
         }
     }
 
-    public Optional<AccountId> takeNextAvailable() {
+    public Optional<T> takeNextAvailable() {
         long stamp = lock.writeLock();
         try {
-            Iterator<AccountId> iterator = accountIds.iterator();
+            Iterator<T> iterator = items.iterator();
             if (iterator.hasNext()) {
-                AccountId accountId = iterator.next();
+                T item = iterator.next();
                 iterator.remove();
-                return Optional.of(accountId);
+                return Optional.of(item);
             } else {
                 return Optional.empty();
             }
@@ -42,11 +39,6 @@ public class WorkQueue {
 
     // todo: test this
     public int size() {
-        long stamp = lock.writeLock();
-        try {
-            return accountIds.size();
-        } finally {
-            lock.unlock(stamp);
-        }
+        return items.size();
     }
 }

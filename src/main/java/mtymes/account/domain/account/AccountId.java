@@ -14,6 +14,10 @@ public class AccountId extends Microtype<UUID> {
         return new AccountId(value);
     }
 
+    public static AccountId accountId(String value) {
+        return new AccountId(UUID.fromString(value));
+    }
+
     public static AccountId newAccountId() {
         return new AccountId(UUID.randomUUID());
     }

@@ -1,15 +1,16 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
-import mtymes.account.WorkQueue;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
+import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferFrom;
 import mtymes.account.domain.operation.TransferTo;
 import mtymes.account.exception.DuplicateOperationException;
+import mtymes.common.util.SetQueue;
 
 import java.util.Optional;
 
@@ -17,9 +18,9 @@ import static java.lang.String.format;
 
 public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
 
-    private final WorkQueue workQueue;
+    private final SetQueue<AccountId> workQueue;
 
-    public TransferFromHandler(AccountDao accountDao, OperationDao operationDao, WorkQueue workQueue) {
+    public TransferFromHandler(AccountDao accountDao, OperationDao operationDao, SetQueue<AccountId> workQueue) {
         super(accountDao, operationDao);
         this.workQueue = workQueue;
     }

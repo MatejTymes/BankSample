@@ -2,11 +2,11 @@ package mtymes.account.handler;
 
 import mtymes.account.domain.operation.*;
 
-public class HandlerDispatcher {
+public class OperationDispatcher {
 
     private final DispatchVisitor dispatchVisitor;
 
-    public HandlerDispatcher(CreateAccountHandler createAccountHandler, DepositToHandler depositToHandler, WithdrawFromHandler withdrawFromHandler, TransferFromHandler transferFromHandler, TransferToHandler transferToHandler) {
+    public OperationDispatcher(CreateAccountHandler createAccountHandler, DepositToHandler depositToHandler, WithdrawFromHandler withdrawFromHandler, TransferFromHandler transferFromHandler, TransferToHandler transferToHandler) {
         this.dispatchVisitor = new DispatchVisitor(createAccountHandler, depositToHandler, withdrawFromHandler, transferFromHandler, transferToHandler);
     }
 
