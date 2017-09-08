@@ -1,6 +1,6 @@
-An simple implementation of Bank application
+# Bank sample
 
-technical decisions:
+### technical decisions:
 - MongoDB is used (as it allowed fast prototyping), (but) this provides few advantages:
   - schema changes can be applied without system downtime or pauses (unlike in most sql solutions) (updates must be designed properly though)
   - secondary nodes can be used which helps with recovery if primary node goes down
@@ -8,7 +8,7 @@ technical decisions:
   - the goal was to allow future switching of database if more performant will arise
   - without using transactions the requirement on database types is lowered and different one (or mix of them) could be used (not only sql or non-sql types)
 
-design decisions:
+### design decisions:
 - each operation (CreateAccount, Transfer, Deposit, Withdraw) is being logged with a sequence id before it is being executed
   - this way we can recreate the db state by just reruning of the log
 - each operation is applied to one Account only and each Account has its own operations log (logically separated)
