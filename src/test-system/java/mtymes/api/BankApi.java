@@ -24,4 +24,12 @@ public class BankApi extends BaseApi {
     public ResponseWrapper withdrawMoney(AccountId accountId, Decimal amount) {
         return post(path("account").path(accountId.toString()).path("withdraw").path(amount.toPlainString()));
     }
+
+    public ResponseWrapper transferMoney(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
+        return post(path("account").path(fromAccountId.toString()).path("transfer").path(amount.toPlainString()).path("to").path(toAccountId.toString()));
+    }
+
+    public ResponseWrapper queuedWorkStats() {
+        return get(path("work/queued/stats"));
+    }
 }

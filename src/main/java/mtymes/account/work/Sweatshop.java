@@ -1,6 +1,7 @@
 package mtymes.account.work;
 
 import javafixes.concurrency.Runner;
+import mtymes.account.domain.QueuedWorkStats;
 import mtymes.account.domain.account.AccountId;
 import mtymes.common.util.Locker;
 import mtymes.common.util.SetQueue;
@@ -31,8 +32,12 @@ public class Sweatshop {
         this.timeoutIfNoWork = timeoutIfNoWork;
     }
 
-    public boolean isFinished() {
-        return workQueue.size() == 0 && workers.stream().noneMatch(WorkerThread::isWorking);
+    // todo: test this
+    public Object queuedWorkStats() {
+        return new QueuedWorkStats(
+                workQueue.size(),
+                (int) workers.stream().filter(WorkerThread::isWorking).count()
+        );
     }
 
     public Sweatshop start() {

@@ -1,4 +1,4 @@
-package mtymes.account.domain;
+package mtymes.common.domain;
 
 import javafixes.object.DataObject;
 

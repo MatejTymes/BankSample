@@ -3,21 +3,21 @@ package mtymes.account;
 import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
-import mtymes.account.domain.Failure;
-import mtymes.account.domain.Success;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
 import mtymes.account.work.Worker;
+import mtymes.common.domain.Failure;
+import mtymes.common.domain.Success;
 import mtymes.common.util.Either;
 
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static mtymes.account.domain.Failure.failure;
 import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.TransferId.newTransferId;
+import static mtymes.common.domain.Failure.failure;
 import static mtymes.common.util.Either.left;
 import static mtymes.common.util.Either.right;
 

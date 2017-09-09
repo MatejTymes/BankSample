@@ -4,6 +4,7 @@ import com.mongodb.client.MongoDatabase;
 import javafixes.math.Decimal;
 import mtymes.account.app.Bank;
 import mtymes.account.config.SystemProperties;
+import mtymes.account.domain.QueuedWorkStats;
 import mtymes.account.domain.account.AccountId;
 import mtymes.api.BankApi;
 import mtymes.api.ResponseWrapper;
@@ -272,48 +273,222 @@ public class BankSystemTest {
 
     @Test
     public void shouldBeAbleToTransferMoney() {
-        // todo: implement
+        AccountId fromAccountId = api.createAccount().accountId();
+        AccountId toAccountId = api.createAccount().accountId();
+
+        Decimal initialDeposit = randomAmountBetween(d("10.00"), d("99_999.99"));
+        api.depositMoney(fromAccountId, initialDeposit);
+
+        Decimal transferAmount = randomAmountBetween(d("0.01"), initialDeposit.minus(d("0.01")));
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(200)
+                .shouldHaveBody(emptyJson());
+
+        api.loadAccount(fromAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", fromAccountId)
+                .with("balance", initialDeposit.minus(transferAmount))
+                .with("version", 3)
+                .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", toAccountId)
+                .with("balance", transferAmount)
+                .with("version", 2)
+                .build());
     }
 
     @Test
     public void shouldBeAbleToTransferMoneyAndGetBalanceToZero() {
-        // todo: implement
-    }
+        AccountId fromAccountId = api.createAccount().accountId();
+        AccountId toAccountId = api.createAccount().accountId();
 
-    @Test
-    public void shouldFailToTransferMoneyFromNonExistingAccount() {
-        // todo: implement
-    }
+        Decimal initialDeposit = randomAmountBetween(d("10.00"), d("99_999.99"));
+        api.depositMoney(fromAccountId, initialDeposit);
 
-    @Test
-    public void shouldFailToTransferMoneyToNonExistingAccount() {
-        // todo: implement
+        Decimal transferAmount = initialDeposit;
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(200)
+                .shouldHaveBody(emptyJson());
+
+        api.loadAccount(fromAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", fromAccountId)
+                .with("balance", ZERO)
+                .with("version", 3)
+                .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", toAccountId)
+                .with("balance", transferAmount)
+                .with("version", 2)
+                .build());
     }
 
     @Test
     public void shouldFailToTransferMoneyIfFromAccountHasInsufficientFunds() {
-        // todo: implement
+        AccountId fromAccountId = api.createAccount().accountId();
+        AccountId toAccountId = api.createAccount().accountId();
+
+        Decimal initialDeposit = randomAmountBetween(d("10.00"), d("99_999.99"));
+        api.depositMoney(fromAccountId, initialDeposit);
+
+        Decimal transferAmount = initialDeposit.plus(d("0.01"));
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(500)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "Insufficient funds on account '" + fromAccountId + "'")
+                        .build());
+
+        api.loadAccount(fromAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", fromAccountId)
+                .with("balance", initialDeposit)
+                .with("version", 2)
+                .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", toAccountId)
+                .with("balance", ZERO)
+                .with("version", 1)
+                .build());
     }
 
+    @Test
+    public void shouldFailToTransferZeroAmount() {
+        AccountId fromAccountId = api.createAccount().accountId();
+        AccountId toAccountId = api.createAccount().accountId();
 
-//    @Deprecated // todo: remove - make part of other system tests
-//    @Test
-//    public void shouldLoadAccount() throws Exception {
-//        SystemProperties properties = new SystemProperties(
-//                getFreeServerPort(),
-//                "localhost",
-//                db.getPort(),
-//                db.getDbName(),
-//                10,
-//                Duration.ofMillis(0)
-//        );
-//        Bank bank = new Bank(properties).start();
-//
-//        BankApi api = new BankApi("localhost", bank.getPort());
-//
-//        Response account = api.createAccount();
-//        System.out.println(account);
-////        Response response = api.loadAccount(randomAccountId().toString());
-////        System.out.println(response);
-//    }
+        Decimal initialDeposit = randomAmountBetween(d("10.00"), d("99_999.99"));
+        api.depositMoney(fromAccountId, initialDeposit);
+
+        Decimal transferAmount = ZERO;
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(500)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "amount must be a positive value")
+                        .build());
+
+        api.loadAccount(fromAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", fromAccountId)
+                .with("balance", initialDeposit)
+                .with("version", 2)
+                .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", toAccountId)
+                .with("balance", ZERO)
+                .with("version", 1)
+                .build());
+    }
+
+    @Test
+    public void shouldFailToTransferNegativeAmount() {
+        AccountId fromAccountId = api.createAccount().accountId();
+        AccountId toAccountId = api.createAccount().accountId();
+
+        Decimal initialDeposit = randomAmountBetween(d("10.00"), d("99_999.99"));
+        api.depositMoney(fromAccountId, initialDeposit);
+
+        Decimal transferAmount = randomNegativeAmount();
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(500)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "amount must be a positive value")
+                        .build());
+
+        api.loadAccount(fromAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", fromAccountId)
+                .with("balance", initialDeposit)
+                .with("version", 2)
+                .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", toAccountId)
+                .with("balance", ZERO)
+                .with("version", 1)
+                .build());
+    }
+
+    @Test
+    public void shouldFailToTransferMoneyFromNonExistingAccount() {
+        AccountId fromAccountId = randomAccountId();
+        AccountId toAccountId = api.createAccount().accountId();
+
+        Decimal transferAmount = randomPositiveAmount();
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(500)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "From Account '" + fromAccountId + "' does not exist")
+                        .build());
+
+        api.loadAccount(fromAccountId)
+                .shouldHaveStatus(400)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "Account '" + fromAccountId + "' not found")
+                        .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", toAccountId)
+                .with("balance", ZERO)
+                .with("version", 1)
+                .build());
+    }
+
+    @Test
+    public void shouldFailToTransferMoneyToNonExistingAccount() {
+        AccountId fromAccountId = api.createAccount().accountId();
+        AccountId toAccountId = randomAccountId();
+
+        Decimal initialDeposit = randomAmountBetween(d("10.00"), d("99_999.99"));
+        api.depositMoney(fromAccountId, initialDeposit);
+
+        Decimal transferAmount = randomAmountBetween(d("0.01"), initialDeposit.minus(d("0.01")));
+
+        // When & Then
+        api.transferMoney(fromAccountId, toAccountId, transferAmount)
+                .shouldHaveStatus(500)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "To Account '" + toAccountId + "' does not exist")
+                        .build());
+
+        api.loadAccount(fromAccountId).shouldHaveBody(jsonBuilder()
+                .with("accountId", fromAccountId)
+                .with("balance", initialDeposit)
+                .with("version", 2)
+                .build());
+        waitForQueuedWorkToFinish();
+        api.loadAccount(toAccountId)
+                .shouldHaveStatus(400)
+                .shouldHaveBody(jsonBuilder()
+                        .with("message", "Account '" + toAccountId + "' not found")
+                        .build());
+    }
+
+    private void waitForQueuedWorkToFinish(Duration duration) {
+        long startTime = System.currentTimeMillis();
+
+        boolean retry;
+        do {
+            long currentTime = System.currentTimeMillis();
+            QueuedWorkStats stats = api.queuedWorkStats().bodyAs(QueuedWorkStats.class);
+            retry = stats.queuedCount > 0 || stats.inProgressCount > 0;
+            if (retry && currentTime - startTime > duration.toMillis()) {
+                throw new IllegalStateException("queued work has not finished in " + duration);
+            }
+        } while (retry);
+    }
+
+    private void waitForQueuedWorkToFinish() {
+        waitForQueuedWorkToFinish(Duration.ofSeconds(2));
+    }
 }

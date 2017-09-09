@@ -45,4 +45,13 @@ public class JsonUtil {
             throw new IllegalArgumentException(e);
         }
     }
+
+    // todo: test
+    public static <T> T toObject(String jsonString, Class<T> responseType) {
+        try {
+            return mapper.readerFor(responseType).readValue(jsonString);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 }

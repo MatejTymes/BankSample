@@ -4,9 +4,10 @@ import mtymes.account.OperationSubmitter;
 import mtymes.account.config.Dependencies;
 import mtymes.account.config.SystemProperties;
 import mtymes.account.dao.AccountDao;
-import mtymes.account.domain.Failure;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.work.Sweatshop;
+import mtymes.common.domain.Failure;
 import mtymes.common.json.JsonUtil;
 import spark.ResponseTransformer;
 
@@ -14,8 +15,8 @@ import java.util.Optional;
 
 import static java.lang.String.format;
 import static javafixes.math.Decimal.decimal;
-import static mtymes.account.domain.Failure.failure;
 import static mtymes.account.domain.account.AccountId.accountId;
+import static mtymes.common.domain.Failure.failure;
 import static mtymes.common.json.JsonUtil.toJsonString;
 import static spark.Spark.*;
 
@@ -38,6 +39,7 @@ public class Bank {
         this.dependencies = new Dependencies(properties);
         AccountDao accountDao = dependencies.accountDao;
         OperationSubmitter submitter = dependencies.submitter;
+        Sweatshop sweatshop = dependencies.sweatshop;
 
         port(port);
 
@@ -77,7 +79,7 @@ public class Bank {
                         () -> res.status(500)
                 ), jsonTransformer);
 
-        post("/account/:fromAccountId/transferTo/:toAccountId/:amount", (req, res) -> submitter
+        post("/account/:fromAccountId/transfer/:amount/to/:toAccountId", (req, res) -> submitter
                 .transferMoney(
                         accountId(req.params(":fromAccountId")),
                         accountId(req.params(":toAccountId")),
@@ -87,6 +89,8 @@ public class Bank {
                         () -> res.status(200),
                         () -> res.status(500)
                 ), jsonTransformer);
+
+        get("/work/queued/stats", (req, res) -> sweatshop.queuedWorkStats(), jsonTransformer);
 
         after((req, res) -> res.type("application/json"));
 

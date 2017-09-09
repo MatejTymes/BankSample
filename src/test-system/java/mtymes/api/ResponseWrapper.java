@@ -6,6 +6,7 @@ import org.asynchttpclient.Response;
 import org.json.JSONException;
 
 import static mtymes.common.json.JsonUtil.toJsonObject;
+import static mtymes.common.json.JsonUtil.toObject;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
@@ -35,5 +36,9 @@ public class ResponseWrapper {
 
     public AccountId accountId() {
         return AccountId.accountId(toJsonObject(response.getResponseBody()).get("accountId").asText());
+    }
+
+    public <T> T bodyAs(Class<T> responseClass) {
+        return toObject(response.getResponseBody(), responseClass);
     }
 }
