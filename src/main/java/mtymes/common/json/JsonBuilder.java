@@ -19,6 +19,10 @@ public class JsonBuilder {
         return jsonBuilder().with(fieldName, value).build();
     }
 
+    public static ObjectNode emptyJson() {
+        return jsonBuilder().build();
+    }
+
     public ObjectNode build() {
         // we return a copy so the builder can be reused without affecting the returned object
         ObjectNode objectNodeCopy = new ObjectNode(JsonNodeFactory.instance);

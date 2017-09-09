@@ -47,9 +47,9 @@ public class Sweatshop {
         return this;
     }
 
-    public void stop() {
+    public void shutdown() {
         locker.lockAndRun(() -> {
-            runner.waitTillDone().shutdown();
+            runner.shutdown();
             workers.clear();
         });
     }

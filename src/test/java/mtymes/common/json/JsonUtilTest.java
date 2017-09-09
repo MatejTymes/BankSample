@@ -30,7 +30,7 @@ public class JsonUtilTest {
         );
 
         // When
-        String jsonValue = JsonUtil.toJson(operation);
+        String jsonValue = JsonUtil.toJsonString(operation);
 
         // Then
         // todo: implement

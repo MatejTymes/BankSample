@@ -18,7 +18,7 @@ public abstract class Either<L, R> {
 
     public boolean isLeft() {
         return false;
-    };
+    }
 
     public boolean isRight() {
         return false;
@@ -30,6 +30,16 @@ public abstract class Either<L, R> {
 
     public L getLeft() {
         throw new NoSuchElementException("Left value not present");
+    }
+
+    public Object handleAndGet(Runnable onRightTask, Runnable onLeftTask) {
+        if (isRight()) {
+            onRightTask.run();
+            return getRight();
+        } else {
+            onLeftTask.run();
+            return getLeft();
+        }
     }
 
     public abstract Object get();

@@ -14,8 +14,6 @@ import org.junit.Before;
 
 import java.util.Optional;
 
-import static java.math.BigDecimal.ROUND_DOWN;
-import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.domain.account.AccountBuilder.accountBuilder;
@@ -71,10 +69,7 @@ public abstract class ReadableOperationHandlerTest extends StrictMockTest {
     }
 
     protected Decimal amountBetween(Decimal fromAmount, Decimal toAmount) {
-        int scaleToUse = 2;
-        long fromLong = fromAmount.bigDecimalValue().setScale(scaleToUse, ROUND_DOWN).unscaledValue().longValue();
-        long toLong = toAmount.bigDecimalValue().setScale(scaleToUse, ROUND_DOWN).unscaledValue().longValue();
-        return decimal(randomLong(fromLong, toLong), scaleToUse);
+        return randomAmountBetween(fromAmount, toAmount);
     }
 
     protected TransferDetail generateTransferDetailFor(Account fromAccount, Account toAccount, Decimal amount) {

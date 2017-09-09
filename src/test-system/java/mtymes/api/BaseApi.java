@@ -25,17 +25,17 @@ public class BaseApi {
         this.port = port;
     }
 
-    protected Response get(UriBuilder uri) {
+    protected ResponseWrapper get(UriBuilder uri) {
         try {
-            return client.prepareGet(uri.build().toString()).execute().get();
+            return wrap(client.prepareGet(uri.build().toString()).execute().get());
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    protected Response post(UriBuilder uri) {
+    protected ResponseWrapper post(UriBuilder uri) {
         try {
-            return client.preparePost(uri.build().toString()).execute().get();
+            return wrap(client.preparePost(uri.build().toString()).execute().get());
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -47,5 +47,9 @@ public class BaseApi {
 
     protected String hostUri() {
         return "http://" + hostName + ":" + port;
+    }
+
+    private ResponseWrapper wrap(Response response) {
+        return new ResponseWrapper(response);
     }
 }

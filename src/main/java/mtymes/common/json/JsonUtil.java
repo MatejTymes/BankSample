@@ -3,10 +3,13 @@ package mtymes.common.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import javafixes.math.Decimal;
 import javafixes.object.Microtype;
+
+import java.io.IOException;
 
 public class JsonUtil {
 
@@ -26,7 +29,20 @@ public class JsonUtil {
     }
 
     // todo: test
-    public static String toJson(Object object) throws JsonProcessingException {
-        return mapper.writeValueAsString(object);
+    public static String toJsonString(Object object) {
+        try {
+            return mapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    // todo: test
+    public static ObjectNode toJsonObject(String jsonString) {
+        try {
+            return (ObjectNode) mapper.reader().readTree(jsonString);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

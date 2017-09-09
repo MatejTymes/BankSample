@@ -1,6 +1,7 @@
 package mtymes.test;
 
 import javafixes.math.Decimal;
+import javafixes.math.Scale;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.*;
@@ -10,14 +11,18 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static java.math.BigDecimal.ROUND_DOWN;
 import static java.util.UUID.randomUUID;
 import static javafixes.math.Decimal.decimal;
+import static javafixes.math.Scale._2_DECIMAL_PLACES;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.account.domain.operation.TransferId.transferId;
 
 public class Random {
+
+    private static final Scale scaleToUse = _2_DECIMAL_PLACES;
 
     public static boolean randomBoolean() {
         return pickRandomValue(true, false);
@@ -43,22 +48,29 @@ public class Random {
     public static Decimal randomAmount() {
         return decimal(
                 randomInt(Integer.MIN_VALUE, Integer.MAX_VALUE),
-                2
+                // todo: allow to pass scale into the factory method
+                scaleToUse.value
         );
     }
 
     public static Decimal randomPositiveAmount() {
         return decimal(
                 randomInt(1, Integer.MAX_VALUE),
-                2
+                scaleToUse.value
         );
     }
 
     public static Decimal randomNegativeAmount() {
         return decimal(
                 randomInt(Integer.MIN_VALUE, -1),
-                2
+                scaleToUse.value
         );
+    }
+
+    public static Decimal randomAmountBetween(Decimal fromAmount, Decimal toAmount) {
+        long fromLong = fromAmount.bigDecimalValue().setScale(scaleToUse.value, ROUND_DOWN).unscaledValue().longValue();
+        long toLong = toAmount.bigDecimalValue().setScale(scaleToUse.value, ROUND_DOWN).unscaledValue().longValue();
+        return decimal(randomLong(fromLong, toLong), scaleToUse.value);
     }
 
     public static AccountId randomAccountId() {

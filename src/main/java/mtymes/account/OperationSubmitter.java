@@ -4,6 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.Failure;
+import mtymes.account.domain.Success;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static mtymes.account.domain.Failure.failure;
 import static mtymes.account.domain.account.AccountId.newAccountId;
+import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.TransferId.newTransferId;
 import static mtymes.common.util.Either.left;
 import static mtymes.common.util.Either.right;
@@ -46,19 +48,19 @@ public class OperationSubmitter {
         }
     }
 
-    public Either<Failure, FinalState> depositMoney(AccountId accountId, Decimal amount) {
+    public Either<Failure, Success> depositMoney(AccountId accountId, Decimal amount) {
         LoggedOperation operation = submitOperation(new DepositTo(accountId, amount));
-        return asStateResponse(operation);
+        return asResponse(operation);
     }
 
-    public Either<Failure, FinalState> withdrawMoney(AccountId accountId, Decimal amount) {
+    public Either<Failure, Success> withdrawMoney(AccountId accountId, Decimal amount) {
         LoggedOperation operation = submitOperation(new WithdrawFrom(accountId, amount));
-        return asStateResponse(operation);
+        return asResponse(operation);
     }
 
-    public Either<Failure, FinalState> transferMoney(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
+    public Either<Failure, Success> transferMoney(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
         LoggedOperation operation = submitOperation(new TransferFrom(new TransferDetail(newTransferId(), fromAccountId, toAccountId, amount)));
-        return asStateResponse(operation);
+        return asResponse(operation);
     }
 
     /* ========================== */
@@ -73,20 +75,24 @@ public class OperationSubmitter {
 
     private boolean wasOperationApplied(LoggedOperation operation) {
         Optional<FinalState> finalState = operation.finalState;
-        return finalState.isPresent() && finalState.get() == FinalState.Applied;
+        return finalState.isPresent() && finalState.get() == Applied;
     }
 
-    private <T> Either<Failure, T> asResponse(T object) {
-        return right(object);
+    private Either<Failure, Account> asResponse(Account account) {
+        return right(account);
+    }
+
+    private Either<Failure, Success> asResponse(LoggedOperation operation) {
+        if (operation.finalState.map(value -> value == Applied).orElse(false)) {
+            return right(new Success());
+        } else {
+            return left(failure(
+                    operation.description.orElse("Failed to finish operation")
+            ));
+        }
     }
 
     private <T> Either<Failure, T> asFailure(String message) {
         return left(failure(message));
-    }
-
-    private Either<Failure, FinalState> asStateResponse(LoggedOperation operation) {
-        return operation.finalState
-                .map(this::asResponse)
-                .orElseGet(() -> asFailure("Failed to finish this operation"));
     }
 }

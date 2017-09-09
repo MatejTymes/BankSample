@@ -44,6 +44,6 @@ public class Dependencies {
     }
 
     public void shutdown() {
-        sweatshop.stop();
+        sweatshop.shutdown();
     }
 }
