@@ -16,6 +16,9 @@ import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+/**
+ * Makes sure that any call that is not mocked will fail
+ */
 public abstract class StrictMockTest {
 
     @Rule

@@ -3,6 +3,7 @@ package mtymes.account.work;
 import javafixes.concurrency.Task;
 import mtymes.account.domain.account.AccountId;
 import mtymes.common.util.SetQueue;
+import mtymes.common.util.Sleeper;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -11,20 +12,21 @@ import java.util.Optional;
 import static java.lang.String.format;
 import static org.slf4j.LoggerFactory.getLogger;
 
-// todo: test this
 public class WorkerThread implements Task {
 
     private Logger logger = getLogger(WorkerThread.class);
 
-    private final SetQueue queue;
+    private final SetQueue<AccountId> queue;
     private final Worker worker;
+    private final Sleeper sleeper;
     private final Duration timeoutIfNoWork;
 
     private volatile Optional<AccountId> workInProgress = Optional.empty();
 
-    public WorkerThread(SetQueue queue, Worker worker, Duration timeoutIfNoWork) {
+    public WorkerThread(SetQueue<AccountId> queue, Worker worker, Sleeper sleeper, Duration timeoutIfNoWork) {
         this.queue = queue;
         this.worker = worker;
+        this.sleeper = sleeper;
         this.timeoutIfNoWork = timeoutIfNoWork;
     }
 
@@ -34,9 +36,9 @@ public class WorkerThread implements Task {
 
             if (optionalAccountId.isPresent()) {
                 processAccountOperations(optionalAccountId.get());
-                Thread.sleep(0); // allow interruption
+                sleeper.sleepFor(0L); // allow interruption
             } else {
-                Thread.sleep(timeoutIfNoWork.toMillis()); // allow interruption
+                sleeper.sleepFor(timeoutIfNoWork); // allow interruption
             }
         }
     }
@@ -50,7 +52,7 @@ public class WorkerThread implements Task {
             workInProgress = Optional.of(accountId);
 
             worker.runUnfinishedOperations(accountId);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error(format("Failed to evaluate operation for Account '%s'", accountId), e);
             queue.add(accountId);
         } finally {
