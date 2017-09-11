@@ -20,4 +20,11 @@ public class Account extends DataObject {
         this.balance = balance;
         this.version = version;
     }
+
+    @SuppressWarnings("unused")
+    private Account() {
+        this.accountId = null;
+        this.balance = null;
+        this.version = null;
+    }
 }

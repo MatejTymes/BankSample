@@ -1,5 +1,6 @@
 package mtymes.account.domain.account;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import javafixes.object.Microtype;
 
 import java.util.UUID;
@@ -14,6 +15,7 @@ public class AccountId extends Microtype<UUID> {
         return new AccountId(value);
     }
 
+    @JsonCreator
     public static AccountId accountId(String value) {
         return new AccountId(UUID.fromString(value));
     }

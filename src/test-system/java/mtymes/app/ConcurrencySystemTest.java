@@ -20,6 +20,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static de.flapdoodle.embed.process.runtime.Network.getFreeServerPort;
 import static javafixes.common.CollectionUtil.newList;
+import static javafixes.math.Decimal.ZERO;
 import static javafixes.math.Decimal.d;
 import static mtymes.common.json.JsonBuilder.jsonBuilder;
 import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
@@ -89,7 +90,7 @@ public class ConcurrencySystemTest {
         api.loadAccount(fromAccountId).shouldHaveBody(
                 jsonBuilder()
                         .with("accountId", fromAccountId)
-                        .with("balance", Decimal.ZERO)
+                        .with("balance", ZERO)
                         .build(),
                 false);
         for (AccountId toAccountId : toAccountIds) {

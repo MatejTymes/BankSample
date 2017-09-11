@@ -23,7 +23,7 @@ public class JsonUtil {
 
         SimpleModule customModule = new SimpleModule();
         customModule.addSerializer(Decimal.class, new DecimalSerializer());
-//        customModule.addDeserializer(Decimal.class, new DecimalDeserializer());
+        customModule.addDeserializer(Decimal.class, new DecimalDeserializer());
         customModule.addSerializer(Microtype.class, new MicrotypeSerializer());
         mapper.registerModule(customModule);
     }
