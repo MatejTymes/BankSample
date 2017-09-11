@@ -45,10 +45,13 @@ public class Random {
         );
     }
 
+    public static String randomUUIDString() {
+        return randomUUID().toString();
+    }
+
     public static Decimal randomAmount() {
         return decimal(
                 randomInt(Integer.MIN_VALUE, Integer.MAX_VALUE),
-                // todo: allow to pass scale into the factory method
                 scaleToUse.value
         );
     }

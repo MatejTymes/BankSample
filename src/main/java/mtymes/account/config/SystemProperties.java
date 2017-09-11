@@ -11,7 +11,6 @@ public class SystemProperties {
     private final int backgroundWorkerCount;
     private final Duration workerIdleTimeout;
 
-    // todo: read from property file
     public SystemProperties(int appPort, String dbHostName, int dbPort, String dbName, int backgroundWorkerCount, Duration workerIdleTimeout) {
         this.appPort = appPort;
         this.dbHostName = dbHostName;

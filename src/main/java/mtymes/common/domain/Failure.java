@@ -9,7 +9,6 @@ public class Failure extends DataObject {
     public final String message;
 
     private Failure(String message) {
-        // todo: test this
         checkNotNull(message, "message can't be null");
         this.message = message;
     }

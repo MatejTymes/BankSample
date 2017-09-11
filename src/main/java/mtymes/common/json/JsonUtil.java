@@ -28,7 +28,6 @@ public class JsonUtil {
         mapper.registerModule(customModule);
     }
 
-    // todo: test
     public static String toJsonString(Object object) {
         try {
             return mapper.writeValueAsString(object);
@@ -37,7 +36,6 @@ public class JsonUtil {
         }
     }
 
-    // todo: test
     public static ObjectNode toJsonObject(String jsonString) {
         try {
             return (ObjectNode) mapper.reader().readTree(jsonString);
@@ -46,7 +44,6 @@ public class JsonUtil {
         }
     }
 
-    // todo: test
     public static <T> T toObject(String jsonString, Class<T> responseType) {
         try {
             return mapper.readerFor(responseType).readValue(jsonString);

@@ -485,6 +485,13 @@ public class BankSystemTest {
             if (retry && currentTime - startTime > duration.toMillis()) {
                 throw new IllegalStateException("queued work has not finished in " + duration);
             }
+
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
         } while (retry);
     }
 
