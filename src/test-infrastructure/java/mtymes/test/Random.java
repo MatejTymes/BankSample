@@ -92,8 +92,12 @@ public class Random {
         );
     }
 
-    public static OpLogId randomOpLogId(AccountId accountId) {
-        return opLogId(accountId, randomVersion());
+    @SafeVarargs
+    public static OpLogId randomOpLogId(AccountId accountId, Condition<OpLogId>... validityConditions) {
+        return generateValidValue(
+                () -> opLogId(accountId, randomVersion()),
+                validityConditions
+        );
     }
 
     public static OpLogId randomOpLogId() {

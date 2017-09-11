@@ -18,7 +18,6 @@ public class Worker {
         this.dispatcher = dispatcher;
     }
 
-    // todo: test this
     public void runUnfinishedOperations(AccountId accountId) {
         List<OpLogId> unfinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(accountId);
         for (OpLogId unfinishedOpLogId : unfinishedOpLogIds) {

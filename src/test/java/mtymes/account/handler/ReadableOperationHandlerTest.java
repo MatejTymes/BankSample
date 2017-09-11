@@ -20,6 +20,7 @@ import static mtymes.domain.account.AccountBuilder.accountBuilder;
 import static mtymes.test.Random.*;
 import static org.mockito.Mockito.*;
 
+// todo: use for all operation unit tests
 public abstract class ReadableOperationHandlerTest extends StrictMockTest {
 
     protected AccountDao accountDao;

@@ -18,9 +18,10 @@ import static javafixes.math.Decimal.decimal;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.common.domain.Failure.failure;
 import static mtymes.common.json.JsonUtil.toJsonString;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static spark.Spark.*;
 
-// todo: test
+// todo: add concurrency test
 public class Bank {
 
     private static final ResponseTransformer jsonTransformer = JsonUtil::toJsonString;
@@ -100,7 +101,7 @@ public class Bank {
             String message = e.getMessage();
             Failure failure = (message != null)
                     ? failure(message)
-                    : failure("todo"); // todo: send stack trace
+                    : failure(getStackTrace(e));
             res.body(toJsonString(failure));
         });
 
