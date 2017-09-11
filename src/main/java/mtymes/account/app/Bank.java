@@ -10,6 +10,7 @@ import mtymes.account.work.Sweatshop;
 import mtymes.common.domain.Failure;
 import mtymes.common.json.JsonUtil;
 import spark.ResponseTransformer;
+import spark.Service;
 
 import java.util.Optional;
 
@@ -19,9 +20,7 @@ import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.common.domain.Failure.failure;
 import static mtymes.common.json.JsonUtil.toJsonString;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
-import static spark.Spark.*;
 
-// todo: add concurrency test
 public class Bank {
 
     private static final ResponseTransformer jsonTransformer = JsonUtil::toJsonString;
@@ -42,9 +41,10 @@ public class Bank {
         OperationSubmitter submitter = dependencies.submitter;
         Sweatshop sweatshop = dependencies.sweatshop;
 
-        port(port);
+        Service spark = Service.ignite();
+        spark.port(port);
 
-        get("/account/:accountId", (req, res) -> {
+        spark.get("/account/:accountId", (req, res) -> {
             AccountId accountId = accountId(req.params(":accountId"));
             Optional<Account> account = accountDao.findAccount(accountId);
             if (account.isPresent()) {
@@ -55,14 +55,14 @@ public class Bank {
             }
         }, jsonTransformer);
 
-        post("/account/new", (req, res) -> submitter
+        spark.post("/account/new", (req, res) -> submitter
                 .createAccount()
                 .handleAndGet(
                         () -> res.status(201),
                         () -> res.status(500)
                 ), jsonTransformer);
 
-        post("/account/:accountId/deposit/:amount", (req, res) -> submitter
+        spark.post("/account/:accountId/deposit/:amount", (req, res) -> submitter
                 .depositMoney(
                         accountId(req.params(":accountId")),
                         decimal(req.params(":amount")))
@@ -71,7 +71,7 @@ public class Bank {
                         () -> res.status(500)
                 ), jsonTransformer);
 
-        post("/account/:accountId/withdraw/:amount", (req, res) -> submitter
+        spark.post("/account/:accountId/withdraw/:amount", (req, res) -> submitter
                 .withdrawMoney(
                         accountId(req.params(":accountId")),
                         decimal(req.params(":amount")))
@@ -80,7 +80,7 @@ public class Bank {
                         () -> res.status(500)
                 ), jsonTransformer);
 
-        post("/account/:fromAccountId/transfer/:amount/to/:toAccountId", (req, res) -> submitter
+        spark.post("/account/:fromAccountId/transfer/:amount/to/:toAccountId", (req, res) -> submitter
                 .transferMoney(
                         accountId(req.params(":fromAccountId")),
                         accountId(req.params(":toAccountId")),
@@ -91,11 +91,11 @@ public class Bank {
                         () -> res.status(500)
                 ), jsonTransformer);
 
-        get("/work/queued/stats", (req, res) -> sweatshop.queuedWorkStats(), jsonTransformer);
+        spark.get("/work/queued/stats", (req, res) -> sweatshop.queuedWorkStats(), jsonTransformer);
 
-        after((req, res) -> res.type("application/json"));
+        spark.after((req, res) -> res.type("application/json"));
 
-        exception(Exception.class, (e, req, res) -> {
+        spark.exception(Exception.class, (e, req, res) -> {
             res.status(500);
             res.type("application/json");
             String message = e.getMessage();

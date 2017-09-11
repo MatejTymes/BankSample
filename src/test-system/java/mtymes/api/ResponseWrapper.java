@@ -19,19 +19,27 @@ public class ResponseWrapper {
         this.response = response;
     }
 
+    public int status() {
+        return response.getStatusCode();
+    }
+
     public ResponseWrapper shouldHaveStatus(int status) {
         assertThat(response.getStatusCode(), equalTo(status));
         return this;
     }
 
-    public ResponseWrapper shouldHaveBody(ObjectNode jsonBody) {
+    public ResponseWrapper shouldHaveBody(ObjectNode jsonBody, boolean strict) {
         assertThat(response.getHeader("Content-Type"), equalTo("application/json"));
         try {
-            assertEquals(jsonBody.toString(), response.getResponseBody(), true);
+            assertEquals(jsonBody.toString(), response.getResponseBody(), strict);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
         return this;
+    }
+
+    public ResponseWrapper shouldHaveBody(ObjectNode jsonBody) {
+        return shouldHaveBody(jsonBody, true);
     }
 
     public AccountId accountId() {

@@ -1,6 +1,5 @@
 package mtymes.app;
 
-import com.mongodb.client.MongoDatabase;
 import javafixes.math.Decimal;
 import mtymes.account.app.Bank;
 import mtymes.account.config.SystemProperties;
@@ -27,13 +26,12 @@ import static mtymes.test.Random.*;
 public class BankSystemTest {
 
     private static EmbeddedDB db;
-    private static Bank bank;
+    private static Bank appNode;
     private static BankApi api;
 
     @BeforeClass
     public static void initDbAndApp() throws IOException {
         db = MongoManager.getEmbeddedDB();
-        MongoDatabase database = db.getDatabase();
 
         SystemProperties properties = new SystemProperties(
                 getFreeServerPort(),
@@ -43,15 +41,15 @@ public class BankSystemTest {
                 10,
                 Duration.ofMillis(0)
         );
-        bank = new Bank(properties).start();
+        appNode = new Bank(properties).start();
 
-        api = new BankApi("localhost", bank.getPort());
+        api = new BankApi("localhost", appNode.getPort());
     }
 
     @AfterClass
     public static void releaseDB() {
         MongoManager.release(db);
-        bank.shutdown();
+        appNode.shutdown();
     }
 
     @Test
