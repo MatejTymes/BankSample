@@ -14,27 +14,27 @@ import mtymes.common.util.Either;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.FinalState.Applied;
-import static mtymes.account.domain.operation.TransferId.newTransferId;
 import static mtymes.common.domain.Failure.failure;
 import static mtymes.common.util.Either.left;
 import static mtymes.common.util.Either.right;
 
 public class OperationSubmitter {
 
+    private final IdGenerator idGenerator;
     private final AccountDao accountDao;
     private final OperationDao operationDao;
     private final Worker worker;
 
-    public OperationSubmitter(AccountDao accountDao, OperationDao operationDao, Worker worker) {
+    public OperationSubmitter(IdGenerator idGenerator, AccountDao accountDao, OperationDao operationDao, Worker worker) {
+        this.idGenerator = idGenerator;
         this.accountDao = accountDao;
         this.operationDao = operationDao;
         this.worker = worker;
     }
 
     public Either<Failure, Account> createAccount() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = idGenerator.nextAccountId();
         LoggedOperation operation = submitOperation(new CreateAccount(accountId));
 
         if (wasOperationApplied(operation)) {
@@ -58,7 +58,8 @@ public class OperationSubmitter {
     }
 
     public Either<Failure, Success> transferMoney(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
-        LoggedOperation operation = submitOperation(new TransferFrom(new TransferDetail(newTransferId(), fromAccountId, toAccountId, amount)));
+        TransferId transferId = idGenerator.nextTransferId();
+        LoggedOperation operation = submitOperation(new TransferFrom(new TransferDetail(transferId, fromAccountId, toAccountId, amount)));
         return asResponse(operation);
     }
 

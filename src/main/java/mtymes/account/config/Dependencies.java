@@ -2,6 +2,7 @@ package mtymes.account.config;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
+import mtymes.account.IdGenerator;
 import mtymes.account.OperationSubmitter;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
@@ -39,8 +40,9 @@ public class Dependencies {
         );
         Worker worker = new Worker(operationDao, dispatcher);
 
+        IdGenerator idGenerator = new IdGenerator();
         this.sweatshop = new Sweatshop(workQueue, properties.backgroundWorkerCount(), worker, properties.workerIdleTimeout()).start();
-        this.submitter = new OperationSubmitter(accountDao, operationDao, worker);
+        this.submitter = new OperationSubmitter(idGenerator, accountDao, operationDao, worker);
     }
 
     public void shutdown() {

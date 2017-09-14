@@ -1,9 +1,11 @@
 package mtymes.common.util;
 
+import javafixes.object.DataObject;
+
 import java.util.NoSuchElementException;
 
 // todo: test this
-public abstract class Either<L, R> {
+public abstract class Either<L, R> extends DataObject {
 
     private Either() {
     }
