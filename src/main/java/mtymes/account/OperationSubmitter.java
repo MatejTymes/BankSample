@@ -21,7 +21,6 @@ import static mtymes.common.domain.Failure.failure;
 import static mtymes.common.util.Either.left;
 import static mtymes.common.util.Either.right;
 
-// todo: test this
 public class OperationSubmitter {
 
     private final AccountDao accountDao;
