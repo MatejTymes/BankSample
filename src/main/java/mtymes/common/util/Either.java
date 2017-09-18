@@ -4,7 +4,6 @@ import javafixes.object.DataObject;
 
 import java.util.NoSuchElementException;
 
-// todo: test this
 public abstract class Either<L, R> extends DataObject {
 
     private Either() {
@@ -27,11 +26,11 @@ public abstract class Either<L, R> extends DataObject {
     }
 
     public R getRight() {
-        throw new NoSuchElementException("Left value not present");
+        throw new NoSuchElementException("Right value not defined");
     }
 
     public L getLeft() {
-        throw new NoSuchElementException("Left value not present");
+        throw new NoSuchElementException("Left value not defined");
     }
 
     public Object handleAndGet(Runnable onRightTask, Runnable onLeftTask) {
@@ -46,7 +45,7 @@ public abstract class Either<L, R> extends DataObject {
 
     public abstract Object get();
 
-    public static final class Right<L, R> extends Either<L, R> {
+    private static final class Right<L, R> extends Either<L, R> {
 
         private final R value;
 
@@ -70,7 +69,7 @@ public abstract class Either<L, R> extends DataObject {
         }
     }
 
-    public static final class Left<L, R> extends Either<L, R> {
+    private static final class Left<L, R> extends Either<L, R> {
 
         private final L value;
 
