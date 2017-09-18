@@ -33,11 +33,17 @@ public class SetQueueTest {
         queue.add(accountId4);
 
         // Then
+        assertThat(queue.size(), equalTo(4));
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId1));
+        assertThat(queue.size(), equalTo(3));
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId2));
+        assertThat(queue.size(), equalTo(2));
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId3));
+        assertThat(queue.size(), equalTo(1));
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId4));
+        assertThat(queue.size(), equalTo(0));
         assertThat(queue.takeNextAvailable(), isNotPresent());
+        assertThat(queue.size(), equalTo(0));
     }
 
     @Test
@@ -46,19 +52,29 @@ public class SetQueueTest {
         AccountId accountId2 = randomAccountId();
         AccountId accountId3 = randomAccountId();
 
-        // When
+        // When & Then
+        assertThat(queue.size(), equalTo(0));
         queue.add(accountId1);
+        assertThat(queue.size(), equalTo(1));
         queue.add(accountId1);
+        assertThat(queue.size(), equalTo(1));
         queue.add(accountId2);
+        assertThat(queue.size(), equalTo(2));
         queue.add(accountId1);
+        assertThat(queue.size(), equalTo(2));
         queue.add(accountId2);
+        assertThat(queue.size(), equalTo(2));
         queue.add(accountId3);
+        assertThat(queue.size(), equalTo(3));
 
-        // Then
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId1));
+        assertThat(queue.size(), equalTo(2));
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId2));
+        assertThat(queue.size(), equalTo(1));
         assertThat(queue.takeNextAvailable(), isPresentAndEqualTo(accountId3));
+        assertThat(queue.size(), equalTo(0));
         assertThat(queue.takeNextAvailable(), isNotPresent());
+        assertThat(queue.size(), equalTo(0));
     }
 
     @Test

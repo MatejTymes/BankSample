@@ -37,7 +37,6 @@ public class SetQueue<T> {
         }
     }
 
-    // todo: test this
     public int size() {
         return items.size();
     }
