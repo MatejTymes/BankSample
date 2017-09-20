@@ -149,7 +149,7 @@ public class BankSystemTest {
 
         // When & Then
         api.depositMoney(nonExistingAccountId, amount)
-                .shouldHaveStatus(500)
+                .shouldHaveStatus(400)
                 .shouldHaveBody(jsonBuilder()
                         .with("message", "Account '" + nonExistingAccountId + "' does not exist")
                         .build());
@@ -202,7 +202,7 @@ public class BankSystemTest {
         // When & Then
         Decimal amount = initialDeposit.plus(d("0.01"));
         api.withdrawMoney(accountId, amount)
-                .shouldHaveStatus(500)
+                .shouldHaveStatus(400)
                 .shouldHaveBody(jsonBuilder()
                         .with("message", "Insufficient funds on account '" + accountId + "'")
                         .build());
@@ -263,7 +263,7 @@ public class BankSystemTest {
 
         // When & Then
         api.withdrawMoney(nonExistingAccountId, amount)
-                .shouldHaveStatus(500)
+                .shouldHaveStatus(400)
                 .shouldHaveBody(jsonBuilder()
                         .with("message", "Account '" + nonExistingAccountId + "' does not exist")
                         .build());
@@ -337,7 +337,7 @@ public class BankSystemTest {
 
         // When & Then
         api.transferMoney(fromAccountId, toAccountId, transferAmount)
-                .shouldHaveStatus(500)
+                .shouldHaveStatus(400)
                 .shouldHaveBody(jsonBuilder()
                         .with("message", "Insufficient funds on account '" + fromAccountId + "'")
                         .build());
@@ -424,7 +424,7 @@ public class BankSystemTest {
 
         // When & Then
         api.transferMoney(fromAccountId, toAccountId, transferAmount)
-                .shouldHaveStatus(500)
+                .shouldHaveStatus(400)
                 .shouldHaveBody(jsonBuilder()
                         .with("message", "From Account '" + fromAccountId + "' does not exist")
                         .build());
@@ -454,7 +454,7 @@ public class BankSystemTest {
 
         // When & Then
         api.transferMoney(fromAccountId, toAccountId, transferAmount)
-                .shouldHaveStatus(500)
+                .shouldHaveStatus(400)
                 .shouldHaveBody(jsonBuilder()
                         .with("message", "To Account '" + toAccountId + "' does not exist")
                         .build());

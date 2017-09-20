@@ -68,7 +68,7 @@ public class Bank {
                         decimal(req.params(":amount")))
                 .handleAndGet(
                         () -> res.status(200),
-                        () -> res.status(500)
+                        () -> res.status(400)
                 ), jsonTransformer);
 
         spark.post("/account/:accountId/withdraw/:amount", (req, res) -> submitter
@@ -77,7 +77,7 @@ public class Bank {
                         decimal(req.params(":amount")))
                 .handleAndGet(
                         () -> res.status(200),
-                        () -> res.status(500)
+                        () -> res.status(400)
                 ), jsonTransformer);
 
         spark.post("/account/:fromAccountId/transfer/:amount/to/:toAccountId", (req, res) -> submitter
@@ -88,7 +88,7 @@ public class Bank {
                 )
                 .handleAndGet(
                         () -> res.status(200),
-                        () -> res.status(500)
+                        () -> res.status(400)
                 ), jsonTransformer);
 
         spark.get("/work/queued/stats", (req, res) -> sweatshop.queuedWorkStats(), jsonTransformer);
