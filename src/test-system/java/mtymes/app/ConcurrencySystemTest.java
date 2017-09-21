@@ -1,5 +1,6 @@
 package mtymes.app;
 
+import javafixes.concurrency.Runner;
 import javafixes.math.Decimal;
 import mtymes.account.app.Bank;
 import mtymes.account.config.SystemProperties;
@@ -7,6 +8,7 @@ import mtymes.account.domain.QueuedWorkStats;
 import mtymes.account.domain.account.AccountId;
 import mtymes.api.BankApi;
 import mtymes.api.ResponseWrapper;
+import mtymes.test.ThreadSynchronizer;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -16,16 +18,21 @@ import org.junit.Test;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static de.flapdoodle.embed.process.runtime.Network.getFreeServerPort;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
+import static javafixes.concurrency.Runner.runner;
 import static javafixes.math.Decimal.ZERO;
 import static javafixes.math.Decimal.d;
 import static mtymes.common.json.JsonBuilder.jsonBuilder;
 import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.Random.pickRandomValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
 public class ConcurrencySystemTest {
@@ -101,6 +108,54 @@ public class ConcurrencySystemTest {
                     .with("version", 1 + transferToCount)
                     .build());
         }
+    }
+
+    @Test
+    public void shouldBeAbleToDoAtLeast250TransfersPerSecond() throws InterruptedException {
+        int accountCount = 5_000;
+        int threadCount = 16;
+        int transferCount = 20_000;
+
+        List<AccountId> accountIds = rangeClosed(1, accountCount).mapToObj(i -> {
+            AccountId accountId = api.createAccount().accountId();
+            api.depositMoney(accountId, d("25_000"));
+            return accountId;
+        }).collect(toList());
+
+        ThreadSynchronizer synchronizer = new ThreadSynchronizer(threadCount + 1);
+        AtomicInteger remainingTransferCounter = new AtomicInteger(transferCount);
+        Runner runner = runner(threadCount);
+        for (int i = 0; i < threadCount; i++) {
+            runner.runTask(() -> {
+                synchronizer.blockUntilAllThreadsCallThisMethod();
+
+                while(remainingTransferCounter.getAndDecrement() > 0) {
+                    AccountId fromAccountId = pickRandomValue(accountIds);
+                    AccountId toAccountId = pickRandomValue(accountIds);
+                    Decimal amount = Decimal.TEN;
+
+                    api.transferMoney(fromAccountId, toAccountId, amount);
+                }
+            });
+        }
+
+        synchronizer.blockUntilAllThreadsCallThisMethod();
+
+        long startTime = System.currentTimeMillis();
+        runner.waitTillDone();
+        long endTime = System.currentTimeMillis();
+
+        runner.shutdown();
+
+        Duration duration = Duration.ofMillis(endTime - startTime);
+        double transfersPerSecond = transferCount * 1000d / (endTime - startTime);
+
+        System.out.println("total duration = " + duration);
+        System.out.println("op/sec = " + transfersPerSecond);
+
+        assertThat(transfersPerSecond, greaterThan(250d));
+
+        waitForQueuedWorkToFinish(Duration.ofSeconds(30));
     }
 
     private void waitForQueuedWorkToFinish(Duration duration) {
