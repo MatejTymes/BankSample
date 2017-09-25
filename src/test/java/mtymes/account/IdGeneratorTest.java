@@ -1,6 +1,7 @@
 package mtymes.account;
 
 import mtymes.account.domain.account.AccountId;
+import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.TransferId;
 import org.junit.Test;
 
@@ -14,6 +15,20 @@ import static org.junit.Assert.assertThat;
 public class IdGeneratorTest {
 
     private IdGenerator idGenerator = new IdGenerator();
+
+    @Test
+    public void shouldGenerateNewOperationIdEachTime() {
+        Set<OperationId> generateOperationIds = newSet();
+
+        for (int i = 0; i < 100; i++) {
+            OperationId operationId = idGenerator.nextOperationId();
+
+            assertThat(operationId, notNullValue());
+            assertThat(generateOperationIds.contains(operationId), is(false));
+
+            generateOperationIds.add(operationId);
+        }
+    }
 
     @Test
     public void shouldGenerateNewAccountIdEachTime() {

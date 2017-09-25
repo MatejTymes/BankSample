@@ -20,6 +20,7 @@ public class AccountId extends Microtype<UUID> {
         return new AccountId(UUID.fromString(value));
     }
 
+    // todo: remove
     public static AccountId newAccountId() {
         return new AccountId(UUID.randomUUID());
     }

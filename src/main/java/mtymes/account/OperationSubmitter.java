@@ -34,8 +34,9 @@ public class OperationSubmitter {
     }
 
     public Either<Failure, Account> createAccount() {
+        OperationId operationId = idGenerator.nextOperationId();
         AccountId accountId = idGenerator.nextAccountId();
-        LoggedOperation operation = submitOperation(new CreateAccount(accountId));
+        LoggedOperation operation = submitOperation(new CreateAccount(operationId, accountId));
 
         if (wasOperationApplied(operation)) {
             return accountDao

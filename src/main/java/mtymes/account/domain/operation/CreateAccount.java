@@ -6,11 +6,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class CreateAccount extends Operation {
 
+    public final OperationId operationId;
     public final AccountId accountId;
 
-    public CreateAccount(AccountId accountId) {
+    public CreateAccount(OperationId operationId, AccountId accountId) {
+        // todo: test this
+        checkNotNull(operationId, "operationId can't be null");
         checkNotNull(accountId, "accountId can't be null");
 
+        this.operationId = operationId;
         this.accountId = accountId;
     }
 

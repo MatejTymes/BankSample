@@ -21,6 +21,7 @@ import static java.lang.String.format;
 import static mtymes.account.dao.mongo.Collections.accountsCollection;
 import static mtymes.account.dao.mongo.Collections.operationsCollection;
 import static mtymes.account.domain.account.AccountId.newAccountId;
+import static mtymes.test.Random.randomOperationId;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
@@ -57,7 +58,7 @@ public abstract class BaseOperationHandlerStabilityTest {
     }
 
     protected Account createAccount(AccountId accountId) {
-        OpLogId opLogId = operationDao.storeOperation(new CreateAccount(accountId));
+        OpLogId opLogId = operationDao.storeOperation(new CreateAccount(randomOperationId(), accountId));
         accountDao.createAccount(accountId, opLogId.seqId);
         operationDao.markAsApplied(opLogId);
         return loadAccount(accountId);

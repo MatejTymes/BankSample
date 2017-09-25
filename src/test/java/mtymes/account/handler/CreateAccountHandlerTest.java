@@ -5,6 +5,7 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.OperationId;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,9 +24,10 @@ public class CreateAccountHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private CreateAccountHandler handler;
 
+    private OperationId operationId = randomOperationId();
     private AccountId accountId = randomAccountId();
     private OpLogId opLogId = randomOpLogId(accountId);
-    private CreateAccount operation = new CreateAccount(accountId);
+    private CreateAccount operation = new CreateAccount(operationId, accountId);
 
     @Before
     public void setUp() throws Exception {

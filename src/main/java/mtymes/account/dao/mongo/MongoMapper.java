@@ -14,13 +14,14 @@ import static java.lang.String.format;
 import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.account.Version.version;
+import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.account.domain.operation.TransferId.transferId;
-import static mtymes.common.mongo.DocumentBuilder.doc;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 
 public class MongoMapper implements OperationVisitor<Document> {
 
+    public static final String OPERATION_ID = "operationId"; // todo: move into MongoOperationDao
     public static final String ACCOUNT_ID = "accountId";
     public static final String AMOUNT = "amount";
     public static final String FROM_ACCOUNT_ID = "fromAccountId";
@@ -29,7 +30,10 @@ public class MongoMapper implements OperationVisitor<Document> {
 
     @Override
     public Document visit(CreateAccount request) {
-        return doc(ACCOUNT_ID, request.accountId);
+        return docBuilder()
+                .put(OPERATION_ID, request.operationId)
+                .put(ACCOUNT_ID, request.accountId)
+                .build();
     }
 
     @Override
@@ -62,6 +66,7 @@ public class MongoMapper implements OperationVisitor<Document> {
         switch (type) {
             case "CreateAccount":
                 return new CreateAccount(
+                        getOperationId(body, OPERATION_ID),
                         getAccountId(body, ACCOUNT_ID)
                 );
             case "DepositTo":
@@ -102,6 +107,10 @@ public class MongoMapper implements OperationVisitor<Document> {
                 getAccountId(doc, TO_ACCOUNT_ID),
                 getDecimal(doc, AMOUNT)
         );
+    }
+
+    public OperationId getOperationId(Document doc, String fieldName) {
+        return operationId(getUUID(doc, fieldName));
     }
 
     public AccountId getAccountId(Document doc, String fieldName) {

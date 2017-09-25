@@ -57,7 +57,7 @@ public class MongoOperationDaoIntegrationTest {
     @Test
     public void shouldBeAbleToStoreAndLoadEachOperation() {
         List<Operation> allOperations = newList(
-                new CreateAccount(randomAccountId()),
+                new CreateAccount(randomOperationId(), randomAccountId()),
                 new DepositTo(randomAccountId(), randomPositiveAmount()),
                 new WithdrawFrom(randomAccountId(), randomPositiveAmount()),
                 new TransferFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveAmount())),

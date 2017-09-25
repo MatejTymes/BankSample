@@ -48,11 +48,13 @@ public class OperationSubmitterTest extends StrictMockTest {
 
     @Test
     public void shouldCreateAccount() {
+        OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
-        CreateAccount expectedOperation = new CreateAccount(accountId);
+        CreateAccount expectedOperation = new CreateAccount(operationId, accountId);
         OpLogId opLogId = randomOpLogId(accountId);
         Account expectedAccount = accountBuilder().accountId(accountId).build();
 
+        when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(idGenerator.nextAccountId()).thenReturn(accountId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(accountId);
@@ -68,10 +70,12 @@ public class OperationSubmitterTest extends StrictMockTest {
 
     @Test
     public void shouldReceiveFailureMessageIfUnableToLoadCreatedAccount() {
+        OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
-        CreateAccount expectedOperation = new CreateAccount(accountId);
+        CreateAccount expectedOperation = new CreateAccount(operationId, accountId);
         OpLogId opLogId = randomOpLogId(accountId);
 
+        when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(idGenerator.nextAccountId()).thenReturn(accountId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(accountId);
@@ -87,10 +91,12 @@ public class OperationSubmitterTest extends StrictMockTest {
 
     @Test
     public void shouldReceiveFailureMessageIfUnableToCreateAccount() {
+        OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
-        CreateAccount expectedOperation = new CreateAccount(accountId);
+        CreateAccount expectedOperation = new CreateAccount(operationId, accountId);
         OpLogId opLogId = randomOpLogId(accountId);
 
+        when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(idGenerator.nextAccountId()).thenReturn(accountId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(accountId);

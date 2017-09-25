@@ -6,17 +6,19 @@ import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.LoggedOperation;
 import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.OperationId;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Optional;
 
-import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.OptionalMatcher.isNotPresent;
 import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
+import static mtymes.test.Random.randomAccountId;
+import static mtymes.test.Random.randomOperationId;
 import static org.junit.Assert.assertThat;
 
 public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerStabilityTest {
@@ -31,8 +33,9 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerSta
 
     @Test
     public void shouldSucceedToCreateAccountOnConcurrentExecution() {
-        AccountId accountId = newAccountId();
-        CreateAccount createAccount = new CreateAccount(accountId);
+        OperationId operationId = randomOperationId();
+        AccountId accountId = randomAccountId();
+        CreateAccount createAccount = new CreateAccount(operationId, accountId);
         OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When
@@ -51,9 +54,10 @@ public class CreateAccountHandlerConcurrencyTest extends BaseOperationHandlerSta
 
     @Test
     public void shouldFailToCreateAccountIfItIsAlreadyPresentOnConcurrentExecution() {
-        AccountId accountId = newAccountId();
+        OperationId operationId = randomOperationId();
+        AccountId accountId = randomAccountId();
         Account initialAccount = createAccount(accountId);
-        CreateAccount createAccount = new CreateAccount(accountId);
+        CreateAccount createAccount = new CreateAccount(operationId, accountId);
         OpLogId opLogId = operationDao.storeOperation(createAccount);
 
         // When

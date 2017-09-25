@@ -18,6 +18,7 @@ import static javafixes.math.Scale._2_DECIMAL_PLACES;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
+import static mtymes.account.domain.operation.OperationId.operationId;
 import static mtymes.account.domain.operation.TransferId.transferId;
 
 public class Random {
@@ -76,6 +77,10 @@ public class Random {
         return decimal(randomLong(fromLong, toLong), scaleToUse.value);
     }
 
+    public static OperationId randomOperationId() {
+        return operationId(randomUUID());
+    }
+
     public static AccountId randomAccountId() {
         return accountId(randomUUID());
     }
@@ -107,7 +112,7 @@ public class Random {
     public static Operation randomOperation(AccountId accountId) {
         switch (randomInt(1, 5)) {
             case 1:
-                return new CreateAccount(accountId);
+                return new CreateAccount(randomOperationId(), accountId);
             case 2:
                 return new DepositTo(accountId, randomPositiveAmount());
             case 3:
