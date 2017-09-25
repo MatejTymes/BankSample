@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
-public class BaseOperationHandlerDisasterRecoveryTest extends BaseOperationHandlerStabilityTest {
+public abstract class BaseOperationHandlerDisasterRecoveryTest extends BaseOperationHandlerStabilityTest {
 
     protected AtomicInteger failureCount = new AtomicInteger(0);
     protected AccountDao brokenAccountDao;
