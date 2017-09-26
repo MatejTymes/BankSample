@@ -112,9 +112,9 @@ public class ConcurrencySystemTest {
 
     @Test
     public void shouldBeAbleToDoAtLeast250TransfersPerSecond() throws InterruptedException {
-        int accountCount = 5_000;
+        int accountCount = 1_000;
         int threadCount = 16;
-        int transferCount = 20_000;
+        int transferCount = 7_500;
 
         List<AccountId> accountIds = rangeClosed(1, accountCount).mapToObj(i -> {
             AccountId accountId = api.createAccount().accountId();

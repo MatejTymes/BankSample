@@ -10,7 +10,6 @@ public class CreateAccount extends Operation {
     public final AccountId accountId;
 
     public CreateAccount(OperationId operationId, AccountId accountId) {
-        // todo: test this
         checkNotNull(operationId, "operationId can't be null");
         checkNotNull(accountId, "accountId can't be null");
 

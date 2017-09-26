@@ -8,10 +8,7 @@ import mtymes.account.dao.mongo.MongoAccountDao;
 import mtymes.account.dao.mongo.MongoOperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.DepositTo;
-import mtymes.account.domain.operation.LoggedOperation;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.*;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -68,7 +65,7 @@ public abstract class BaseOperationHandlerStabilityTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OpLogId opLogId = operationDao.storeOperation(new DepositTo(accountId, amount));
+        OpLogId opLogId = operationDao.storeOperation(new DepositTo(randomOperationId(), accountId, amount));
 
         accountDao.updateBalance(accountId, account.balance.plus(amount), account.version, opLogId.seqId);
 
@@ -79,7 +76,7 @@ public abstract class BaseOperationHandlerStabilityTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OpLogId opLogId = operationDao.storeOperation(new DepositTo(accountId, amount));
+        OpLogId opLogId = operationDao.storeOperation(new WithdrawFrom(accountId, amount));
 
         accountDao.updateBalance(accountId, account.balance.minus(amount), account.version, opLogId.seqId);
 

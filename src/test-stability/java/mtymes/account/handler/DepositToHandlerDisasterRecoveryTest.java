@@ -33,7 +33,7 @@ public class DepositToHandlerDisasterRecoveryTest extends BaseOperationHandlerDi
         Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        DepositTo depositTo = new DepositTo(accountId, amount);
+        DepositTo depositTo = new DepositTo(randomOperationId(), accountId, amount);
         OpLogId opLogId = operationDao.storeOperation(depositTo);
 
         // When

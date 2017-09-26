@@ -39,6 +39,7 @@ public class MongoMapper implements OperationVisitor<Document> {
     @Override
     public Document visit(DepositTo request) {
         return docBuilder()
+                .put(OPERATION_ID, request.operationId)
                 .put(ACCOUNT_ID, request.accountId)
                 .put(AMOUNT, request.amount)
                 .build();
@@ -71,6 +72,7 @@ public class MongoMapper implements OperationVisitor<Document> {
                 );
             case "DepositTo":
                 return new DepositTo(
+                        getOperationId(body, OPERATION_ID),
                         getAccountId(body, ACCOUNT_ID),
                         getDecimal(body, AMOUNT)
                 );

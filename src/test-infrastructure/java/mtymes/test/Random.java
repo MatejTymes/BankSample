@@ -114,7 +114,7 @@ public class Random {
             case 1:
                 return new CreateAccount(randomOperationId(), accountId);
             case 2:
-                return new DepositTo(accountId, randomPositiveAmount());
+                return new DepositTo(randomOperationId(), accountId, randomPositiveAmount());
             case 3:
                 return new WithdrawFrom(accountId, randomPositiveAmount());
             case 4:

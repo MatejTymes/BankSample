@@ -6,6 +6,8 @@ import mtymes.account.domain.account.AccountId;
 
 public abstract class Operation extends DataObject {
 
+    // todo: add operationId
+
     @JsonGetter
     public String type() {
         return getClass().getSimpleName();

@@ -48,8 +48,9 @@ public class OperationDispatcherTest extends StrictMockTest {
 
     @Test
     public void shouldDispatchDepositTo() {
+        OperationId operationId = randomOperationId();
         OpLogId opLogId = randomOpLogId();
-        DepositTo operation = new DepositTo(opLogId.accountId, randomPositiveAmount());
+        DepositTo operation = new DepositTo(operationId, opLogId.accountId, randomPositiveAmount());
 
         doNothing().when(depositToHandler).handleOperation(opLogId, operation);
 
@@ -92,7 +93,7 @@ public class OperationDispatcherTest extends StrictMockTest {
         OpLogId opLogId = randomOpLogId();
         List<Operation> operations = newList(
                 new CreateAccount(operationId, opLogId.accountId),
-                new DepositTo(opLogId.accountId, randomPositiveAmount()),
+                new DepositTo(operationId, opLogId.accountId, randomPositiveAmount()),
                 new WithdrawFrom(opLogId.accountId, randomPositiveAmount()),
                 new TransferFrom(new TransferDetail(randomTransferId(), opLogId.accountId, randomAccountId(), randomPositiveAmount())),
                 new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), opLogId.accountId, randomPositiveAmount()))

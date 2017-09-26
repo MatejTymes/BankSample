@@ -7,6 +7,7 @@ import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.DepositTo;
 import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.OperationId;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,10 +27,11 @@ public class DepositToHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private DepositToHandler handler;
 
+    private OperationId operationId = randomOperationId();
     private AccountId accountId = randomAccountId();
     private Decimal depositAmount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(accountId);
-    private DepositTo operation = new DepositTo(accountId, depositAmount);
+    private DepositTo operation = new DepositTo(operationId, accountId, depositAmount);
 
     @Before
     public void setUp() throws Exception {
