@@ -153,11 +153,13 @@ public class OperationSubmitterTest extends StrictMockTest {
 
     @Test
     public void shouldWithdrawMoney() {
+        OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
-        WithdrawFrom expectedOperation = new WithdrawFrom(accountId, amount);
+        WithdrawFrom expectedOperation = new WithdrawFrom(operationId, accountId, amount);
         OpLogId opLogId = randomOpLogId(accountId);
 
+        when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(accountId);
         when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
@@ -171,11 +173,13 @@ public class OperationSubmitterTest extends StrictMockTest {
 
     @Test
     public void shouldReceiveFailureMessageIfUnableToWithdrawMoney() {
+        OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
-        WithdrawFrom expectedOperation = new WithdrawFrom(accountId, amount);
+        WithdrawFrom expectedOperation = new WithdrawFrom(operationId, accountId, amount);
         OpLogId opLogId = randomOpLogId(accountId);
 
+        when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(accountId);
         String failureMessage = "for some reason the withdraw failed";

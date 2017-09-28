@@ -48,6 +48,7 @@ public class MongoMapper implements OperationVisitor<Document> {
     @Override
     public Document visit(WithdrawFrom request) {
         return docBuilder()
+                .put(OPERATION_ID, request.operationId)
                 .put(ACCOUNT_ID, request.accountId)
                 .put(AMOUNT, request.amount)
                 .build();
@@ -78,6 +79,7 @@ public class MongoMapper implements OperationVisitor<Document> {
                 );
             case "WithdrawFrom":
                 return new WithdrawFrom(
+                        getOperationId(body, OPERATION_ID),
                         getAccountId(body, ACCOUNT_ID),
                         getDecimal(body, AMOUNT)
                 );

@@ -6,6 +6,7 @@ import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.WithdrawFrom;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
@@ -26,10 +27,11 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private WithdrawFromHandler handler;
 
+    private OperationId operationId = randomOperationId();
     private AccountId accountId = randomAccountId();
     private Decimal withdrawAmount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(accountId);
-    private WithdrawFrom operation = new WithdrawFrom(accountId, withdrawAmount);
+    private WithdrawFrom operation = new WithdrawFrom(operationId, accountId, withdrawAmount);
 
     @Before
     public void setUp() throws Exception {
@@ -72,7 +74,7 @@ public class WithdrawFromHandlerTest extends StrictMockTest {
         Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal lastBalance = randomPositiveAmount();
         withdrawAmount = lastBalance.plus(randomPositiveAmount());
-        operation = new WithdrawFrom(accountId, withdrawAmount);
+        operation = new WithdrawFrom(operationId, accountId, withdrawAmount);
 
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(accountId)

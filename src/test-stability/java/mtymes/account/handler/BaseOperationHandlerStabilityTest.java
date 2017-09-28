@@ -76,7 +76,7 @@ public abstract class BaseOperationHandlerStabilityTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OpLogId opLogId = operationDao.storeOperation(new WithdrawFrom(accountId, amount));
+        OpLogId opLogId = operationDao.storeOperation(new WithdrawFrom(randomOperationId(), accountId, amount));
 
         accountDao.updateBalance(accountId, account.balance.minus(amount), account.version, opLogId.seqId);
 

@@ -59,7 +59,7 @@ public class MongoOperationDaoIntegrationTest {
         List<Operation> allOperations = newList(
                 new CreateAccount(randomOperationId(), randomAccountId()),
                 new DepositTo(randomOperationId(), randomAccountId(), randomPositiveAmount()),
-                new WithdrawFrom(randomAccountId(), randomPositiveAmount()),
+                new WithdrawFrom(randomOperationId(), randomAccountId(), randomPositiveAmount()),
                 new TransferFrom(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveAmount())),
                 new TransferTo(new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveAmount()))
         );

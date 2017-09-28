@@ -34,7 +34,7 @@ public class WithdrawFromHandlerDisasterRecoveryTest extends BaseOperationHandle
         Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
+        WithdrawFrom withdrawFrom = new WithdrawFrom(randomOperationId(), accountId, amount);
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When
@@ -57,7 +57,7 @@ public class WithdrawFromHandlerDisasterRecoveryTest extends BaseOperationHandle
         AccountId accountId = initialAccount.accountId;
 
         Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
-        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
+        WithdrawFrom withdrawFrom = new WithdrawFrom(randomOperationId(), accountId, amount);
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When

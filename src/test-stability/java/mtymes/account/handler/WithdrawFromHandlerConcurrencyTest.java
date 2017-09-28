@@ -35,7 +35,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
+        WithdrawFrom withdrawFrom = new WithdrawFrom(randomOperationId(), accountId, amount);
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When
@@ -59,7 +59,7 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         AccountId accountId = initialAccount.accountId;
 
         Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
-        WithdrawFrom withdrawFrom = new WithdrawFrom(accountId, amount);
+        WithdrawFrom withdrawFrom = new WithdrawFrom(randomOperationId(), accountId, amount);
         OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
 
         // When

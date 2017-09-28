@@ -55,7 +55,8 @@ public class OperationSubmitter {
     }
 
     public Either<Failure, Success> withdrawMoney(AccountId accountId, Decimal amount) {
-        LoggedOperation operation = submitOperation(new WithdrawFrom(accountId, amount));
+        OperationId operationId = idGenerator.nextOperationId();
+        LoggedOperation operation = submitOperation(new WithdrawFrom(operationId, accountId, amount));
         return asResponse(operation);
     }
 
