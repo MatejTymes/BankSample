@@ -21,7 +21,8 @@ import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 public class MongoMapper implements OperationVisitor<Document> {
 
-    public static final String OPERATION_ID = "operationId"; // todo: move into MongoOperationDao
+    public static final String OPERATION_ID = "operationId";
+    public static final String TO_PART_OPERATION_ID = "toPartOpId";
     public static final String ACCOUNT_ID = "accountId";
     public static final String AMOUNT = "amount";
     public static final String FROM_ACCOUNT_ID = "fromAccountId";
@@ -56,12 +57,25 @@ public class MongoMapper implements OperationVisitor<Document> {
 
     @Override
     public Document visit(TransferFrom request) {
-        return toDocument(request.detail);
+        return docBuilder()
+                .put(OPERATION_ID, request.operationId)
+                .put(TO_PART_OPERATION_ID, request.toPartOperationId)
+                .put(TRANSFER_ID, request.detail.transferId)
+                .put(FROM_ACCOUNT_ID, request.detail.fromAccountId)
+                .put(TO_ACCOUNT_ID, request.detail.toAccountId)
+                .put(AMOUNT, request.detail.amount)
+                .build();
     }
 
     @Override
     public Document visit(TransferTo request) {
-        return toDocument(request.detail);
+        return docBuilder()
+                .put(OPERATION_ID, request.operationId)
+                .put(TRANSFER_ID, request.detail.transferId)
+                .put(FROM_ACCOUNT_ID, request.detail.fromAccountId)
+                .put(TO_ACCOUNT_ID, request.detail.toAccountId)
+                .put(AMOUNT, request.detail.amount)
+                .build();
     }
 
     public Operation toOperation(String type, Document body) {
@@ -85,23 +99,17 @@ public class MongoMapper implements OperationVisitor<Document> {
                 );
             case "TransferFrom":
                 return new TransferFrom(
+                        getOperationId(body, OPERATION_ID),
+                        getOperationId(body, TO_PART_OPERATION_ID),
                         toTransferDetail(body)
                 );
             case "TransferTo":
                 return new TransferTo(
+                        getOperationId(body, OPERATION_ID),
                         toTransferDetail(body)
                 );
         }
         throw new IllegalStateException(format("Unknown type '%s'", type));
-    }
-
-    private Document toDocument(TransferDetail details) {
-        return docBuilder()
-                .put(TRANSFER_ID, details.transferId)
-                .put(FROM_ACCOUNT_ID, details.fromAccountId)
-                .put(TO_ACCOUNT_ID, details.toAccountId)
-                .put(AMOUNT, details.amount)
-                .build();
     }
 
     private TransferDetail toTransferDetail(Document doc) {

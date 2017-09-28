@@ -7,11 +7,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class TransferFrom extends Operation {
 
+    public final OperationId toPartOperationId;
     @JsonUnwrapped
     public final TransferDetail detail;
 
-    public TransferFrom(TransferDetail detail) {
+    public TransferFrom(OperationId operationId, OperationId toPartOperationId, TransferDetail detail) {
+        super(operationId);
+
+        checkNotNull(toPartOperationId, "toPartOperationId can't be null");
         checkNotNull(detail, "detail can't be null");
+
+        this.toPartOperationId = toPartOperationId;
         this.detail = detail;
     }
 

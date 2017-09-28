@@ -27,13 +27,15 @@ public class TransferFromHandlerTest extends StrictMockTest {
     private SetQueue<AccountId> queue;
     private TransferFromHandler handler;
 
+    private OperationId fromOperationId = randomOperationId();
+    private OperationId toOperationId = randomOperationId();
     private TransferId transferId = randomTransferId();
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
     private Decimal amount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(fromAccountId);
     private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
-    private TransferFrom operation = new TransferFrom(detail);
+    private TransferFrom operation = new TransferFrom(fromOperationId, toOperationId, detail);
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +62,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.storeOperation(new TransferTo(detail))).thenReturn(randomOpLogId(toAccountId));
+        when(operationDao.storeOperation(new TransferTo(toOperationId, detail))).thenReturn(randomOpLogId(toAccountId));
         doNothing().when(queue).add(toAccountId);
 
         when(operationDao.markAsApplied(opLogId)).thenReturn(true);
@@ -86,7 +88,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.storeOperation(new TransferTo(detail))).thenThrow(new DuplicateOperationException());
+        when(operationDao.storeOperation(new TransferTo(toOperationId, detail))).thenThrow(new DuplicateOperationException());
         doNothing().when(queue).add(toAccountId);
 
         when(operationDao.markAsApplied(opLogId)).thenReturn(true);
@@ -108,7 +110,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
                         .build())
         ).when(accountDao).findAccount(toAccountId);
 
-        when(operationDao.storeOperation(new TransferTo(detail))).thenReturn(randomOpLogId(toAccountId));
+        when(operationDao.storeOperation(new TransferTo(toOperationId, detail))).thenReturn(randomOpLogId(toAccountId));
         doNothing().when(queue).add(toAccountId);
 
         when(operationDao.markAsApplied(opLogId)).thenReturn(true);
@@ -123,7 +125,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
         Decimal fromAccountBalance = randomPositiveAmount();
         amount = fromAccountBalance.plus(randomPositiveAmount());
         detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
-        operation = new TransferFrom(detail);
+        operation = new TransferFrom(fromOperationId, toOperationId, detail);
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)
                 .balance(fromAccountBalance)

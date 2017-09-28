@@ -11,7 +11,7 @@ import static com.mongodb.client.model.Indexes.ascending;
 import static com.mongodb.client.model.Indexes.descending;
 import static javafixes.common.CollectionUtil.newSet;
 import static mtymes.account.dao.mongo.MongoMapper.TRANSFER_ID;
-import static mtymes.account.dao.mongo.MongoOperationDao.*;
+import static mtymes.account.dao.mongo.MongoOperationDao.BODY;
 import static mtymes.common.mongo.DocumentBuilder.doc;
 
 public class Collections {
@@ -21,7 +21,9 @@ public class Collections {
                 database,
                 "accounts",
                 accounts -> accounts.createIndex(
-                        ascending("accountId"),
+                        ascending(
+                                MongoAccountDao.ACCOUNT_ID
+                        ),
                         new IndexOptions().unique(true)
                 )
         );
@@ -33,14 +35,31 @@ public class Collections {
                 "operations",
                 operations -> {
                     operations.createIndex(
-                            ascending(ACCOUNT_ID, FINAL_STATE, VERSION)
+                            ascending(
+                                    MongoOperationDao.ACCOUNT_ID,
+                                    MongoOperationDao.FINAL_STATE,
+                                    MongoOperationDao.VERSION
+                            )
                     );
                     operations.createIndex(
-                            descending(ACCOUNT_ID, VERSION),
+                            ascending(
+                                    MongoOperationDao.BODY + "." + MongoMapper.OPERATION_ID // todo: test this
+                            ),
                             new IndexOptions().unique(true)
                     );
                     operations.createIndex(
-                            ascending(BODY + "." + TRANSFER_ID, TYPE),
+                            descending(
+                                    MongoOperationDao.ACCOUNT_ID,
+                                    MongoOperationDao.VERSION
+                            ),
+                            new IndexOptions().unique(true)
+                    );
+                    // todo: remove this
+                    operations.createIndex(
+                            ascending(
+                                    MongoOperationDao.BODY + "." + MongoMapper.TRANSFER_ID,
+                                    MongoOperationDao.TYPE
+                            ),
                             new IndexOptions().unique(true).partialFilterExpression(doc(BODY + "." + TRANSFER_ID, doc("$exists", true)))
                     );
                 }

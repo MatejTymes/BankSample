@@ -35,7 +35,7 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         expect_operationMarkedAsApplied(opLogId);
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(transferDetail));
+        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         expect_operationMarkedAsApplied(opLogId);
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(transferDetail));
+        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         expect_operationMarkedAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist");
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(transferDetail));
+        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
     }
 
     @Test
@@ -83,6 +83,6 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         // do nothing
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(transferDetail));
+        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
     }
 }

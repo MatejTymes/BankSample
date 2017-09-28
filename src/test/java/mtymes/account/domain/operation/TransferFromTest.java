@@ -17,12 +17,16 @@ public class TransferFromTest extends StrictMockTest {
 
     @Test
     public void shouldCreateOperation() {
+        OperationId operationId = randomOperationId();
+        OperationId toPartOperationId = randomOperationId();
         TransferDetail detail = randomTransferDetail();
 
         // When
-        TransferFrom transferFrom = new TransferFrom(detail);
+        TransferFrom transferFrom = new TransferFrom(operationId, toPartOperationId, detail);
 
         // Then
+        assertThat(transferFrom.operationId, equalTo(operationId));
+        assertThat(transferFrom.toPartOperationId, equalTo(toPartOperationId));
         assertThat(transferFrom.detail, equalTo(detail));
         assertThat(transferFrom.affectedAccountId(), equalTo(detail.fromAccountId));
     }
@@ -30,7 +34,21 @@ public class TransferFromTest extends StrictMockTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new TransferFrom(null);
+            new TransferFrom(null, randomOperationId(), randomTransferDetail());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("operationId can't be null"));
+        }
+        try {
+            new TransferFrom(randomOperationId(), null, randomTransferDetail());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("toPartOperationId can't be null"));
+        }
+        try {
+            new TransferFrom(randomOperationId(), randomOperationId(), null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -41,7 +59,7 @@ public class TransferFromTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        TransferFrom transferFrom = new TransferFrom(randomTransferDetail());
+        TransferFrom transferFrom = new TransferFrom(randomOperationId(), randomOperationId(), randomTransferDetail());
 
         UUID expectedResponse = randomUUID();
         when(visitor.visit(transferFrom)).thenReturn(expectedResponse);

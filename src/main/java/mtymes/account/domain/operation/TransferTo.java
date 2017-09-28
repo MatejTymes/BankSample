@@ -10,8 +10,11 @@ public class TransferTo extends Operation {
     @JsonUnwrapped
     public final TransferDetail detail;
 
-    public TransferTo(TransferDetail detail) {
+    public TransferTo(OperationId operationId, TransferDetail detail) {
+        super(operationId);
+
         checkNotNull(detail, "detail can't be null");
+
         this.detail = detail;
     }
 

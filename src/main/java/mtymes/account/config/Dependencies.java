@@ -29,6 +29,7 @@ public class Dependencies {
         this.accountDao = new MongoAccountDao(accountsCollection(database));
         OperationDao operationDao = new MongoOperationDao(operationsCollection(database));
 
+        IdGenerator idGenerator = new IdGenerator();
         SetQueue<AccountId> workQueue = new SetQueue<>();
 
         OperationDispatcher dispatcher = new OperationDispatcher(
@@ -40,7 +41,6 @@ public class Dependencies {
         );
         Worker worker = new Worker(operationDao, dispatcher);
 
-        IdGenerator idGenerator = new IdGenerator();
         this.sweatshop = new Sweatshop(workQueue, properties.backgroundWorkerCount(), worker, properties.workerIdleTimeout()).start();
         this.submitter = new OperationSubmitter(idGenerator, accountDao, operationDao, worker);
     }

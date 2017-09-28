@@ -4,9 +4,17 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import javafixes.object.DataObject;
 import mtymes.account.domain.account.AccountId;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class Operation extends DataObject {
 
-    // todo: add operationId
+    public final OperationId operationId;
+
+    public Operation(OperationId operationId) {
+        checkNotNull(operationId, "operationId can't be null");
+
+        this.operationId = operationId;
+    }
 
     @JsonGetter
     public String type() {

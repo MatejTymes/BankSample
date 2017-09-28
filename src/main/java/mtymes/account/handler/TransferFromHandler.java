@@ -5,10 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferFrom;
-import mtymes.account.domain.operation.TransferTo;
+import mtymes.account.domain.operation.*;
 import mtymes.account.exception.DuplicateOperationException;
 import mtymes.common.util.SetQueue;
 
@@ -41,7 +38,7 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
 
         boolean success = withdrawMoney(opLogId, optionalFromAccount.get(), detail);
         if (success) {
-            submitOperationTransferTo(opLogId, detail);
+            submitOperationTransferTo(operation.toPartOperationId, opLogId, detail);
         }
     }
 
@@ -60,9 +57,9 @@ public class TransferFromHandler extends BaseOperationHandler<TransferFrom> {
         }
     }
 
-    private void submitOperationTransferTo(OpLogId opLogId, TransferDetail detail) {
+    private void submitOperationTransferTo(OperationId operationId, OpLogId opLogId, TransferDetail detail) {
         try {
-            operationDao.storeOperation(new TransferTo(detail));
+            operationDao.storeOperation(new TransferTo(operationId, detail));
         } catch (DuplicateOperationException e) {
             // do nothing - another concurrent thread already submitted it
         }

@@ -17,12 +17,14 @@ public class TransferToTest extends StrictMockTest {
 
     @Test
     public void shouldCreateOperation() {
+        OperationId operationId = randomOperationId();
         TransferDetail detail = randomTransferDetail();
 
         // When
-        TransferTo transferTo = new TransferTo(detail);
+        TransferTo transferTo = new TransferTo(operationId, detail);
 
         // Then
+        assertThat(transferTo.operationId, equalTo(operationId));
         assertThat(transferTo.detail, equalTo(detail));
         assertThat(transferTo.affectedAccountId(), equalTo(detail.toAccountId));
     }
@@ -30,7 +32,14 @@ public class TransferToTest extends StrictMockTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new TransferTo(null);
+            new TransferTo(null, randomTransferDetail());
+
+            fail("should fail with NullPointerException");
+        } catch (NullPointerException expected) {
+            assertThat(expected.getMessage(), equalTo("operationId can't be null"));
+        }
+        try {
+            new TransferTo(randomOperationId(), null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
@@ -41,7 +50,7 @@ public class TransferToTest extends StrictMockTest {
     @Test
     public void shouldCallCorrectVisitorMethod() {
         OperationVisitor<UUID> visitor = mock(OperationVisitor.class);
-        TransferTo transferTo = new TransferTo(randomTransferDetail());
+        TransferTo transferTo = new TransferTo(randomOperationId(), randomTransferDetail());
 
         UUID expectedResponse = randomUUID();
         when(visitor.visit(transferTo)).thenReturn(expectedResponse);

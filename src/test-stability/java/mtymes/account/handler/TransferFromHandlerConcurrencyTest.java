@@ -39,9 +39,10 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         Decimal toBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId fromAccountId = createAccountWithInitialBalance(fromBalance).accountId;
         Account toAccount = createAccountWithInitialBalance(toBalance);
+        OperationId toPartOperationId = randomOperationId();
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccount.accountId, amount);
 
-        TransferFrom transferFrom = new TransferFrom(detail);
+        TransferFrom transferFrom = new TransferFrom(randomOperationId(), toPartOperationId, detail);
         OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When
@@ -66,7 +67,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         assertThat(unfinishedOpLogIds.size(), is(1));
         Optional<LoggedOperation> loggedOperation = operationDao.findLoggedOperation(unfinishedOpLogIds.get(0));
         assertThat(loggedOperation, isPresent());
-        assertThat(loggedOperation.get().operation, equalTo(new TransferTo(detail)));
+        assertThat(loggedOperation.get().operation, equalTo(new TransferTo(toPartOperationId, detail)));
     }
 
     @Test
@@ -79,9 +80,10 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         AccountId toAccountId = initialToAccount.accountId;
 
         Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
+        OperationId toPartOperationId = randomOperationId();
         TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
 
-        TransferFrom transferFrom = new TransferFrom(detail);
+        TransferFrom transferFrom = new TransferFrom(randomOperationId(), toPartOperationId, detail);
         OpLogId opLogId = operationDao.storeOperation(transferFrom);
 
         // When

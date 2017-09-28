@@ -31,10 +31,12 @@ public class TransferToHandlerDisasterRecoveryTest extends BaseOperationHandlerD
         Decimal initialBalance = pickRandomValue(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount());
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
+        OperationId operationId = randomOperationId();
         TransferId transferId = randomTransferId();
-        TransferTo transferTo = new TransferTo(new TransferDetail(
-                transferId, randomAccountId(), accountId, amount
-        ));
+        TransferTo transferTo = new TransferTo(
+                operationId,
+                new TransferDetail(transferId, randomAccountId(), accountId, amount)
+        );
         OpLogId opLogId = operationDao.storeOperation(transferTo);
 
         // When

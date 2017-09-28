@@ -5,6 +5,7 @@ import javafixes.object.Microtype;
 
 import java.util.UUID;
 
+@Deprecated // todo: remove this
 public class TransferId extends Microtype<UUID> {
 
     private TransferId(UUID value) {

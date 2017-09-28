@@ -3,10 +3,7 @@ package mtymes.account.handler;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferFrom;
-import mtymes.account.domain.operation.TransferTo;
+import mtymes.account.domain.operation.*;
 import mtymes.common.util.SetQueue;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,18 +35,19 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
                 .build());
         Account toAccount = given_anAccountExists();
 
+        OperationId toPartOperationId = randomOperationId();
         OpLogId opLogId = generateNextOperationIdFor(fromAccount);
         Decimal amount = amountBetween(d("0.01"), fromAccount.balance);
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
         expect_balanceUpdateOf(fromAccount, fromAccount.balance.minus(amount), opLogId);
-        expect_storageOf(new TransferTo(transferDetail));
+        expect_storageOf(new TransferTo(toPartOperationId, transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
         expect_operationMarkedAsApplied(opLogId);
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), toPartOperationId, transferDetail));
     }
 
     @Test
@@ -58,17 +56,18 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         Account fromAccount = given_anAccountExists();
         Account toAccount = given_anAccountExists();
 
+        OperationId toPartOperationId = randomOperationId();
         OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_storageOfDuplicate(new TransferTo(transferDetail));
+        expect_storageOfDuplicate(new TransferTo(toPartOperationId, transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
         expect_operationMarkedAsApplied(opLogId);
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), toPartOperationId, transferDetail));
     }
 
     @Test
@@ -77,17 +76,18 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         Account fromAccount = given_anAccountExists();
         Account toAccount = given_anAccountExists();
 
+        OperationId toPartOperationId = randomOperationId();
         OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(fromAccount);
         Decimal amount = randomPositiveAmount();
         TransferDetail transferDetail = generateTransferDetailFor(fromAccount, toAccount, amount);
 
         // Then
-        expect_storageOf(new TransferTo(transferDetail));
+        expect_storageOf(new TransferTo(toPartOperationId, transferDetail));
         expect_additionToWorkQueue(toAccount.accountId);
         expect_operationMarkedAsApplied(opLogId);
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), toPartOperationId, transferDetail));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         expect_operationMarkedAsRejected(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), randomOperationId(), transferDetail));
     }
 
     @Test
@@ -125,7 +125,7 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         expect_operationMarkedAsRejected(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), randomOperationId(), transferDetail));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         expect_operationMarkedAsRejected(opLogId, "Insufficient funds on account '" + fromAccount.accountId + "'");
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), randomOperationId(), transferDetail));
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         expect_operationMarkedAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist");
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), randomOperationId(), transferDetail));
     }
 
     @Test
@@ -179,7 +179,7 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         expect_operationMarkedAsRejected(opLogId, "From Account '" + fromAccountId + "' does not exist");
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), randomOperationId(), transferDetail));
     }
 
     @Test
@@ -198,7 +198,7 @@ public class ReadableTransferFromHandlerTest extends ReadableOperationHandlerTes
         // do nothing
 
         // When
-        handler.handleOperation(opLogId, new TransferFrom(transferDetail));
+        handler.handleOperation(opLogId, new TransferFrom(randomOperationId(), randomOperationId(), transferDetail));
     }
 
     private void expect_additionToWorkQueue(AccountId accountId) {

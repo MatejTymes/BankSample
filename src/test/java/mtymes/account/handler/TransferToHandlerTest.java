@@ -5,10 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.account.Version;
-import mtymes.account.domain.operation.OpLogId;
-import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.domain.operation.TransferId;
-import mtymes.account.domain.operation.TransferTo;
+import mtymes.account.domain.operation.*;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +25,14 @@ public class TransferToHandlerTest extends StrictMockTest {
     private OperationDao operationDao;
     private TransferToHandler handler;
 
+    private OperationId operationId = randomOperationId();
     private TransferId transferId = randomTransferId();
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
     private Decimal amount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(toAccountId);
     private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
-    private TransferTo operation = new TransferTo(detail);
+    private TransferTo operation = new TransferTo(operationId, detail);
 
     @Before
     public void setUp() throws Exception {
