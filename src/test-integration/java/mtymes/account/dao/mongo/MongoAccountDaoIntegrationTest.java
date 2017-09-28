@@ -16,7 +16,6 @@ import java.util.Optional;
 
 import static javafixes.math.Decimal.ZERO;
 import static mtymes.account.dao.mongo.Collections.accountsCollection;
-import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.test.Condition.after;
 import static mtymes.test.Condition.otherThan;
@@ -51,7 +50,7 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldCreateAndLoadNewAccount() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Version version = randomVersion();
 
         // When
@@ -66,7 +65,7 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldFailToCreateAccountIfItAlreadyExists() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Version version = randomVersion();
         accountDao.createAccount(accountId, version);
 
@@ -90,7 +89,7 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldUpdateBalance() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Version currentVersion = randomVersion();
         accountDao.createAccount(accountId, currentVersion);
 
@@ -109,7 +108,7 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldNotUpdateBalanceOnVersionMismatch() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Version currentVersion = randomVersion();
         accountDao.createAccount(accountId, currentVersion);
 
@@ -129,7 +128,7 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldFailToUpdateBalanceIfNewVersionIsBeforeCurrentVersion() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Version currentVersion = randomVersion();
         accountDao.createAccount(accountId, currentVersion);
 
@@ -148,7 +147,7 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldFailToUpdateBalanceIfNewVersionIsTheSameCurrentVersion() {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Version currentVersion = randomVersion();
         accountDao.createAccount(accountId, currentVersion);
 

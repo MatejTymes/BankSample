@@ -19,9 +19,4 @@ public class TransferId extends Microtype<UUID> {
     public static TransferId transferId(String value) {
         return new TransferId(UUID.fromString(value));
     }
-
-    // todo: remove
-    public static TransferId newTransferId() {
-        return new TransferId(UUID.randomUUID());
-    }
 }

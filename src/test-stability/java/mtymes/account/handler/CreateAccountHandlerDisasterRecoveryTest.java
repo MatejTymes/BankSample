@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static mtymes.account.domain.account.AccountId.newAccountId;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.test.OptionalMatcher.isNotPresent;
@@ -54,7 +53,7 @@ public class CreateAccountHandlerDisasterRecoveryTest extends BaseOperationHandl
     @Test
     public void shouldFailToCreateAccountIfItIsAlreadyPresentEvenIfAnyDbCallFails() {
         OperationId operationId = randomOperationId();
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         Account initialAccount = createAccount(accountId);
         CreateAccount createAccount = new CreateAccount(operationId, accountId);
         OpLogId opLogId = operationDao.storeOperation(createAccount);

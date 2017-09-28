@@ -17,7 +17,7 @@ import org.junit.BeforeClass;
 import static java.lang.String.format;
 import static mtymes.account.dao.mongo.Collections.accountsCollection;
 import static mtymes.account.dao.mongo.Collections.operationsCollection;
-import static mtymes.account.domain.account.AccountId.newAccountId;
+import static mtymes.test.Random.randomAccountId;
 import static mtymes.test.Random.randomOperationId;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
@@ -43,7 +43,7 @@ public abstract class BaseOperationHandlerStabilityTest {
     }
 
     protected Account createAccountWithInitialBalance(Decimal initialBalance) {
-        AccountId accountId = newAccountId();
+        AccountId accountId = randomAccountId();
         createAccount(accountId);
         if (initialBalance.signum() > 0) {
             depositMoney(accountId, initialBalance);
