@@ -40,7 +40,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         AccountId fromAccountId = createAccountWithInitialBalance(fromBalance).accountId;
         Account toAccount = createAccountWithInitialBalance(toBalance);
         OperationId toPartOperationId = randomOperationId();
-        TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccount.accountId, amount);
+        TransferDetail detail = new TransferDetail(fromAccountId, toAccount.accountId, amount);
 
         TransferFrom transferFrom = new TransferFrom(randomOperationId(), toPartOperationId, detail);
         OpLogId opLogId = operationDao.storeOperation(transferFrom);
@@ -81,7 +81,7 @@ public class TransferFromHandlerConcurrencyTest extends BaseOperationHandlerStab
 
         Decimal amount = fromBalance.signum() >= 0 ? fromBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
         OperationId toPartOperationId = randomOperationId();
-        TransferDetail detail = new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
+        TransferDetail detail = new TransferDetail(fromAccountId, toAccountId, amount);
 
         TransferFrom transferFrom = new TransferFrom(randomOperationId(), toPartOperationId, detail);
         OpLogId opLogId = operationDao.storeOperation(transferFrom);

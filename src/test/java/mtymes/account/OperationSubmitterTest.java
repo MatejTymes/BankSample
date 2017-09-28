@@ -196,15 +196,13 @@ public class OperationSubmitterTest extends StrictMockTest {
     public void shouldTransferMoney() {
         OperationId operationId = randomOperationId();
         OperationId toPartOperationId = randomOperationId();
-        TransferId transferId = randomTransferId();
         AccountId fromAccountId = randomAccountId();
         AccountId toAccountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
-        TransferFrom expectedOperation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(transferId, fromAccountId, toAccountId, amount));
+        TransferFrom expectedOperation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(fromAccountId, toAccountId, amount));
         OpLogId opLogId = randomOpLogId(fromAccountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId, toPartOperationId);
-        when(idGenerator.nextTransferId()).thenReturn(transferId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(fromAccountId);
         when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
@@ -220,15 +218,13 @@ public class OperationSubmitterTest extends StrictMockTest {
     public void shouldReceiveFailureMessageIfUnableToTransferMoney() {
         OperationId operationId = randomOperationId();
         OperationId toPartOperationId = randomOperationId();
-        TransferId transferId = randomTransferId();
         AccountId fromAccountId = randomAccountId();
         AccountId toAccountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
-        TransferFrom expectedOperation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(transferId, fromAccountId, toAccountId, amount));
+        TransferFrom expectedOperation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(fromAccountId, toAccountId, amount));
         OpLogId opLogId = randomOpLogId(fromAccountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId, toPartOperationId);
-        when(idGenerator.nextTransferId()).thenReturn(transferId);
         when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
         doNothing().when(worker).runUnfinishedOperations(fromAccountId);
         String failureMessage = "for some reason the transfer failed";

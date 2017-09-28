@@ -15,7 +15,6 @@ import static javafixes.math.Decimal.d;
 import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OperationId.operationId;
-import static mtymes.account.domain.operation.TransferId.transferId;
 import static mtymes.common.mongo.DocumentBuilder.docBuilder;
 
 
@@ -27,7 +26,6 @@ public class MongoMapper implements OperationVisitor<Document> {
     public static final String AMOUNT = "amount";
     public static final String FROM_ACCOUNT_ID = "fromAccountId";
     public static final String TO_ACCOUNT_ID = "toAccountId";
-    public static final String TRANSFER_ID = "transferId";
 
     @Override
     public Document visit(CreateAccount request) {
@@ -60,7 +58,6 @@ public class MongoMapper implements OperationVisitor<Document> {
         return docBuilder()
                 .put(OPERATION_ID, request.operationId)
                 .put(TO_PART_OPERATION_ID, request.toPartOperationId)
-                .put(TRANSFER_ID, request.detail.transferId)
                 .put(FROM_ACCOUNT_ID, request.detail.fromAccountId)
                 .put(TO_ACCOUNT_ID, request.detail.toAccountId)
                 .put(AMOUNT, request.detail.amount)
@@ -71,7 +68,6 @@ public class MongoMapper implements OperationVisitor<Document> {
     public Document visit(TransferTo request) {
         return docBuilder()
                 .put(OPERATION_ID, request.operationId)
-                .put(TRANSFER_ID, request.detail.transferId)
                 .put(FROM_ACCOUNT_ID, request.detail.fromAccountId)
                 .put(TO_ACCOUNT_ID, request.detail.toAccountId)
                 .put(AMOUNT, request.detail.amount)
@@ -114,7 +110,6 @@ public class MongoMapper implements OperationVisitor<Document> {
 
     private TransferDetail toTransferDetail(Document doc) {
         return new TransferDetail(
-                getTransferId(doc, TRANSFER_ID),
                 getAccountId(doc, FROM_ACCOUNT_ID),
                 getAccountId(doc, TO_ACCOUNT_ID),
                 getDecimal(doc, AMOUNT)
@@ -127,10 +122,6 @@ public class MongoMapper implements OperationVisitor<Document> {
 
     public AccountId getAccountId(Document doc, String fieldName) {
         return accountId(getUUID(doc, fieldName));
-    }
-
-    public TransferId getTransferId(Document doc, String fieldName) {
-        return transferId(getUUID(doc, fieldName));
     }
 
     public Version getVersion(Document doc, String fieldName) {

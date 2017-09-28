@@ -2,7 +2,6 @@ package mtymes.account;
 
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.OperationId;
-import mtymes.account.domain.operation.TransferId;
 import org.junit.Test;
 
 import java.util.Set;
@@ -41,20 +40,6 @@ public class IdGeneratorTest {
             assertThat(generateAccountIds.contains(accountId), is(false));
 
             generateAccountIds.add(accountId);
-        }
-    }
-
-    @Test
-    public void shouldGenerateNewTransferIdEachTime() {
-        Set<TransferId> generateTransferIds = newSet();
-
-        for (int i = 0; i < 100; i++) {
-            TransferId transferId = idGenerator.nextTransferId();
-
-            assertThat(transferId, notNullValue());
-            assertThat(generateTransferIds.contains(transferId), is(false));
-
-            generateTransferIds.add(transferId);
         }
     }
 }

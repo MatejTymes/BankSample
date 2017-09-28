@@ -29,12 +29,11 @@ public class TransferFromHandlerTest extends StrictMockTest {
 
     private OperationId fromOperationId = randomOperationId();
     private OperationId toOperationId = randomOperationId();
-    private TransferId transferId = randomTransferId();
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
     private Decimal amount = randomPositiveAmount();
     private OpLogId opLogId = randomOpLogId(fromAccountId);
-    private TransferDetail detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
+    private TransferDetail detail = new TransferDetail(fromAccountId, toAccountId, amount);
     private TransferFrom operation = new TransferFrom(fromOperationId, toOperationId, detail);
 
     @Before
@@ -124,7 +123,7 @@ public class TransferFromHandlerTest extends StrictMockTest {
         Version accountVersion = randomVersion(before(opLogId.seqId));
         Decimal fromAccountBalance = randomPositiveAmount();
         amount = fromAccountBalance.plus(randomPositiveAmount());
-        detail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
+        detail = new TransferDetail(fromAccountId, toAccountId, amount);
         operation = new TransferFrom(fromOperationId, toOperationId, detail);
         when(accountDao.findAccount(fromAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(fromAccountId)

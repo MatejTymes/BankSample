@@ -10,9 +10,6 @@ import java.util.function.Consumer;
 import static com.mongodb.client.model.Indexes.ascending;
 import static com.mongodb.client.model.Indexes.descending;
 import static javafixes.common.CollectionUtil.newSet;
-import static mtymes.account.dao.mongo.MongoMapper.TRANSFER_ID;
-import static mtymes.account.dao.mongo.MongoOperationDao.BODY;
-import static mtymes.common.mongo.DocumentBuilder.doc;
 
 public class Collections {
 
@@ -43,7 +40,7 @@ public class Collections {
                     );
                     operations.createIndex(
                             ascending(
-                                    MongoOperationDao.BODY + "." + MongoMapper.OPERATION_ID // todo: test this
+                                    MongoOperationDao.BODY + "." + MongoMapper.OPERATION_ID // todo: test this - make sure duplicate OperationId can't be stored
                             ),
                             new IndexOptions().unique(true)
                     );
@@ -53,14 +50,6 @@ public class Collections {
                                     MongoOperationDao.VERSION
                             ),
                             new IndexOptions().unique(true)
-                    );
-                    // todo: remove this
-                    operations.createIndex(
-                            ascending(
-                                    MongoOperationDao.BODY + "." + MongoMapper.TRANSFER_ID,
-                                    MongoOperationDao.TYPE
-                            ),
-                            new IndexOptions().unique(true).partialFilterExpression(doc(BODY + "." + TRANSFER_ID, doc("$exists", true)))
                     );
                 }
         );

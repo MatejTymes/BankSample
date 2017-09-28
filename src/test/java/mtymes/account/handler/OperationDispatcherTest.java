@@ -73,7 +73,7 @@ public class OperationDispatcherTest extends StrictMockTest {
         OperationId operationId = randomOperationId();
         OperationId toPartOperationId = randomOperationId();
         OpLogId opLogId = randomOpLogId();
-        TransferFrom operation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(randomTransferId(), opLogId.accountId, randomAccountId(), randomPositiveAmount()));
+        TransferFrom operation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(opLogId.accountId, randomAccountId(), randomPositiveAmount()));
 
         doNothing().when(transferFromHandler).handleOperation(opLogId, operation);
 
@@ -84,7 +84,7 @@ public class OperationDispatcherTest extends StrictMockTest {
     public void shouldDispatchTransferTo() {
         OperationId operationId = randomOperationId();
         OpLogId opLogId = randomOpLogId();
-        TransferTo operation = new TransferTo(operationId, new TransferDetail(randomTransferId(), randomAccountId(), opLogId.accountId, randomPositiveAmount()));
+        TransferTo operation = new TransferTo(operationId, new TransferDetail(randomAccountId(), opLogId.accountId, randomPositiveAmount()));
 
         doNothing().when(transferToHandler).handleOperation(opLogId, operation);
 
@@ -99,8 +99,8 @@ public class OperationDispatcherTest extends StrictMockTest {
                 new CreateAccount(operationId, opLogId.accountId),
                 new DepositTo(operationId, opLogId.accountId, randomPositiveAmount()),
                 new WithdrawFrom(operationId, opLogId.accountId, randomPositiveAmount()),
-                new TransferFrom(operationId, randomOperationId(), new TransferDetail(randomTransferId(), opLogId.accountId, randomAccountId(), randomPositiveAmount())),
-                new TransferTo(operationId, new TransferDetail(randomTransferId(), randomAccountId(), opLogId.accountId, randomPositiveAmount()))
+                new TransferFrom(operationId, randomOperationId(), new TransferDetail(opLogId.accountId, randomAccountId(), randomPositiveAmount())),
+                new TransferTo(operationId, new TransferDetail(randomAccountId(), opLogId.accountId, randomPositiveAmount()))
         );
 
         for (Operation operation : operations) {

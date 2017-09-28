@@ -19,7 +19,6 @@ import static mtymes.account.domain.account.AccountId.accountId;
 import static mtymes.account.domain.account.Version.version;
 import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.account.domain.operation.OperationId.operationId;
-import static mtymes.account.domain.operation.TransferId.transferId;
 
 public class Random {
 
@@ -85,10 +84,6 @@ public class Random {
         return accountId(randomUUID());
     }
 
-    public static TransferId randomTransferId() {
-        return transferId(randomUUID());
-    }
-
     @SafeVarargs
     public static Version randomVersion(Condition<Version>... validityConditions) {
         return generateValidValue(
@@ -118,9 +113,9 @@ public class Random {
             case 3:
                 return new WithdrawFrom(randomOperationId(), accountId, randomPositiveAmount());
             case 4:
-                return new TransferFrom(randomOperationId(), randomOperationId(), new TransferDetail(randomTransferId(), accountId, randomAccountId(), randomPositiveAmount()));
+                return new TransferFrom(randomOperationId(), randomOperationId(), new TransferDetail(accountId, randomAccountId(), randomPositiveAmount()));
             default:
-                return new TransferTo(randomOperationId(), new TransferDetail(randomTransferId(), randomAccountId(), accountId, randomPositiveAmount()));
+                return new TransferTo(randomOperationId(), new TransferDetail(randomAccountId(), accountId, randomPositiveAmount()));
         }
     }
 

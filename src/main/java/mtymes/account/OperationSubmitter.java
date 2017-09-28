@@ -63,8 +63,7 @@ public class OperationSubmitter {
     public Either<Failure, Success> transferMoney(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
         OperationId operationId = idGenerator.nextOperationId();
         OperationId toPartOperationId = idGenerator.nextOperationId();
-        TransferId transferId = idGenerator.nextTransferId();
-        LoggedOperation operation = submitOperation(new TransferFrom(operationId, toPartOperationId, new TransferDetail(transferId, fromAccountId, toAccountId, amount)));
+        LoggedOperation operation = submitOperation(new TransferFrom(operationId, toPartOperationId, new TransferDetail(fromAccountId, toAccountId, amount)));
         return asResponse(operation);
     }
 

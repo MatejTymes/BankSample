@@ -14,16 +14,14 @@ public class TransferDetailTest extends StrictMockTest {
 
     @Test
     public void shouldCreateTransferDetail() {
-        TransferId transferId = randomTransferId();
         AccountId fromAccountId = randomAccountId();
         AccountId toAccountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
 
         // When
-        TransferDetail transferDetail = new TransferDetail(transferId, fromAccountId, toAccountId, amount);
+        TransferDetail transferDetail = new TransferDetail(fromAccountId, toAccountId, amount);
 
         // Then
-        assertThat(transferDetail.transferId, equalTo(transferId));
         assertThat(transferDetail.fromAccountId, equalTo(fromAccountId));
         assertThat(transferDetail.toAccountId, equalTo(toAccountId));
         assertThat(transferDetail.amount, equalTo(amount));
@@ -32,42 +30,35 @@ public class TransferDetailTest extends StrictMockTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new TransferDetail(null, randomAccountId(), randomAccountId(), randomPositiveAmount());
-
-            fail("should fail with NullPointerException");
-        } catch (NullPointerException expected) {
-            assertThat(expected.getMessage(), equalTo("transferId can't be null"));
-        }
-        try {
-            new TransferDetail(randomTransferId(), null, randomAccountId(), randomPositiveAmount());
+            new TransferDetail(null, randomAccountId(), randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("fromAccountId can't be null"));
         }
         try {
-            new TransferDetail(randomTransferId(), randomAccountId(), null, randomPositiveAmount());
+            new TransferDetail(randomAccountId(), null, randomPositiveAmount());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("toAccountId can't be null"));
         }
         try {
-            new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), null);
+            new TransferDetail(randomAccountId(), randomAccountId(), null);
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("amount can't be null"));
         }
         try {
-            new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), Decimal.ZERO);
+            new TransferDetail(randomAccountId(), randomAccountId(), Decimal.ZERO);
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
             assertThat(expected.getMessage(), equalTo("amount must be a positive value"));
         }
         try {
-            new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomNegativeAmount());
+            new TransferDetail(randomAccountId(), randomAccountId(), randomNegativeAmount());
 
             fail("should fail with IllegalArgumentException");
         } catch (IllegalArgumentException expected) {

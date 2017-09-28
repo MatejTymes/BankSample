@@ -74,19 +74,19 @@ public abstract class ReadableOperationHandlerTest extends StrictMockTest {
     }
 
     protected TransferDetail generateTransferDetailFor(Account fromAccount, Account toAccount, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccount.accountId, toAccount.accountId, amount);
+        return new TransferDetail(fromAccount.accountId, toAccount.accountId, amount);
     }
 
     protected TransferDetail generateTransferDetailFor(Account fromAccount, AccountId toAccountId, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccount.accountId, toAccountId, amount);
+        return new TransferDetail(fromAccount.accountId, toAccountId, amount);
     }
 
     protected TransferDetail generateTransferDetailFor(AccountId fromAccountId, Account toAccount, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccountId, toAccount.accountId, amount);
+        return new TransferDetail(fromAccountId, toAccount.accountId, amount);
     }
 
     protected TransferDetail generateTransferDetailFor(AccountId fromAccountId, AccountId toAccountId, Decimal amount) {
-        return new TransferDetail(randomTransferId(), fromAccountId, toAccountId, amount);
+        return new TransferDetail(fromAccountId, toAccountId, amount);
     }
 
     protected void expect_balanceUpdateOf(Account account, Decimal newBalance, OpLogId opLogId) {

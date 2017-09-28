@@ -72,6 +72,6 @@ public class TransferFromTest extends StrictMockTest {
     }
 
     private TransferDetail randomTransferDetail() {
-        return new TransferDetail(randomTransferId(), randomAccountId(), randomAccountId(), randomPositiveAmount());
+        return new TransferDetail(randomAccountId(), randomAccountId(), randomPositiveAmount());
     }
 }
