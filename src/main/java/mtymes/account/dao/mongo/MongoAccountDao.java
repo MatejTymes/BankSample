@@ -7,7 +7,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.account.Version;
+import mtymes.account.domain.operation.SeqId;
 import org.bson.Document;
 
 import java.util.Optional;
@@ -30,7 +30,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     }
 
     @Override
-    public boolean createAccount(AccountId accountId, Version version) {
+    public boolean createAccount(AccountId accountId, SeqId version) {
         try {
             accounts.insertOne(docBuilder()
                     .put(ACCOUNT_ID, accountId)
@@ -44,7 +44,7 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
     }
 
     @Override
-    public boolean updateBalance(AccountId accountId, Decimal newBalance, Version oldVersion, Version newVersion) {
+    public boolean updateBalance(AccountId accountId, Decimal newBalance, SeqId oldVersion, SeqId newVersion) {
         checkArgument(oldVersion.isBefore(newVersion), "oldVersion must be before newVersion");
 
         try {
@@ -72,18 +72,18 @@ public class MongoAccountDao extends MongoBaseDao implements AccountDao {
                 doc -> new Account(
                         mapper.getAccountId(doc, ACCOUNT_ID),
                         mapper.getDecimal(doc, BALANCE),
-                        mapper.getVersion(doc, VERSION)
+                        mapper.getSeqId(doc, VERSION)
                 )
         );
     }
 
     @Override
-    public Optional<Version> findCurrentVersion(AccountId accountId) {
+    public Optional<SeqId> findCurrentVersion(AccountId accountId) {
         return findOne(
                 accounts,
                 doc(ACCOUNT_ID, accountId),
                 doc(VERSION, 1),
-                doc -> mapper.getVersion(doc, VERSION)
+                doc -> mapper.getSeqId(doc, VERSION)
         );
     }
 }

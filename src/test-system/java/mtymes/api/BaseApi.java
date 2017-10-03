@@ -13,8 +13,8 @@ public class BaseApi {
     private DefaultAsyncHttpClient client = new DefaultAsyncHttpClient(
             new DefaultAsyncHttpClientConfig.Builder()
                     .setKeepEncodingHeader(true)
-                    .setReadTimeout(10_000)
-                    .setRequestTimeout(10_000)
+                    .setReadTimeout(30_000)
+                    .setRequestTimeout(30_000)
                     .build()
     );
     private final String hostName;

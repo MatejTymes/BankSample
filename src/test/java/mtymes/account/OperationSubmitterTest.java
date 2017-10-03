@@ -2,6 +2,7 @@ package mtymes.account;
 
 import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
+import mtymes.account.dao.OpLogDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
@@ -32,6 +33,7 @@ public class OperationSubmitterTest extends StrictMockTest {
     private IdGenerator idGenerator;
     private AccountDao accountDao;
     private OperationDao operationDao;
+    private OpLogDao opLogDao;
     private Worker worker;
 
     private OperationSubmitter submitter;
@@ -41,9 +43,10 @@ public class OperationSubmitterTest extends StrictMockTest {
         idGenerator = mock(IdGenerator.class);
         accountDao = mock(AccountDao.class);
         operationDao = mock(OperationDao.class);
+        opLogDao = mock(OpLogDao.class);
         worker = mock(Worker.class);
 
-        submitter = new OperationSubmitter(idGenerator, accountDao, operationDao, worker);
+        submitter = new OperationSubmitter(idGenerator, accountDao, operationDao, opLogDao, worker);
     }
 
     @Test
@@ -51,14 +54,14 @@ public class OperationSubmitterTest extends StrictMockTest {
         OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
         CreateAccount expectedOperation = new CreateAccount(operationId, accountId);
-        OpLogId opLogId = randomOpLogId(accountId);
         Account expectedAccount = accountBuilder().accountId(accountId).build();
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(idGenerator.nextAccountId()).thenReturn(accountId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Applied), Optional.empty())));
         when(accountDao.findAccount(accountId)).thenReturn(Optional.of(expectedAccount));
 
         // When
@@ -73,13 +76,13 @@ public class OperationSubmitterTest extends StrictMockTest {
         OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
         CreateAccount expectedOperation = new CreateAccount(operationId, accountId);
-        OpLogId opLogId = randomOpLogId(accountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(idGenerator.nextAccountId()).thenReturn(accountId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Applied), Optional.empty())));
         when(accountDao.findAccount(accountId)).thenReturn(Optional.empty());
 
         // When
@@ -94,14 +97,14 @@ public class OperationSubmitterTest extends StrictMockTest {
         OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
         CreateAccount expectedOperation = new CreateAccount(operationId, accountId);
-        OpLogId opLogId = randomOpLogId(accountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
         when(idGenerator.nextAccountId()).thenReturn(accountId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
         String failureMessage = "for some reason the account was not created";
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
 
         // When
         Either<Failure, Account> response = submitter.createAccount();
@@ -116,12 +119,12 @@ public class OperationSubmitterTest extends StrictMockTest {
         AccountId accountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
         DepositTo expectedOperation = new DepositTo(operationId, accountId, amount);
-        OpLogId opLogId = randomOpLogId(accountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Applied), Optional.empty())));
 
         // When
         Either<Failure, Success> response = submitter.depositMoney(accountId, amount);
@@ -136,13 +139,13 @@ public class OperationSubmitterTest extends StrictMockTest {
         AccountId accountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
         DepositTo expectedOperation = new DepositTo(operationId, accountId, amount);
-        OpLogId opLogId = randomOpLogId(accountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
         String failureMessage = "for some reason the deposit of money failed";
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
 
         // When
         Either<Failure, Success> response = submitter.depositMoney(accountId, amount);
@@ -157,12 +160,12 @@ public class OperationSubmitterTest extends StrictMockTest {
         AccountId accountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
         WithdrawFrom expectedOperation = new WithdrawFrom(operationId, accountId, amount);
-        OpLogId opLogId = randomOpLogId(accountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Applied), Optional.empty())));
 
         // When
         Either<Failure, Success> response = submitter.withdrawMoney(accountId, amount);
@@ -177,13 +180,13 @@ public class OperationSubmitterTest extends StrictMockTest {
         AccountId accountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
         WithdrawFrom expectedOperation = new WithdrawFrom(operationId, accountId, amount);
-        OpLogId opLogId = randomOpLogId(accountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(accountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(accountId);
         String failureMessage = "for some reason the withdraw failed";
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
 
         // When
         Either<Failure, Success> response = submitter.withdrawMoney(accountId, amount);
@@ -200,12 +203,12 @@ public class OperationSubmitterTest extends StrictMockTest {
         AccountId toAccountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
         TransferFrom expectedOperation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(fromAccountId, toAccountId, amount));
-        OpLogId opLogId = randomOpLogId(fromAccountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId, toPartOperationId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(fromAccountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(fromAccountId);
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Applied), Optional.empty())));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Applied), Optional.empty())));
 
         // When
         Either<Failure, Success> response = submitter.transferMoney(fromAccountId, toAccountId, amount);
@@ -222,13 +225,13 @@ public class OperationSubmitterTest extends StrictMockTest {
         AccountId toAccountId = randomAccountId();
         Decimal amount = randomPositiveAmount();
         TransferFrom expectedOperation = new TransferFrom(operationId, toPartOperationId, new TransferDetail(fromAccountId, toAccountId, amount));
-        OpLogId opLogId = randomOpLogId(fromAccountId);
 
         when(idGenerator.nextOperationId()).thenReturn(operationId, toPartOperationId);
-        when(operationDao.storeOperation(expectedOperation)).thenReturn(opLogId);
+        doNothing().when(operationDao).storeOperation(expectedOperation);
+        when(opLogDao.registerOperationId(fromAccountId, operationId)).thenReturn(randomSeqId());
         doNothing().when(worker).runUnfinishedOperations(fromAccountId);
         String failureMessage = "for some reason the transfer failed";
-        when(operationDao.findLoggedOperation(opLogId)).thenReturn(Optional.of(new LoggedOperation(opLogId, expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
+        when(operationDao.findLoggedOperation(operationId)).thenReturn(Optional.of(new LoggedOperation(expectedOperation, Optional.of(Rejected), Optional.of(failureMessage))));
 
         // When
         Either<Failure, Success> response = submitter.transferMoney(fromAccountId, toAccountId, amount);

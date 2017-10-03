@@ -3,7 +3,6 @@ package mtymes.test;
 import javafixes.math.Decimal;
 import javafixes.math.Scale;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.*;
 
 import java.util.List;
@@ -16,9 +15,8 @@ import static java.util.UUID.randomUUID;
 import static javafixes.math.Decimal.decimal;
 import static javafixes.math.Scale._2_DECIMAL_PLACES;
 import static mtymes.account.domain.account.AccountId.accountId;
-import static mtymes.account.domain.account.Version.version;
-import static mtymes.account.domain.operation.OpLogId.opLogId;
 import static mtymes.account.domain.operation.OperationId.operationId;
+import static mtymes.account.domain.operation.SeqId.seqId;
 
 public class Random {
 
@@ -85,42 +83,38 @@ public class Random {
     }
 
     @SafeVarargs
-    public static Version randomVersion(Condition<Version>... validityConditions) {
+    public static SeqId randomSeqId(Condition<SeqId>... validityConditions) {
         return generateValidValue(
-                () -> version(randomInt(0, Integer.MAX_VALUE)),
+                () -> seqId(randomInt(0, Integer.MAX_VALUE)),
                 validityConditions
         );
     }
 
-    @SafeVarargs
-    public static OpLogId randomOpLogId(AccountId accountId, Condition<OpLogId>... validityConditions) {
-        return generateValidValue(
-                () -> opLogId(accountId, randomVersion()),
-                validityConditions
-        );
-    }
-
-    public static OpLogId randomOpLogId() {
-        return randomOpLogId(randomAccountId());
-    }
-
-    public static Operation randomOperation(AccountId accountId) {
+    public static Operation randomOperation(AccountId accountId, OperationId operationId) {
         switch (randomInt(1, 5)) {
             case 1:
-                return new CreateAccount(randomOperationId(), accountId);
+                return new CreateAccount(operationId, accountId);
             case 2:
-                return new DepositTo(randomOperationId(), accountId, randomPositiveAmount());
+                return new DepositTo(operationId, accountId, randomPositiveAmount());
             case 3:
-                return new WithdrawFrom(randomOperationId(), accountId, randomPositiveAmount());
+                return new WithdrawFrom(operationId, accountId, randomPositiveAmount());
             case 4:
-                return new TransferFrom(randomOperationId(), randomOperationId(), new TransferDetail(accountId, randomAccountId(), randomPositiveAmount()));
+                return new TransferFrom(operationId, randomOperationId(), new TransferDetail(accountId, randomAccountId(), randomPositiveAmount()));
             default:
-                return new TransferTo(randomOperationId(), new TransferDetail(randomAccountId(), accountId, randomPositiveAmount()));
+                return new TransferTo(operationId, new TransferDetail(randomAccountId(), accountId, randomPositiveAmount()));
         }
     }
 
+    public static Operation randomOperation(AccountId accountId) {
+        return randomOperation(accountId, randomOperationId());
+    }
+
+    public static Operation randomOperation(OperationId operationId) {
+        return randomOperation(randomAccountId(), operationId);
+    }
+
     public static Operation randomOperation() {
-        return randomOperation(randomAccountId());
+        return randomOperation(randomAccountId(), randomOperationId());
     }
 
     @SafeVarargs

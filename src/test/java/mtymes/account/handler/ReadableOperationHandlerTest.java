@@ -5,17 +5,17 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
+import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
-import mtymes.account.exception.DuplicateOperationException;
+import mtymes.account.exception.DuplicateItemException;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 
 import java.util.Optional;
 
-import static mtymes.account.domain.account.Version.version;
-import static mtymes.account.domain.operation.OpLogId.opLogId;
+import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.domain.account.AccountBuilder.accountBuilder;
 import static mtymes.test.Random.*;
 import static org.mockito.Mockito.*;
@@ -47,22 +47,16 @@ public abstract class ReadableOperationHandlerTest extends StrictMockTest {
         return accountId;
     }
 
-    protected OpLogId generateNextOperationIdFor(Account account) {
-        return opLogId(
-                account.accountId,
-                version(account.version.value() + randomLong(1L, 10L))
-        );
+    protected SeqId generateNextSeqIdFor(Account account) {
+        return seqId(account.version.value() + randomLong(1L, 10L));
     }
 
-    protected OpLogId generateCurrentlyAppliedOperationIdFor(Account account) {
-        return opLogId(account.accountId, account.version);
+    protected SeqId generateCurrentlyAppliedSeqIdFor(Account account) {
+        return account.version;
     }
 
-    protected OpLogId generatePreviouslyAppliedOperationIdFor(Account account) {
-        return opLogId(
-                account.accountId,
-                version(account.version.value() + randomLong(-10L, -1L))
-        );
+    protected SeqId generatePreviouslyAppliedSeqIdFor(Account account) {
+        return seqId(account.version.value() + randomLong(-10L, -1L));
     }
 
     protected Account randomAccount() {
@@ -89,23 +83,23 @@ public abstract class ReadableOperationHandlerTest extends StrictMockTest {
         return new TransferDetail(fromAccountId, toAccountId, amount);
     }
 
-    protected void expect_balanceUpdateOf(Account account, Decimal newBalance, OpLogId opLogId) {
-        when(accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId)).thenReturn(true);
+    protected void expect_balanceUpdateOf(Account account, Decimal newBalance, SeqId seqId) {
+        when(accountDao.updateBalance(account.accountId, newBalance, account.version, seqId)).thenReturn(true);
     }
 
     protected void expect_storageOf(Operation operation) {
-        when(operationDao.storeOperation(operation)).thenReturn(randomOpLogId(operation.affectedAccountId()));
+        doNothing().when(operationDao).storeOperation(operation);
     }
 
     protected void expect_storageOfDuplicate(Operation operation) {
-        when(operationDao.storeOperation(operation)).thenThrow(new DuplicateOperationException());
+        doThrow(new DuplicateItemException()).when(operationDao).storeOperation(operation);
     }
 
-    protected void expect_operationMarkedAsApplied(OpLogId opLogId) {
-        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
+    protected void expect_operationMarkedAsApplied(OperationId operationId) {
+        when(operationDao.markAsApplied(operationId)).thenReturn(true);
     }
 
-    protected void expect_operationMarkedAsRejected(OpLogId opLogId, String description) {
-        when(operationDao.markAsRejected(opLogId, description)).thenReturn(true);
+    protected void expect_operationMarkedAsRejected(OperationId operationId, String description) {
+        when(operationDao.markAsRejected(operationId, description)).thenReturn(true);
     }
 }

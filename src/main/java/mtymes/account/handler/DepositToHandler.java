@@ -5,7 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.operation.DepositTo;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.SeqId;
 
 import java.util.Optional;
 
@@ -18,22 +18,22 @@ public class DepositToHandler extends BaseOperationHandler<DepositTo> {
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, DepositTo operation) {
+    public void handleOperation(SeqId seqId, DepositTo operation) {
         Optional<Account> optionalAccount = loadAccount(operation.accountId);
         if (optionalAccount.isPresent()) {
-            depositMoney(opLogId, optionalAccount.get(), operation);
+            depositMoney(seqId, optionalAccount.get(), operation);
         } else {
-            markOperationAsRejected(opLogId, format("Account '%s' does not exist", operation.accountId));
+            markOperationAsRejected(operation.operationId, format("Account '%s' does not exist", operation.accountId));
         }
     }
 
-    private void depositMoney(OpLogId opLogId, Account account, DepositTo operation) {
-        if (opLogId.canApplyOperationTo(account)) {
+    private void depositMoney(SeqId seqId, Account account, DepositTo operation) {
+        if (seqId.canApplyAfter(account.version)) {
             Decimal newBalance = account.balance.plus(operation.amount);
-            accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId);
-            markOperationAsApplied(opLogId);
-        } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
-            markOperationAsApplied(opLogId);
+            accountDao.updateBalance(account.accountId, newBalance, account.version, seqId);
+            markOperationAsApplied(operation.operationId);
+        } else if (seqId.isCurrentlyApplied(account.version)) {
+            markOperationAsApplied(operation.operationId);
         }
     }
 }

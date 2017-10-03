@@ -17,18 +17,19 @@ public class MongoMapperTest {
 
     @Test
     public void shouldBeAbleToConvertOperationToDocumentAndBackAgain() {
+        OperationId operationId = randomOperationId();
         List<Operation> allOperations = newList(
-                new CreateAccount(randomOperationId(), randomAccountId()),
-                new DepositTo(randomOperationId(), randomAccountId(), randomPositiveAmount()),
-                new WithdrawFrom(randomOperationId(), randomAccountId(), randomPositiveAmount()),
-                new TransferFrom(randomOperationId(), randomOperationId(), new TransferDetail(randomAccountId(), randomAccountId(), randomPositiveAmount())),
-                new TransferTo(randomOperationId(), new TransferDetail(randomAccountId(), randomAccountId(), randomPositiveAmount()))
+                new CreateAccount(operationId, randomAccountId()),
+                new DepositTo(operationId, randomAccountId(), randomPositiveAmount()),
+                new WithdrawFrom(operationId, randomAccountId(), randomPositiveAmount()),
+                new TransferFrom(operationId, operationId, new TransferDetail(randomAccountId(), randomAccountId(), randomPositiveAmount())),
+                new TransferTo(operationId, new TransferDetail(randomAccountId(), randomAccountId(), randomPositiveAmount()))
         );
 
         for (Operation originalOperation : allOperations) {
             // When & Then
             Document document = originalOperation.apply(dbMapper);
-            Operation reconstructedOperation = dbMapper.toOperation(originalOperation.getClass().getSimpleName(), document);
+            Operation reconstructedOperation = dbMapper.toOperation(operationId, originalOperation.getClass().getSimpleName(), document);
             assertThat(reconstructedOperation, equalTo(originalOperation));
         }
     }

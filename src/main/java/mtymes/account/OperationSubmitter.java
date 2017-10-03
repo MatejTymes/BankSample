@@ -2,6 +2,7 @@ package mtymes.account;
 
 import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
+import mtymes.account.dao.OpLogDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
@@ -24,12 +25,14 @@ public class OperationSubmitter {
     private final IdGenerator idGenerator;
     private final AccountDao accountDao;
     private final OperationDao operationDao;
+    private final OpLogDao opLogDao;
     private final Worker worker;
 
-    public OperationSubmitter(IdGenerator idGenerator, AccountDao accountDao, OperationDao operationDao, Worker worker) {
+    public OperationSubmitter(IdGenerator idGenerator, AccountDao accountDao, OperationDao operationDao, OpLogDao opLogDao, Worker worker) {
         this.idGenerator = idGenerator;
         this.accountDao = accountDao;
         this.operationDao = operationDao;
+        this.opLogDao = opLogDao;
         this.worker = worker;
     }
 
@@ -72,9 +75,13 @@ public class OperationSubmitter {
     /* ========================== */
 
     private LoggedOperation submitOperation(Operation operation) {
-        OpLogId opLogId = operationDao.storeOperation(operation);
-        worker.runUnfinishedOperations(opLogId.accountId);
-        return operationDao.findLoggedOperation(opLogId).get();
+        AccountId accountId = operation.affectedAccountId();
+
+        operationDao.storeOperation(operation);
+        opLogDao.registerOperationId(accountId, operation.operationId);
+        worker.runUnfinishedOperations(accountId);
+
+        return operationDao.findLoggedOperation(operation.operationId).get();
     }
 
     private boolean wasOperationApplied(LoggedOperation operation) {

@@ -5,8 +5,8 @@ import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
 import mtymes.account.domain.operation.LoggedOperation;
-import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,19 +35,20 @@ public class CreateAccountHandlerDisasterRecoveryTest extends BaseOperationHandl
         OperationId operationId = randomOperationId();
         AccountId accountId = randomAccountId();
         CreateAccount createAccount = new CreateAccount(operationId, accountId);
-        OpLogId opLogId = operationDao.storeOperation(createAccount);
+        operationDao.storeOperation(createAccount);
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
         // When
         retryWhileSystemIsBroken(
-                () -> handler.handleOperation(opLogId, createAccount)
+                () -> handler.handleOperation(seqId, createAccount)
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
         Optional<Account> account = accountDao.findAccount(accountId);
-        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, opLogId.seqId)));
+        assertThat(account, isPresentAndEqualTo(new Account(accountId, Decimal.ZERO, seqId)));
     }
 
     @Test
@@ -56,15 +57,16 @@ public class CreateAccountHandlerDisasterRecoveryTest extends BaseOperationHandl
         AccountId accountId = randomAccountId();
         Account initialAccount = createAccount(accountId);
         CreateAccount createAccount = new CreateAccount(operationId, accountId);
-        OpLogId opLogId = operationDao.storeOperation(createAccount);
+        operationDao.storeOperation(createAccount);
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
         // When
         retryWhileSystemIsBroken(
-                () -> handler.handleOperation(opLogId, createAccount)
+                () -> handler.handleOperation(seqId, createAccount)
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Rejected));
         assertThat(operation.description, isPresentAndEqualTo("Account '" + accountId + "' already exists"));
         Optional<Account> account = accountDao.findAccount(accountId);

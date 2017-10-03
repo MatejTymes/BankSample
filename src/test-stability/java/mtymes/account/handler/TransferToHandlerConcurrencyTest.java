@@ -37,19 +37,20 @@ public class TransferToHandlerConcurrencyTest extends BaseOperationHandlerStabil
                 operationId,
                 new TransferDetail(randomAccountId(), accountId, amount)
         );
-        OpLogId opLogId = operationDao.storeOperation(transferTo);
+        operationDao.storeOperation(transferTo);
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
         // When
         runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, transferTo),
+                () -> handler.handleOperation(seqId, transferTo),
                 50
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), opLogId.seqId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance.plus(amount), seqId)));
     }
 }

@@ -4,7 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferTo;
 
@@ -19,24 +19,25 @@ public class TransferToHandler extends BaseOperationHandler<TransferTo>{
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, TransferTo operation) {
+    public void handleOperation(SeqId seqId, TransferTo operation) {
         TransferDetail detail = operation.detail;
 
         Optional<Account> optionalToAccount = loadAccount(detail.toAccountId);
         if (optionalToAccount.isPresent()) {
-            depositMoney(opLogId, optionalToAccount.get(), detail);
+            depositMoney(seqId, optionalToAccount.get(), operation);
         } else {
-            markOperationAsRejected(opLogId, format("To Account '%s' does not exist", detail.toAccountId));
+            markOperationAsRejected(operation.operationId, format("To Account '%s' does not exist", detail.toAccountId));
         }
     }
 
-    private void depositMoney(OpLogId opLogId, Account account, TransferDetail detail) {
-        if (opLogId.canApplyOperationTo(account)) {
+    private void depositMoney(SeqId seqId, Account account, TransferTo operation) {
+        if (seqId.canApplyAfter(account.version)) {
+            TransferDetail detail = operation.detail;
             Decimal newBalance = account.balance.plus(detail.amount);
-            accountDao.updateBalance(detail.toAccountId, newBalance, account.version, opLogId.seqId);
-            markOperationAsApplied(opLogId);
-        } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
-            markOperationAsApplied(opLogId);
+            accountDao.updateBalance(detail.toAccountId, newBalance, account.version, seqId);
+            markOperationAsApplied(operation.operationId);
+        } else if (seqId.isCurrentlyApplied(account.version)) {
+            markOperationAsApplied(operation.operationId);
         }
     }
 }

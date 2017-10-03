@@ -3,7 +3,8 @@ package mtymes.account.handler;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferTo;
 import org.junit.Before;
@@ -26,16 +27,17 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         // Given
         Account toAccount = given_anAccountExists();
 
-        OpLogId opLogId = generateNextOperationIdFor(toAccount);
+        OperationId operationId = randomOperationId();
+        SeqId seqId = generateNextSeqIdFor(toAccount);
         Decimal amount = randomPositiveAmount();
         TransferDetail transferDetail = generateTransferDetailFor(randomAccountId(), toAccount, amount);
 
         // Then
-        expect_balanceUpdateOf(toAccount, toAccount.balance.plus(amount), opLogId);
-        expect_operationMarkedAsApplied(opLogId);
+        expect_balanceUpdateOf(toAccount, toAccount.balance.plus(amount), seqId);
+        expect_operationMarkedAsApplied(operationId);
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
+        handler.handleOperation(seqId, new TransferTo(operationId, transferDetail));
     }
 
     @Test
@@ -43,15 +45,16 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         // Given
         Account toAccount = given_anAccountExists();
 
-        OpLogId opLogId = generateCurrentlyAppliedOperationIdFor(toAccount);
+        OperationId operationId = randomOperationId();
+        SeqId seqId = generateCurrentlyAppliedSeqIdFor(toAccount);
         Decimal amount = randomPositiveAmount();
         TransferDetail transferDetail = generateTransferDetailFor(randomAccountId(), toAccount, amount);
 
         // Then
-        expect_operationMarkedAsApplied(opLogId);
+        expect_operationMarkedAsApplied(operationId);
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
+        handler.handleOperation(seqId, new TransferTo(operationId, transferDetail));
     }
 
     @Test
@@ -59,15 +62,16 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         // Given
         AccountId toAccountId = given_anMissingAccount();
 
-        OpLogId opLogId = randomOpLogId(toAccountId);
+        OperationId operationId = randomOperationId();
+        SeqId seqId = randomSeqId();
         Decimal amount = randomPositiveAmount();
         TransferDetail transferDetail = generateTransferDetailFor(randomAccountId(), toAccountId, amount);
 
         // Then
-        expect_operationMarkedAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist");
+        expect_operationMarkedAsRejected(operationId, "To Account '" + toAccountId + "' does not exist");
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
+        handler.handleOperation(seqId, new TransferTo(operationId, transferDetail));
     }
 
     @Test
@@ -75,7 +79,8 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         // Given
         Account toAccount = given_anAccountExists();
 
-        OpLogId opLogId = generatePreviouslyAppliedOperationIdFor(toAccount);
+        OperationId operationId = randomOperationId();
+        SeqId seqId = generatePreviouslyAppliedSeqIdFor(toAccount);
         Decimal amount = randomPositiveAmount();
         TransferDetail transferDetail = generateTransferDetailFor(randomAccountId(), toAccount, amount);
 
@@ -83,6 +88,6 @@ public class ReadableTransferToHandlerTest extends ReadableOperationHandlerTest 
         // do nothing
 
         // When
-        handler.handleOperation(opLogId, new TransferTo(randomOperationId(), transferDetail));
+        handler.handleOperation(seqId, new TransferTo(operationId, transferDetail));
     }
 }

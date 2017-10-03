@@ -1,6 +1,7 @@
 package mtymes.account.handler;
 
 import javafixes.math.Decimal;
+import javafixes.object.Tuple;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.*;
@@ -27,7 +28,7 @@ public class TransferFromHandlerDisasterRecoveryTest extends BaseOperationHandle
     @Before
     public void setUp() throws Exception {
         db.removeAllData();
-        handler = new TransferFromHandler(brokenAccountDao, brokenOperationDao, workQueue);
+        handler = new TransferFromHandler(brokenAccountDao, brokenOperationDao, brokenOpLogDao, workQueue);
     }
 
     @Test
@@ -41,29 +42,31 @@ public class TransferFromHandlerDisasterRecoveryTest extends BaseOperationHandle
         OperationId toPartOperationId = randomOperationId();
         TransferDetail detail = new TransferDetail(fromAccountId, toAccount.accountId, amount);
 
-        TransferFrom transferFrom = new TransferFrom(randomOperationId(), toPartOperationId, detail);
-        OpLogId opLogId = operationDao.storeOperation(transferFrom);
+        OperationId operationId = randomOperationId();
+        TransferFrom transferFrom = new TransferFrom(operationId, toPartOperationId, detail);
+        operationDao.storeOperation(transferFrom);
+        SeqId seqId = opLogDao.registerOperationId(fromAccountId, operationId);
 
         // When
         retryWhileSystemIsBroken(
-                () -> handler.handleOperation(opLogId, transferFrom)
+                () -> handler.handleOperation(seqId, transferFrom)
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
 
         Account fromAccount = loadAccount(fromAccountId);
-        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), opLogId.seqId)));
+        assertThat(fromAccount, equalTo(new Account(fromAccountId, fromBalance.minus(amount), seqId)));
         assertThat(loadAccount(toAccount.accountId), equalTo(toAccount));
 
         assertThat(workQueue.takeNextAvailable(), isPresentAndEqualTo(toAccount.accountId));
         assertThat(workQueue.takeNextAvailable(), isNotPresent());
 
-        List<OpLogId> unfinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(toAccount.accountId);
-        assertThat(unfinishedOpLogIds.size(), is(1));
-        Optional<LoggedOperation> loggedOperation = operationDao.findLoggedOperation(unfinishedOpLogIds.get(0));
+        List<Tuple<OperationId, SeqId>> unfinishedOperationIds = opLogDao.findUnfinishedOperationIds(toAccount.accountId);
+        assertThat(unfinishedOperationIds.size(), is(1));
+        Optional<LoggedOperation> loggedOperation = operationDao.findLoggedOperation(unfinishedOperationIds.get(0).a);
         assertThat(loggedOperation, isPresent());
         assertThat(loggedOperation.get().operation, equalTo(new TransferTo(toPartOperationId, detail)));
     }
@@ -81,16 +84,18 @@ public class TransferFromHandlerDisasterRecoveryTest extends BaseOperationHandle
         OperationId toPartOperationId = randomOperationId();
         TransferDetail detail = new TransferDetail(fromAccountId, toAccountId, amount);
 
-        TransferFrom transferFrom = new TransferFrom(randomOperationId(), toPartOperationId, detail);
-        OpLogId opLogId = operationDao.storeOperation(transferFrom);
+        OperationId operationId = randomOperationId();
+        TransferFrom transferFrom = new TransferFrom(operationId, toPartOperationId, detail);
+        operationDao.storeOperation(transferFrom);
+        SeqId seqId = opLogDao.registerOperationId(fromAccountId, operationId);
 
         // When
         retryWhileSystemIsBroken(
-                () -> handler.handleOperation(opLogId, transferFrom)
+                () -> handler.handleOperation(seqId, transferFrom)
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Rejected));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + fromAccountId + "'"));
 
@@ -101,7 +106,7 @@ public class TransferFromHandlerDisasterRecoveryTest extends BaseOperationHandle
 
         assertThat(workQueue.takeNextAvailable(), isNotPresent());
 
-        List<OpLogId> unfinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(toAccount.accountId);
-        assertThat(unfinishedOpLogIds.size(), is(0));
+        List<Tuple<OperationId, SeqId>> unfinishedOperationIds = opLogDao.findUnfinishedOperationIds(toAccount.accountId);
+        assertThat(unfinishedOperationIds.size(), is(0));
     }
 }

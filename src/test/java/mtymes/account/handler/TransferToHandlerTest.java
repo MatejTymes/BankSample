@@ -4,9 +4,8 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.account.Version;
-import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.TransferDetail;
 import mtymes.account.domain.operation.TransferTo;
 import mtymes.test.StrictMockTest;
@@ -32,7 +31,7 @@ public class TransferToHandlerTest extends StrictMockTest {
     private AccountId fromAccountId = randomAccountId();
     private AccountId toAccountId = randomAccountId();
     private Decimal amount = randomPositiveAmount();
-    private OpLogId opLogId = randomOpLogId(toAccountId);
+    private SeqId seqId = randomSeqId();
     private TransferDetail detail = new TransferDetail(fromAccountId, toAccountId, amount);
     private TransferTo operation = new TransferTo(operationId, detail);
 
@@ -45,51 +44,51 @@ public class TransferToHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldDepositTo() {
-        Version accountVersion = randomVersion(before(opLogId.seqId));
+        SeqId accountVersion = randomSeqId(before(seqId));
         Decimal lastBalance = randomAmount();
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .balance(lastBalance)
                 .version(accountVersion)
                 .build()));
-        when(accountDao.updateBalance(toAccountId, lastBalance.plus(amount), accountVersion, opLogId.seqId)).thenReturn(true);
-        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
+        when(accountDao.updateBalance(toAccountId, lastBalance.plus(amount), accountVersion, seqId)).thenReturn(true);
+        when(operationDao.markAsApplied(operationId)).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldSucceedIfBalanceHasBeenAlreadyUpdatedByThisOperation() {
-        Version accountVersion = opLogId.seqId;
+        SeqId accountVersion = seqId;
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .version(accountVersion)
                 .build()));
-        when(operationDao.markAsApplied(opLogId)).thenReturn(true);
+        when(operationDao.markAsApplied(operationId)).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldFailIfAccountDoesNotExist() {
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.empty());
-        when(operationDao.markAsRejected(opLogId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
+        when(operationDao.markAsRejected(operationId, "To Account '" + toAccountId + "' does not exist")).thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        Version accountVersion = randomVersion(after(opLogId.seqId));
+        SeqId accountVersion = randomSeqId(after(seqId));
         when(accountDao.findAccount(toAccountId)).thenReturn(Optional.of(accountBuilder()
                 .accountId(toAccountId)
                 .version(accountVersion)
                 .build()));
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 }

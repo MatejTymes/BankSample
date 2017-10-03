@@ -4,7 +4,8 @@ import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.LoggedOperation;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.WithdrawFrom;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,21 +36,23 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         Decimal initialBalance = pickRandomValue(amount, amount.plus(randomPositiveAmount()));
         AccountId accountId = createAccountWithInitialBalance(initialBalance).accountId;
 
-        WithdrawFrom withdrawFrom = new WithdrawFrom(randomOperationId(), accountId, amount);
-        OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
+        OperationId operationId = randomOperationId();
+        WithdrawFrom withdrawFrom = new WithdrawFrom(operationId, accountId, amount);
+        operationDao.storeOperation(withdrawFrom);
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
         // When
         runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, withdrawFrom),
+                () -> handler.handleOperation(seqId, withdrawFrom),
                 50
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Applied));
         assertThat(operation.description, isNotPresent());
         Account account = loadAccount(accountId);
-        assertThat(account, equalTo(new Account(accountId, initialBalance.minus(amount), opLogId.seqId)));
+        assertThat(account, equalTo(new Account(accountId, initialBalance.minus(amount), seqId)));
     }
 
     @Test
@@ -59,17 +62,19 @@ public class WithdrawFromHandlerConcurrencyTest extends BaseOperationHandlerStab
         AccountId accountId = initialAccount.accountId;
 
         Decimal amount = initialBalance.signum() >= 0 ? initialBalance.plus(randomPositiveAmount()) : randomPositiveAmount();
-        WithdrawFrom withdrawFrom = new WithdrawFrom(randomOperationId(), accountId, amount);
-        OpLogId opLogId = operationDao.storeOperation(withdrawFrom);
+        OperationId operationId = randomOperationId();
+        WithdrawFrom withdrawFrom = new WithdrawFrom(operationId, accountId, amount);
+        operationDao.storeOperation(withdrawFrom);
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
         // When
         runConcurrentlyOnNThreads(
-                () -> handler.handleOperation(opLogId, withdrawFrom),
+                () -> handler.handleOperation(seqId, withdrawFrom),
                 50
         );
 
         // Then
-        LoggedOperation operation = loadOperation(opLogId);
+        LoggedOperation operation = loadOperation(operationId);
         assertThat(operation.finalState, isPresentAndEqualTo(Rejected));
         assertThat(operation.description, isPresentAndEqualTo("Insufficient funds on account '" + accountId + "'"));
         Account account = loadAccount(accountId);

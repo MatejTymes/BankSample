@@ -1,8 +1,10 @@
 package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
+import mtymes.account.dao.OpLogDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.test.BrokenAccountDao;
+import mtymes.test.BrokenOpLogDao;
 import mtymes.test.BrokenOperationDao;
 import mtymes.test.BrokenSystemException;
 import org.junit.After;
@@ -18,6 +20,7 @@ public abstract class BaseOperationHandlerDisasterRecoveryTest extends BaseOpera
     protected AtomicInteger failureCount = new AtomicInteger(0);
     protected AccountDao brokenAccountDao;
     protected OperationDao brokenOperationDao;
+    protected OpLogDao brokenOpLogDao;
 
     @Before
     public void initDR() {
@@ -30,6 +33,13 @@ public abstract class BaseOperationHandlerDisasterRecoveryTest extends BaseOpera
         );
         brokenOperationDao = new BrokenOperationDao(
                 operationDao,
+                () -> {
+                    failureCount.incrementAndGet();
+                    return new BrokenSystemException();
+                }
+        );
+        brokenOpLogDao = new BrokenOpLogDao(
+                opLogDao,
                 () -> {
                     failureCount.incrementAndGet();
                     return new BrokenSystemException();

@@ -3,8 +3,10 @@ package mtymes.account.handler;
 import com.mongodb.client.MongoDatabase;
 import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
+import mtymes.account.dao.OpLogDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.dao.mongo.MongoAccountDao;
+import mtymes.account.dao.mongo.MongoOpLogDao;
 import mtymes.account.dao.mongo.MongoOperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
@@ -15,8 +17,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import static java.lang.String.format;
-import static mtymes.account.dao.mongo.Collections.accountsCollection;
-import static mtymes.account.dao.mongo.Collections.operationsCollection;
+import static mtymes.account.dao.mongo.Collections.*;
 import static mtymes.test.Random.randomAccountId;
 import static mtymes.test.Random.randomOperationId;
 import static org.hamcrest.Matchers.greaterThan;
@@ -27,6 +28,7 @@ public abstract class BaseOperationHandlerStabilityTest {
     protected static EmbeddedDB db;
     protected static AccountDao accountDao;
     protected static OperationDao operationDao;
+    protected static OpLogDao opLogDao;
 
     @BeforeClass
     public static void initDB() {
@@ -35,6 +37,7 @@ public abstract class BaseOperationHandlerStabilityTest {
 
         accountDao = new MongoAccountDao(accountsCollection(database));
         operationDao = new MongoOperationDao(operationsCollection(database));
+        opLogDao = new MongoOpLogDao(opLogCollection(database));
     }
 
     @AfterClass
@@ -55,9 +58,14 @@ public abstract class BaseOperationHandlerStabilityTest {
     }
 
     protected Account createAccount(AccountId accountId) {
-        OpLogId opLogId = operationDao.storeOperation(new CreateAccount(randomOperationId(), accountId));
-        accountDao.createAccount(accountId, opLogId.seqId);
-        operationDao.markAsApplied(opLogId);
+        OperationId operationId = randomOperationId();
+        operationDao.storeOperation(new CreateAccount(operationId, accountId));
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
+
+        accountDao.createAccount(accountId, seqId);
+
+        operationDao.markAsApplied(operationId);
+        opLogDao.markAsFinished(operationId);
         return loadAccount(accountId);
     }
 
@@ -65,22 +73,28 @@ public abstract class BaseOperationHandlerStabilityTest {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OpLogId opLogId = operationDao.storeOperation(new DepositTo(randomOperationId(), accountId, amount));
+        OperationId operationId = randomOperationId();
+        operationDao.storeOperation(new DepositTo(operationId, accountId, amount));
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
-        accountDao.updateBalance(accountId, account.balance.plus(amount), account.version, opLogId.seqId);
+        accountDao.updateBalance(accountId, account.balance.plus(amount), account.version, seqId);
 
-        operationDao.markAsApplied(opLogId);
+        operationDao.markAsApplied(operationId);
+        opLogDao.markAsFinished(operationId);
     }
 
     protected void withdrawMoney(AccountId accountId, Decimal amount) {
         assertThat(amount.compareTo(Decimal.ZERO), greaterThan(0));
 
         Account account = loadAccount(accountId);
-        OpLogId opLogId = operationDao.storeOperation(new WithdrawFrom(randomOperationId(), accountId, amount));
+        OperationId operationId = randomOperationId();
+        operationDao.storeOperation(new WithdrawFrom(operationId, accountId, amount));
+        SeqId seqId = opLogDao.registerOperationId(accountId, operationId);
 
-        accountDao.updateBalance(accountId, account.balance.minus(amount), account.version, opLogId.seqId);
+        accountDao.updateBalance(accountId, account.balance.minus(amount), account.version, seqId);
 
-        operationDao.markAsApplied(opLogId);
+        operationDao.markAsApplied(operationId);
+        opLogDao.markAsFinished(operationId);
     }
 
     protected Account loadAccount(AccountId accountId) {
@@ -88,8 +102,8 @@ public abstract class BaseOperationHandlerStabilityTest {
                 .orElseThrow(() -> new IllegalStateException(format("Account '%s' should be present", accountId)));
     }
 
-    protected LoggedOperation loadOperation(OpLogId opLogId) {
-        return operationDao.findLoggedOperation(opLogId)
-                .orElseThrow(() -> new IllegalStateException(format("Operation '%s' should be present", opLogId)));
+    protected LoggedOperation loadOperation(OperationId operationId) {
+        return operationDao.findLoggedOperation(operationId)
+                .orElseThrow(() -> new IllegalStateException(format("Operation '%s' should be present", operationId)));
     }
 }

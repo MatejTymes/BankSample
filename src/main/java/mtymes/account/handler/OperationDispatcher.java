@@ -1,22 +1,26 @@
 package mtymes.account.handler;
 
+import mtymes.account.dao.OpLogDao;
 import mtymes.account.domain.operation.*;
 
 public class OperationDispatcher {
 
+    private final OpLogDao opLogDao;
     private final DispatchVisitor dispatchVisitor;
 
-    public OperationDispatcher(CreateAccountHandler createAccountHandler, DepositToHandler depositToHandler, WithdrawFromHandler withdrawFromHandler, TransferFromHandler transferFromHandler, TransferToHandler transferToHandler) {
+    public OperationDispatcher(OpLogDao opLogDao, CreateAccountHandler createAccountHandler, DepositToHandler depositToHandler, WithdrawFromHandler withdrawFromHandler, TransferFromHandler transferFromHandler, TransferToHandler transferToHandler) {
+        this.opLogDao = opLogDao;
         this.dispatchVisitor = new DispatchVisitor(createAccountHandler, depositToHandler, withdrawFromHandler, transferFromHandler, transferToHandler);
     }
 
     @SuppressWarnings("unchecked")
-    public void dispatchOperation(LoggedOperation loggedOperation) {
+    public void dispatchOperation(SeqId seqId, LoggedOperation loggedOperation) {
+        Operation operation = loggedOperation.operation;
         if (!loggedOperation.isFinished()) {
-            Operation operation = loggedOperation.operation;
             OperationHandler handler = operation.apply(dispatchVisitor);
-            handler.handleOperation(loggedOperation.opLogId, operation);
+            handler.handleOperation(seqId, operation);
         }
+        opLogDao.markAsFinished(operation.operationId);
     }
 
     private class DispatchVisitor implements OperationVisitor<OperationHandler<?>> {

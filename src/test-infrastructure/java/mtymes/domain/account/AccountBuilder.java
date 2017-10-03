@@ -3,7 +3,7 @@ package mtymes.domain.account;
 import javafixes.math.Decimal;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.account.Version;
+import mtymes.account.domain.operation.SeqId;
 
 import static mtymes.test.Random.*;
 
@@ -11,7 +11,7 @@ public class AccountBuilder {
 
     private AccountId accountId = randomAccountId();
     private Decimal balance = randomAmount();
-    private Version version = randomVersion();
+    private SeqId version = randomSeqId();
 
     public static AccountBuilder accountBuilder() {
         return new AccountBuilder();
@@ -31,7 +31,7 @@ public class AccountBuilder {
         return this;
     }
 
-    public AccountBuilder version(Version version) {
+    public AccountBuilder version(SeqId version) {
         this.version = version;
         return this;
     }

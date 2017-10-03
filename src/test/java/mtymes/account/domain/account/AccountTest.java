@@ -1,6 +1,7 @@
 package mtymes.account.domain.account;
 
 import javafixes.math.Decimal;
+import mtymes.account.domain.operation.SeqId;
 import org.junit.Test;
 
 import static javafixes.common.CollectionUtil.newList;
@@ -15,7 +16,7 @@ public class AccountTest {
     public void shouldCreateAccount() {
         for (Decimal balance : newList(randomNegativeAmount(), Decimal.ZERO, randomPositiveAmount())) {
             AccountId accountId = randomAccountId();
-            Version version = randomVersion();
+            SeqId version = randomSeqId();
 
             // When
             Account account = new Account(accountId, balance, version);
@@ -30,14 +31,14 @@ public class AccountTest {
     @Test
     public void shouldFailConstructionOnInvalidParameters() {
         try {
-            new Account(null, randomAmount(), randomVersion());
+            new Account(null, randomAmount(), randomSeqId());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {
             assertThat(expected.getMessage(), equalTo("accountId can't be null"));
         }
         try {
-            new Account(randomAccountId(), null, randomVersion());
+            new Account(randomAccountId(), null, randomSeqId());
 
             fail("should fail with NullPointerException");
         } catch (NullPointerException expected) {

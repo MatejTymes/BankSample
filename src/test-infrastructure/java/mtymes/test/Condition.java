@@ -2,7 +2,6 @@ package mtymes.test;
 
 
 import javafixes.math.Decimal;
-import mtymes.account.domain.account.Version;
 
 import java.util.Set;
 import java.util.function.Function;
@@ -37,11 +36,11 @@ public interface Condition<T> extends Function<T, Boolean> {
         }
     }
 
-    static Condition<Version> before(Version version) {
-        return value -> value.compareTo(version) < 0;
+    static <T extends Comparable<T>> Condition<T> before(T otherValue) {
+        return value -> value.compareTo(otherValue) < 0;
     }
 
-    static Condition<Version> after(Version version) {
-        return value -> value.compareTo(version) > 0;
+    static <T extends Comparable<T>> Condition<T> after(T otherValue) {
+        return value -> value.compareTo(otherValue) > 0;
     }
 }

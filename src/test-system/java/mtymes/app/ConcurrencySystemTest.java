@@ -155,7 +155,7 @@ public class ConcurrencySystemTest {
 
         assertThat(transfersPerSecond, greaterThan(250d));
 
-        waitForQueuedWorkToFinish(Duration.ofSeconds(30));
+        waitForQueuedWorkToFinish(Duration.ofSeconds(60));
     }
 
     private void waitForQueuedWorkToFinish(Duration duration) {

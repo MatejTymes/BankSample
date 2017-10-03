@@ -26,28 +26,37 @@ public class Collections {
         );
     }
 
+    public static MongoCollection<Document> opLogCollection(MongoDatabase database) {
+        return getOrCreateCollection(
+                database,
+                "opLogs",
+                opLogs -> {
+                    opLogs.createIndex(
+                            descending(
+                                    MongoOpLogDao.ACCOUNT_ID,
+                                    MongoOpLogDao.SEQ_ID
+                            ),
+                            new IndexOptions().unique(true)
+                    );
+                    opLogs.createIndex(
+                            ascending(
+                                    MongoOpLogDao.OPERATION_ID
+                            ),
+                            new IndexOptions().unique(true)
+                    );
+                }
+        );
+    }
+
     public static MongoCollection<Document> operationsCollection(MongoDatabase database) {
         return getOrCreateCollection(
                 database,
                 "operations",
                 operations -> {
+                    // todo: test this
                     operations.createIndex(
                             ascending(
-                                    MongoOperationDao.ACCOUNT_ID,
-                                    MongoOperationDao.FINAL_STATE,
-                                    MongoOperationDao.VERSION
-                            )
-                    );
-                    operations.createIndex(
-                            ascending(
-                                    MongoOperationDao.BODY + "." + MongoMapper.OPERATION_ID // todo: test this - make sure duplicate OperationId can't be stored
-                            ),
-                            new IndexOptions().unique(true)
-                    );
-                    operations.createIndex(
-                            descending(
-                                    MongoOperationDao.ACCOUNT_ID,
-                                    MongoOperationDao.VERSION
+                                    MongoOperationDao.OPERATION_ID
                             ),
                             new IndexOptions().unique(true)
                     );

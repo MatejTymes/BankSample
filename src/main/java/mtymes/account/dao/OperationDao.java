@@ -1,23 +1,18 @@
 package mtymes.account.dao;
 
-import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.LoggedOperation;
-import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.Operation;
-import mtymes.account.exception.DuplicateOperationException;
+import mtymes.account.domain.operation.OperationId;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface OperationDao {
 
-    OpLogId storeOperation(Operation operation) throws DuplicateOperationException;
+    void storeOperation(Operation operation);
 
-    boolean markAsApplied(OpLogId opLogId);
+    boolean markAsApplied(OperationId operationId);
 
-    boolean markAsRejected(OpLogId opLogId, String description);
+    boolean markAsRejected(OperationId operationId, String description);
 
-    Optional<LoggedOperation> findLoggedOperation(OpLogId opLogId);
-
-    List<OpLogId> findUnfinishedOperationLogIds(AccountId accountId);
+    Optional<LoggedOperation> findLoggedOperation(OperationId operationId);
 }

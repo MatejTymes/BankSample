@@ -2,9 +2,8 @@ package mtymes.account.handler;
 
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
-import mtymes.account.domain.account.Version;
 import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.SeqId;
 
 import java.util.Optional;
 
@@ -17,26 +16,25 @@ public class CreateAccountHandler extends BaseOperationHandler<CreateAccount> {
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, CreateAccount operation) {
-
-        boolean success = accountDao.createAccount(operation.accountId, opLogId.seqId);
+    public void handleOperation(SeqId seqId, CreateAccount operation) {
+        boolean success = accountDao.createAccount(operation.accountId, seqId);
         if (success) {
-            markOperationAsApplied(opLogId);
+            markOperationAsApplied(operation.operationId);
         } else {
-            onAccountNotCreated(opLogId, operation);
+            onAccountNotCreated(seqId, operation);
         }
     }
 
-    private void onAccountNotCreated(OpLogId opLogId, CreateAccount operation) {
-        Optional<Version> optionalVersion = loadAccountVersion(operation.accountId);
+    private void onAccountNotCreated(SeqId seqId, CreateAccount operation) {
+        Optional<SeqId> optionalVersion = loadAccountVersion(operation.accountId);
         if (!optionalVersion.isPresent()) {
-            markOperationAsRejected(opLogId, format("Failed to create Account '%s'", operation.accountId));
+            markOperationAsRejected(operation.operationId, format("Failed to create Account '%s'", operation.accountId));
         } else {
-            Version accountVersion = optionalVersion.get();
-            if (opLogId.canApplyOperationTo(accountVersion)) {
-                markOperationAsRejected(opLogId, format("Account '%s' already exists", operation.accountId));
-            } else if (opLogId.isOperationCurrentlyAppliedTo(accountVersion)) {
-                markOperationAsApplied(opLogId);
+            SeqId accountVersion = optionalVersion.get();
+            if (seqId.canApplyAfter(accountVersion)) {
+                markOperationAsRejected(operation.operationId, format("Account '%s' already exists", operation.accountId));
+            } else if (seqId.isCurrentlyApplied(accountVersion)) {
+                markOperationAsApplied(operation.operationId);
             }
         }
     }

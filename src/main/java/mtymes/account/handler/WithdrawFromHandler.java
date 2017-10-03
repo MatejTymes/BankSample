@@ -5,7 +5,7 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.operation.OpLogId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.account.domain.operation.WithdrawFrom;
 
 import java.util.Optional;
@@ -19,28 +19,28 @@ public class WithdrawFromHandler extends BaseOperationHandler<WithdrawFrom> {
     }
 
     @Override
-    public void handleOperation(OpLogId opLogId, WithdrawFrom operation) {
+    public void handleOperation(SeqId seqId, WithdrawFrom operation) {
         AccountId accountId = operation.accountId;
 
         Optional<Account> optionalAccount = loadAccount(accountId);
         if (optionalAccount.isPresent()) {
-            withdrawMoney(opLogId, optionalAccount.get(), operation);
+            withdrawMoney(seqId, optionalAccount.get(), operation);
         } else {
-            markOperationAsRejected(opLogId, format("Account '%s' does not exist", accountId));
+            markOperationAsRejected(operation.operationId, format("Account '%s' does not exist", accountId));
         }
     }
 
-    private void withdrawMoney(OpLogId opLogId, Account account, WithdrawFrom operation) {
-        if (opLogId.canApplyOperationTo(account)) {
+    private void withdrawMoney(SeqId seqId, Account account, WithdrawFrom operation) {
+        if (seqId.canApplyAfter(account.version)) {
             Decimal newBalance = account.balance.minus(operation.amount);
             if (newBalance.compareTo(Decimal.ZERO) < 0) {
-                markOperationAsRejected(opLogId, format("Insufficient funds on account '%s'", account.accountId));
+                markOperationAsRejected(operation.operationId, format("Insufficient funds on account '%s'", account.accountId));
             } else {
-                accountDao.updateBalance(account.accountId, newBalance, account.version, opLogId.seqId);
-                markOperationAsApplied(opLogId);
+                accountDao.updateBalance(account.accountId, newBalance, account.version, seqId);
+                markOperationAsApplied(operation.operationId);
             }
-        } else if (opLogId.isOperationCurrentlyAppliedTo(account)) {
-            markOperationAsApplied(opLogId);
+        } else if (seqId.isCurrentlyApplied(account.version)) {
+            markOperationAsApplied(operation.operationId);
         }
     }
 }

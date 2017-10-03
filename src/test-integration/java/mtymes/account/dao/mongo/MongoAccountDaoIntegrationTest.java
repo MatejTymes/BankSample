@@ -4,7 +4,7 @@ import javafixes.math.Decimal;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.domain.account.Account;
 import mtymes.account.domain.account.AccountId;
-import mtymes.account.domain.account.Version;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -16,7 +16,7 @@ import java.util.Optional;
 
 import static javafixes.math.Decimal.ZERO;
 import static mtymes.account.dao.mongo.Collections.accountsCollection;
-import static mtymes.account.domain.account.Version.version;
+import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.test.Condition.after;
 import static mtymes.test.Condition.otherThan;
 import static mtymes.test.OptionalMatcher.isNotPresent;
@@ -51,7 +51,7 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldCreateAndLoadNewAccount() {
         AccountId accountId = randomAccountId();
-        Version version = randomVersion();
+        SeqId version = randomSeqId();
 
         // When
         boolean success = accountDao.createAccount(accountId, version);
@@ -66,10 +66,10 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldFailToCreateAccountIfItAlreadyExists() {
         AccountId accountId = randomAccountId();
-        Version version = randomVersion();
+        SeqId version = randomSeqId();
         accountDao.createAccount(accountId, version);
 
-        Version newVersion = randomVersion(otherThan(version));
+        SeqId newVersion = randomSeqId(otherThan(version));
 
         // When
         boolean success = accountDao.createAccount(accountId, newVersion);
@@ -90,10 +90,10 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldUpdateBalance() {
         AccountId accountId = randomAccountId();
-        Version currentVersion = randomVersion();
+        SeqId currentVersion = randomSeqId();
         accountDao.createAccount(accountId, currentVersion);
 
-        Version newVersion = version(currentVersion.value() + randomLong(1, 100));
+        SeqId newVersion = seqId(currentVersion.value() + randomLong(1, 100));
         Decimal newBalance = randomAmount();
 
         // When
@@ -109,11 +109,11 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldNotUpdateBalanceOnVersionMismatch() {
         AccountId accountId = randomAccountId();
-        Version currentVersion = randomVersion();
+        SeqId currentVersion = randomSeqId();
         accountDao.createAccount(accountId, currentVersion);
 
-        Version differentVersion = version(currentVersion.value() + randomLong(1, 100));
-        Version newVersion = version(differentVersion.value() + randomLong(1, 100));
+        SeqId differentVersion = seqId(currentVersion.value() + randomLong(1, 100));
+        SeqId newVersion = seqId(differentVersion.value() + randomLong(1, 100));
         Decimal newBalance = randomAmount();
 
         // When
@@ -129,10 +129,10 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldFailToUpdateBalanceIfNewVersionIsBeforeCurrentVersion() {
         AccountId accountId = randomAccountId();
-        Version currentVersion = randomVersion();
+        SeqId currentVersion = randomSeqId();
         accountDao.createAccount(accountId, currentVersion);
 
-        Version newVersion = version(currentVersion.value() - randomLong(1, 100));
+        SeqId newVersion = seqId(currentVersion.value() - randomLong(1, 100));
         Decimal newBalance = randomAmount();
 
         try {
@@ -148,10 +148,10 @@ public class MongoAccountDaoIntegrationTest {
     @Test
     public void shouldFailToUpdateBalanceIfNewVersionIsTheSameCurrentVersion() {
         AccountId accountId = randomAccountId();
-        Version currentVersion = randomVersion();
+        SeqId currentVersion = randomSeqId();
         accountDao.createAccount(accountId, currentVersion);
 
-        Version newVersion = currentVersion;
+        SeqId newVersion = currentVersion;
         Decimal newBalance = randomAmount();
 
         try {
@@ -166,8 +166,8 @@ public class MongoAccountDaoIntegrationTest {
 
     @Test
     public void shouldNotUpdateBalanceForNonExistingAccount() {
-        Version oldVersion = randomVersion();
-        Version newVersion = randomVersion(after(oldVersion));
+        SeqId oldVersion = randomSeqId();
+        SeqId newVersion = randomSeqId(after(oldVersion));
         assertThat(accountDao.updateBalance(randomAccountId(), randomAmount(), oldVersion, newVersion), is(false));
     }
 }

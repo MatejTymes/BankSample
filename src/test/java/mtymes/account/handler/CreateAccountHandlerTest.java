@@ -4,8 +4,8 @@ import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.CreateAccount;
-import mtymes.account.domain.operation.OpLogId;
 import mtymes.account.domain.operation.OperationId;
+import mtymes.account.domain.operation.SeqId;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     private OperationId operationId = randomOperationId();
     private AccountId accountId = randomAccountId();
-    private OpLogId opLogId = randomOpLogId(accountId);
+    private SeqId seqId = randomSeqId();
     private CreateAccount operation = new CreateAccount(operationId, accountId);
 
     @Before
@@ -38,62 +38,62 @@ public class CreateAccountHandlerTest extends StrictMockTest {
 
     @Test
     public void shouldSucceedToCreateNewAccount() {
-        when(accountDao.createAccount(accountId, opLogId.seqId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(true);
-        when(operationDao.markAsApplied(opLogId))
+        when(operationDao.markAsApplied(operationId))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldSucceedIfAccountHasBeenAlreadyCreatedByThisOperation() {
-        when(accountDao.createAccount(accountId, opLogId.seqId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
-                .thenReturn(Optional.of(opLogId.seqId));
-        when(operationDao.markAsApplied(opLogId))
+                .thenReturn(Optional.of(seqId));
+        when(operationDao.markAsApplied(operationId))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldFailIfAccountAlreadyExistedBeforeThisOperation() {
-        when(accountDao.createAccount(accountId, opLogId.seqId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
-                .thenReturn(Optional.of(randomVersion(before(opLogId.seqId))));
-        when(operationDao.markAsRejected(opLogId, "Account '" + accountId + "' already exists"))
+                .thenReturn(Optional.of(randomSeqId(before(seqId))));
+        when(operationDao.markAsRejected(operationId, "Account '" + accountId + "' already exists"))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldFailIfUnableToCreateAccountAndRetrieveAccountVersion() {
-        when(accountDao.createAccount(accountId, opLogId.seqId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
                 .thenReturn(Optional.empty());
-        when(operationDao.markAsRejected(opLogId, "Failed to create Account '" + accountId + "'"))
+        when(operationDao.markAsRejected(operationId, "Failed to create Account '" + accountId + "'"))
                 .thenReturn(true);
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 
     @Test
     public void shouldDoNothingIfNextOperationIsAlreadyApplied() {
-        when(accountDao.createAccount(accountId, opLogId.seqId))
+        when(accountDao.createAccount(accountId, seqId))
                 .thenReturn(false);
         when(accountDao.findCurrentVersion(accountId))
-                .thenReturn(Optional.of(randomVersion(after(opLogId.seqId))));
+                .thenReturn(Optional.of(randomSeqId(after(seqId))));
 
         // When & Then
-        handler.handleOperation(opLogId, operation);
+        handler.handleOperation(seqId, operation);
     }
 }

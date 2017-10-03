@@ -27,6 +27,7 @@ import static de.flapdoodle.embed.process.runtime.Network.localhostIsIPv6;
 public class EmbeddedDB {
 
     private static final IFeatureAwareVersion V3_4_7 = Versions.withFeatures(new GenericVersion("3.4.7"), SYNC_DELAY, STORAGE_ENGINE, ONLY_64BIT, NO_CHUNKSIZE_ARG, MONGOS_CONFIGDB_SET_STYLE);
+    private static final IFeatureAwareVersion V3_4_9 = Versions.withFeatures(new GenericVersion("3.4.9"), SYNC_DELAY, STORAGE_ENGINE, ONLY_64BIT, NO_CHUNKSIZE_ARG, MONGOS_CONFIGDB_SET_STYLE);
 
     private final int port;
     private final String dbName;
@@ -78,7 +79,7 @@ public class EmbeddedDB {
         }
         try {
             IMongodConfig config = new MongodConfigBuilder()
-                    .version(V3_4_7) // Version.V3_4_1
+                    .version(V3_4_9)
                     .net(new Net("localhost", port, localhostIsIPv6()))
                     .build();
             Command command = Command.MongoD;
