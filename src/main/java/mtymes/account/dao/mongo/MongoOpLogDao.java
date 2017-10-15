@@ -36,7 +36,6 @@ public class MongoOpLogDao extends MongoBaseDao implements OpLogDao {
         this.opLogs = opLogs;
     }
 
-    // todo: test this
     @Override
     public SeqId registerOperationId(AccountId accountId, OperationId operationId) {
         long seqIdValue = storeWithSequenceId(
@@ -49,13 +48,11 @@ public class MongoOpLogDao extends MongoBaseDao implements OpLogDao {
         return seqId(seqIdValue);
     }
 
-    // todo: test this
     @Override
     public void markAsFinished(OperationId operationId) {
         opLogs.updateOne(doc(OPERATION_ID, operationId), doc("$set", doc(FINISHED, true)));
     }
 
-    // todo: test this
     @Override
     public List<Tuple<OperationId, SeqId>> findUnfinishedOperationIds(AccountId accountId) {
         MongoIterable<Tuple<OperationId, SeqId>> operationIds = opLogs.find(

@@ -39,6 +39,7 @@ public class MongoOperationDaoPerformanceTest {
         MongoManager.release(db);
     }
 
+    // todo: test this for OpLogDao instead
     @Test
     public void shouldStoreAtLeast1000OpPerSecondOnConcurrentWrites() throws InterruptedException {
         int threadCount = 128;
