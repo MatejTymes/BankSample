@@ -11,7 +11,7 @@ import static com.mongodb.client.model.Indexes.ascending;
 import static com.mongodb.client.model.Indexes.descending;
 import static javafixes.common.CollectionUtil.newSet;
 
-public class Collections {
+public class MongoCollections {
 
     public static MongoCollection<Document> accountsCollection(MongoDatabase database) {
         return getOrCreateCollection(
@@ -53,7 +53,6 @@ public class Collections {
                 database,
                 "operations",
                 operations -> {
-                    // todo: test this
                     operations.createIndex(
                             ascending(
                                     MongoOperationDao.OPERATION_ID

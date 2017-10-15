@@ -13,7 +13,7 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static javafixes.concurrency.Runner.runner;
-import static mtymes.account.dao.mongo.Collections.operationsCollection;
+import static mtymes.account.dao.mongo.MongoCollections.operationsCollection;
 import static mtymes.test.Random.randomOperation;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;

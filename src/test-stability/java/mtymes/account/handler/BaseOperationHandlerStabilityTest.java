@@ -17,7 +17,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import static java.lang.String.format;
-import static mtymes.account.dao.mongo.Collections.*;
+import static mtymes.account.dao.mongo.MongoCollections.*;
 import static mtymes.test.Random.randomAccountId;
 import static mtymes.test.Random.randomOperationId;
 import static org.hamcrest.Matchers.greaterThan;

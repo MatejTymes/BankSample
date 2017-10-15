@@ -5,6 +5,7 @@ import mtymes.account.dao.OpLogDao;
 import mtymes.account.domain.account.AccountId;
 import mtymes.account.domain.operation.OperationId;
 import mtymes.account.domain.operation.SeqId;
+import mtymes.account.exception.DuplicateItemException;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -23,13 +24,14 @@ import static java.util.stream.IntStream.rangeClosed;
 import static javafixes.common.CollectionUtil.newList;
 import static javafixes.common.CollectionUtil.newSet;
 import static javafixes.object.Tuple.tuple;
-import static mtymes.account.dao.mongo.Collections.opLogCollection;
+import static mtymes.account.dao.mongo.MongoCollections.opLogCollection;
 import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class MongoOpLogDaoIntegrationTest {
 
@@ -65,6 +67,24 @@ public class MongoOpLogDaoIntegrationTest {
         assertThat(opLogDao.registerOperationId(accountId2, randomOperationId()), equalTo(seqId(2)));
         assertThat(opLogDao.registerOperationId(accountId3, randomOperationId()), equalTo(seqId(1)));
         assertThat(opLogDao.registerOperationId(accountId2, randomOperationId()), equalTo(seqId(3)));
+    }
+
+    @Test
+    public void shouldFailToRegisterTheSameOperationIdTwice() {
+        AccountId accountId = randomAccountId();
+        OperationId operationId = randomOperationId();
+
+        opLogDao.registerOperationId(accountId, operationId);
+
+        try {
+            // When
+            opLogDao.registerOperationId(accountId, operationId);
+
+            // Then
+            fail("expected DuplicateItemException");
+        } catch (DuplicateItemException expectedException) {
+            // expected
+        }
     }
 
     @Test

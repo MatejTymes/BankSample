@@ -16,7 +16,7 @@ import mtymes.account.work.Sweatshop;
 import mtymes.account.work.Worker;
 import mtymes.common.util.SetQueue;
 
-import static mtymes.account.dao.mongo.Collections.*;
+import static mtymes.account.dao.mongo.MongoCollections.*;
 
 public class Dependencies {
 

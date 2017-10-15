@@ -15,7 +15,7 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static javafixes.math.Decimal.ZERO;
-import static mtymes.account.dao.mongo.Collections.accountsCollection;
+import static mtymes.account.dao.mongo.MongoCollections.accountsCollection;
 import static mtymes.account.domain.operation.SeqId.seqId;
 import static mtymes.test.Condition.after;
 import static mtymes.test.Condition.otherThan;

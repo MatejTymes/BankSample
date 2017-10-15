@@ -2,6 +2,7 @@ package mtymes.account.dao.mongo;
 
 import mtymes.account.dao.OperationDao;
 import mtymes.account.domain.operation.*;
+import mtymes.account.exception.DuplicateItemException;
 import mtymes.test.db.EmbeddedDB;
 import mtymes.test.db.MongoManager;
 import org.junit.AfterClass;
@@ -14,7 +15,7 @@ import java.util.Optional;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
 import static javafixes.common.CollectionUtil.newList;
-import static mtymes.account.dao.mongo.Collections.operationsCollection;
+import static mtymes.account.dao.mongo.MongoCollections.operationsCollection;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.test.ConcurrencyUtil.runConcurrentlyOnNThreads;
@@ -22,6 +23,7 @@ import static mtymes.test.OptionalMatcher.isPresentAndEqualTo;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class MongoOperationDaoIntegrationTest {
 
@@ -63,21 +65,21 @@ public class MongoOperationDaoIntegrationTest {
         }
     }
 
-    // todo: move to the OpLogDao test
-//    @Test
-//    public void shouldStoreOperationsWithSequentialOpLogIdForEachAccount() {
-//        AccountId accountId1 = randomAccountId();
-//        AccountId accountId2 = randomAccountId();
-//        AccountId accountId3 = randomAccountId();
-//        assertThat(operationDao.storeOperation(randomOperation(accountId1)), equalTo(opLogId(accountId1, seqId(1))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId1)), equalTo(opLogId(accountId1, seqId(2))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId2)), equalTo(opLogId(accountId2, seqId(1))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId1)), equalTo(opLogId(accountId1, seqId(3))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId1)), equalTo(opLogId(accountId1, seqId(4))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId2)), equalTo(opLogId(accountId2, seqId(2))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId3)), equalTo(opLogId(accountId3, seqId(1))));
-//        assertThat(operationDao.storeOperation(randomOperation(accountId2)), equalTo(opLogId(accountId2, seqId(3))));
-//    }
+    @Test
+    public void shouldFailToStoreTwoOperationsUnderTheSameOperationId() {
+        OperationId operationId = randomOperationId();
+        operationDao.storeOperation(randomOperation(operationId));
+
+        try {
+            // When
+            operationDao.storeOperation(randomOperation(operationId));
+
+            // Then
+            fail("expected DuplicateItemException");
+        } catch (DuplicateItemException expectedException) {
+            // expected
+        }
+    }
 
     @Test
     public void shouldMarkOperationAsApplied() {
@@ -172,71 +174,6 @@ public class MongoOperationDaoIntegrationTest {
         Optional<LoggedOperation> actualOperation = operationDao.findLoggedOperation(operationId);
         assertThat(actualOperation, isPresentAndEqualTo(appliedOperation(operation)));
     }
-
-    // todo: move to the OpLogDao test
-//    @Test
-//    public void shouldFindUnfinishedOperationLogIds() {
-//        AccountId accountId = randomAccountId();
-//        AccountId otherAccountId = randomAccountId();
-//
-//        OpLogId opLogId1 = operationDao.storeOperation(randomOperation(accountId));
-//        OpLogId otherOpLogId1 = operationDao.storeOperation(randomOperation(otherAccountId));
-//        OpLogId opLogId2 = operationDao.storeOperation(randomOperation(accountId));
-//        OpLogId opLogId3 = operationDao.storeOperation(randomOperation(accountId));
-//        OpLogId otherOpLogId2 = operationDao.storeOperation(randomOperation(otherAccountId));
-//        OpLogId opLogId4 = operationDao.storeOperation(randomOperation(accountId));
-//        OpLogId otherOpLogId3 = operationDao.storeOperation(randomOperation(otherAccountId));
-//        OpLogId opLogId5 = operationDao.storeOperation(randomOperation(accountId));
-//
-//        operationDao.markAsApplied(opLogId3);
-//        operationDao.markAsRejected(opLogId4, "Rejected");
-//        operationDao.markAsApplied(otherOpLogId2);
-//        operationDao.markAsRejected(otherOpLogId3, "Rejected");
-//
-//        // When
-//        List<OpLogId> unFinishedOpLogIds = operationDao.findUnfinishedOperationLogIds(accountId);
-//
-//        // Then
-//        assertThat(unFinishedOpLogIds, equalTo(newList(opLogId1, opLogId2, opLogId5)));
-//    }
-
-    // todo: move to the OpLogDao test
-//    @Test
-//    public void shouldCreateUniqueSequentialOpLogIdsOnConcurrentWrites() {
-//        int threadCount = 64;
-//
-//        List<OpLogId> opLogIds = newCopyOnWriteArrayList();
-//
-//        List<AccountId> accountIds = rangeClosed(1, 10).mapToObj(value -> randomAccountId()).collect(toList());
-//        Map<AccountId, AtomicInteger> highestId = accountIds.stream().collect(toMap(
-//                accountId -> accountId,
-//                accountId -> new AtomicInteger(0)
-//        ));
-//
-//        runConcurrentlyOnNThreads(
-//                () -> {
-//                    AccountId accountId = pickRandomValue(accountIds);
-//                    Operation operation = randomOperation(accountId);
-//
-//                    // When
-//                    opLogIds.add(
-//                            operationDao.storeOperation(operation)
-//                    );
-//
-//                    highestId.get(accountId).incrementAndGet();
-//                },
-//                threadCount
-//        );
-//
-//        // Then
-//        assertThat(opLogIds.size(), is(threadCount));
-//
-//        Set<OpLogId> expectedOpLogIds = highestId.entrySet().stream()
-//                .filter(entry -> entry.getValue().get() > 0)
-//                .flatMap(entry -> rangeClosed(1, entry.getValue().get()).mapToObj(seqId -> opLogId(entry.getKey(), seqId(seqId))))
-//                .collect(toSet());
-//        assertThat(newSet(opLogIds), equalTo(expectedOpLogIds));
-//    }
 
     @Test
     public void shouldAllowOnlyOneFinalizationMethodOnConcurrentRequests() {

@@ -44,7 +44,6 @@ public class MongoOperationDao extends MongoBaseDao implements OperationDao {
                     .put(BODY, operation.apply(mapper))
                     .build());
         } catch (MongoWriteException e) {
-            // todo: test this
             if (e.getError().getCode() == DUPLICATE_CODE) {
                 throw new DuplicateItemException(e);
             } else {
