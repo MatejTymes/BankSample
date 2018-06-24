@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.2'
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.5.0'
     }
 }
 
