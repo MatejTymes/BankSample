@@ -56,40 +56,48 @@ public class Bank {
         }, jsonTransformer);
 
         spark.post("/account/new", (req, res) -> submitter
-                .createAccount()
-                .handleAndGet(
-                        () -> res.status(201),
-                        () -> res.status(500)
-                ), jsonTransformer);
+                        .createAccount()
+                        .handle(
+                                failure -> res.status(500),
+                                account -> res.status(201)
+                        )
+                        .value(),
+                jsonTransformer);
 
         spark.post("/account/:accountId/deposit/:amount", (req, res) -> submitter
-                .depositMoney(
-                        accountId(req.params(":accountId")),
-                        decimal(req.params(":amount")))
-                .handleAndGet(
-                        () -> res.status(200),
-                        () -> res.status(400)
-                ), jsonTransformer);
+                        .depositMoney(
+                                accountId(req.params(":accountId")),
+                                decimal(req.params(":amount")))
+                        .handle(
+                                failure -> res.status(400),
+                                success -> res.status(200)
+                        )
+                        .value(),
+                jsonTransformer);
 
         spark.post("/account/:accountId/withdraw/:amount", (req, res) -> submitter
-                .withdrawMoney(
-                        accountId(req.params(":accountId")),
-                        decimal(req.params(":amount")))
-                .handleAndGet(
-                        () -> res.status(200),
-                        () -> res.status(400)
-                ), jsonTransformer);
+                        .withdrawMoney(
+                                accountId(req.params(":accountId")),
+                                decimal(req.params(":amount")))
+                        .handle(
+                                failure -> res.status(400),
+                                success -> res.status(200)
+                        )
+                        .value(),
+                jsonTransformer);
 
         spark.post("/account/:fromAccountId/transfer/:amount/to/:toAccountId", (req, res) -> submitter
-                .transferMoney(
-                        accountId(req.params(":fromAccountId")),
-                        accountId(req.params(":toAccountId")),
-                        decimal(req.params(":amount"))
-                )
-                .handleAndGet(
-                        () -> res.status(200),
-                        () -> res.status(400)
-                ), jsonTransformer);
+                        .transferMoney(
+                                accountId(req.params(":fromAccountId")),
+                                accountId(req.params(":toAccountId")),
+                                decimal(req.params(":amount"))
+                        )
+                        .handle(
+                                failure -> res.status(400),
+                                success -> res.status(200)
+                        )
+                        .value(),
+                jsonTransformer);
 
         spark.get("/work/queued/stats", (req, res) -> sweatshop.queuedWorkStats(), jsonTransformer);
 

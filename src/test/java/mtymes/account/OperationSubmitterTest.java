@@ -1,6 +1,7 @@
 package mtymes.account;
 
 import javafixes.math.Decimal;
+import javafixes.object.Either;
 import mtymes.account.dao.AccountDao;
 import mtymes.account.dao.OpLogDao;
 import mtymes.account.dao.OperationDao;
@@ -10,18 +11,17 @@ import mtymes.account.domain.operation.*;
 import mtymes.account.work.Worker;
 import mtymes.common.domain.Failure;
 import mtymes.common.domain.Success;
-import mtymes.common.util.Either;
 import mtymes.test.StrictMockTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Optional;
 
+import static javafixes.object.Either.left;
+import static javafixes.object.Either.right;
 import static mtymes.account.domain.operation.FinalState.Applied;
 import static mtymes.account.domain.operation.FinalState.Rejected;
 import static mtymes.common.domain.Failure.failure;
-import static mtymes.common.util.Either.left;
-import static mtymes.common.util.Either.right;
 import static mtymes.domain.account.AccountBuilder.accountBuilder;
 import static mtymes.test.Random.*;
 import static org.hamcrest.Matchers.equalTo;

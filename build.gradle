@@ -13,13 +13,14 @@ apply plugin: 'idea'
 
 idea {
     project {
-        jdkName = '1.8'
-        languageLevel = '1.8'
+        jdkName = '10'
+        languageLevel = '10'
     }
 }
+
 compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = 10
+    targetCompatibility = 10
 }
 
 repositories {
@@ -59,7 +60,7 @@ systemTest.mustRunAfter test
 dependencies {
     compile 'commons-io:commons-io:2.5'
     compile 'com.google.guava:guava:20.0'
-    compile 'com.github.matejtymes:javafixes:1.2.0.rc1'
+    compile 'com.github.matejtymes:javafixes:1.3.2'
 
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'ch.qos.logback:logback-classic:1.1.9'
@@ -93,7 +94,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.1'
+    gradleVersion = '4.10'
 }
 
 tasks.withType(Test) {
