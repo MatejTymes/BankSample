@@ -104,7 +104,7 @@ public class ConcurrencySystemTest {
             int transferToCount = (int) successfulTransfers.stream().filter(accountId -> accountId.equals(toAccountId)).count();
             api.loadAccount(toAccountId).shouldHaveBody(jsonBuilder()
                     .with("accountId", toAccountId)
-                    .with("balance", transferAmount.multiply(d(transferToCount)))
+                    .with("balance", transferAmount.times(d(transferToCount)))
                     .with("version", 1 + transferToCount)
                     .build());
         }
@@ -113,8 +113,8 @@ public class ConcurrencySystemTest {
     @Test
     public void shouldBeAbleToDoAtLeast250TransfersPerSecond() throws InterruptedException {
         int accountCount = 1_000;
-        int threadCount = 16;
-        int transferCount = 7_500;
+        int threadCount = 32;
+        int transferCount = 10_000;
 
         List<AccountId> accountIds = rangeClosed(1, accountCount).mapToObj(i -> {
             AccountId accountId = api.createAccount().accountId();
